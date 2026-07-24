@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive decision journal explaining how Terra Rossa is being designed and built.">
+  <title>Why Terra Rossa?</title>
+  <style>
+    :root {
+      --ink: #f5ead5;
+      --muted: #c8b89d;
+      --night: #100f17;
+      --night-2: #191522;
+      --earth: #a83e27;
+      --ember: #f0783c;
+      --moon: #d9e7dc;
+      --moss: #688d63;
+      --line: rgba(245, 234, 213, 0.14);
+      --card: rgba(28, 23, 34, 0.78);
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.36);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      color-scheme: dark;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 73% 5%, rgba(217, 231, 220, 0.11), transparent 23rem),
+        radial-gradient(circle at 18% 35%, rgba(168, 62, 39, 0.2), transparent 30rem),
+        linear-gradient(150deg, var(--night), #0c0b11 68%);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.35;
+      background-image: repeating-linear-gradient(117deg, transparent 0 31px, rgba(255,255,255,.018) 32px);
+      mask-image: linear-gradient(to bottom, black, transparent 78%);
+    }
+
+    a { color: inherit; }
+    button, input { font: inherit; }
+
+    .shell {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      min-height: 94vh;
+      display: grid;
+      align-items: end;
+      padding: 80px 0 64px;
+      position: relative;
+      overflow: clip;
+    }
+
+    .moon {
+      position: absolute;
+      width: clamp(180px, 25vw, 370px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      right: 6vw;
+      top: 8vh;
+      background: radial-gradient(circle at 37% 35%, #f8fff9, var(--moon) 43%, #8fa49d 76%);
+      box-shadow: 0 0 90px rgba(217,231,220,.18);
+      opacity: .86;
+    }
+
+    .moon::after {
+      content: "";
+      position: absolute;
+      width: 35%;
+      aspect-ratio: 1.25;
+      border-radius: 50%;
+      background: rgba(57, 70, 68, .19);
+      left: 18%;
+      top: 52%;
+      transform: rotate(-18deg);
+      box-shadow: 85px -73px 0 -16px rgba(57,70,68,.12), 130px 21px 0 -25px rgba(57,70,68,.16);
+    }
+
+    .eyebrow {
+      color: var(--ember);
+      font-size: .74rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    h1, h2, h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      line-height: .98;
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 870px;
+      font-size: clamp(4.4rem, 13vw, 10.5rem);
+      letter-spacing: -.065em;
+      text-wrap: balance;
+      position: relative;
+    }
+
+    h1 em {
+      color: var(--ember);
+      font-weight: 500;
+    }
+
+    .lede {
+      max-width: 680px;
+      margin: 28px 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.4rem);
+      line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .button {
+      border: 1px solid var(--line);
+      background: var(--ink);
+      color: #21141a;
+      padding: 12px 17px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease;
+    }
+
+    .button:hover { transform: translateY(-2px); }
+    .button.secondary { background: transparent; color: var(--ink); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin: 0 0 96px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .stat {
+      background: rgba(16,15,23,.94);
+      padding: 25px;
+    }
+
+    .stat strong {
+      display: block;
+      font-family: Georgia, serif;
+      color: var(--ember);
+      font-size: 2.15rem;
+      font-weight: 500;
+    }
+
+    .stat span { color: var(--muted); font-size: .9rem; }
+
+    .section {
+      padding: 78px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: .7fr 1.3fr;
+      gap: 36px;
+      margin-bottom: 38px;
+    }
+
+    h2 {
+      font-size: clamp(2.5rem, 7vw, 5.4rem);
+      letter-spacing: -.045em;
+    }
+
+    .section-intro {
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.7;
+      max-width: 660px;
+      align-self: end;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .filter {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 13px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .filter[aria-pressed="true"] {
+      background: var(--earth);
+      color: white;
+      border-color: transparent;
+    }
+
+    .decisions {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+    }
+
+    .decision {
+      grid-column: span 6;
+      min-height: 250px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      background:
+        linear-gradient(140deg, rgba(255,255,255,.035), transparent 45%),
+        var(--card);
+      box-shadow: var(--shadow);
+      transition: transform .25s ease, border-color .25s ease, opacity .2s ease;
+    }
+
+    .decision:hover {
+      transform: translateY(-4px);
+      border-color: rgba(240,120,60,.5);
+    }
+
+    .decision[hidden] { display: none; }
+
+    .tag {
+      display: inline-block;
+      color: var(--ember);
+      font-size: .7rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 27px;
+    }
+
+    h3 {
+      font-size: clamp(1.65rem, 3.3vw, 2.7rem);
+      letter-spacing: -.025em;
+    }
+
+    .decision p {
+      color: var(--muted);
+      line-height: 1.62;
+      margin: 16px 0 0;
+    }
+
+    .decision .why {
+      color: var(--ink);
+      border-left: 2px solid var(--earth);
+      padding-left: 14px;
+    }
+
+    .loop {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      counter-reset: loop;
+    }
+
+    .loop article {
+      counter-increment: loop;
+      border-top: 2px solid var(--earth);
+      padding: 18px 10px 0 0;
+    }
+
+    .loop article::before {
+      content: "0" counter(loop);
+      display: block;
+      color: var(--ember);
+      font-family: Georgia, serif;
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+    }
+
+    .loop h3 { font-size: 1.45rem; }
+    .loop p { color: var(--muted); line-height: 1.5; font-size: .92rem; }
+
+    .principle {
+      margin: 56px 0 0;
+      padding: clamp(28px, 6vw, 70px);
+      border-radius: 30px;
+      background: var(--earth);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .principle::after {
+      content: "WHY?";
+      position: absolute;
+      right: -3vw;
+      bottom: -5vw;
+      font: 900 clamp(6rem, 20vw, 17rem)/1 sans-serif;
+      color: rgba(255,255,255,.07);
+      pointer-events: none;
+    }
+
+    .principle blockquote {
+      max-width: 850px;
+      margin: 0;
+      font: 500 clamp(2rem, 5vw, 4.4rem)/1.08 Georgia, serif;
+      letter-spacing: -.035em;
+      position: relative;
+    }
+
+    .open-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .open-list div {
+      background: var(--night-2);
+      padding: 18px 20px;
+      color: var(--muted);
+    }
+
+    .open-list strong { color: var(--ink); }
+
+    footer {
+      padding: 55px 0 75px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (max-width: 760px) {
+      .hero { min-height: 84vh; }
+      .moon { right: -70px; top: 50px; opacity: .55; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .section-head { grid-template-columns: 1fr; }
+      .decision { grid-column: 1 / -1; min-height: auto; }
+      .loop { grid-template-columns: 1fr; }
+      .loop article { display: grid; grid-template-columns: 54px 1fr; column-gap: 14px; }
+      .loop article::before { grid-row: span 2; margin: 0; }
+      .loop p { margin-top: 7px; }
+      .open-list { grid-template-columns: 1fr; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="moon" aria-hidden="true"></div>
+    <div class="shell">
+      <p class="eyebrow">Terra Rossa / decision journal</p>
+      <h1>Build the pack.<br><em>Explain why.</em></h1>
+      <p class="lede">A living, plain-English account of the choices behind a fast browser PvPvE game about armed dog heroes, dangerous darkness, and the friends you need to survive it.</p>
+      <div class="hero-actions">
+        <a class="button" href="#decisions">Explore the decisions</a>
+        <a class="button secondary" href="spec.md">Read the full specification</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <section class="stats reveal" aria-label="Current project constraints">
+        <div class="stat"><strong>16</strong><span>players at most</span></div>
+        <div class="stat"><strong>4</strong><span>dogs in a pack</span></div>
+        <div class="stat"><strong>1</strong><span>persistent HUD element</span></div>
+        <div class="stat"><strong>Web</strong><span>the performance target</span></div>
+      </section>
+    </div>
+
+    <section class="section" id="decisions">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow">The decisions</p>
+            <h2>Constraints create character.</h2>
+          </div>
+          <p class="section-intro">A good specification records what we chose. A useful decision journal also records what we rejected, what risk the choice creates, and what evidence could change our minds.</p>
+        </div>
+
+        <div class="filters reveal" aria-label="Filter decisions">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">Everything</button>
+          <button class="filter" type="button" data-filter="gameplay" aria-pressed="false">Gameplay</button>
+          <button class="filter" type="button" data-filter="world" aria-pressed="false">World</button>
+          <button class="filter" type="button" data-filter="technical" aria-pressed="false">Technical</button>
+          <button class="filter" type="button" data-filter="interface" aria-pressed="false">Interface</button>
+        </div>
+
+        <div class="decisions">
+          <article class="decision reveal" data-category="gameplay">
+            <span class="tag">Gameplay / players</span>
+            <h3>Sixteen dogs, packs of four.</h3>
+            <p>Players are assigned randomly to balanced packs. No pack exceeds four dogs, and packs cannot be hand-picked.</p>
+            <p class="why"><strong>Why:</strong> twenty people were too difficult to coordinate and read. Four is intimate enough for rescues and equipment sharing while still allowing four rival groups.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay world">
+            <span class="tag">Gameplay / match</span>
+            <h3>No safe preparation phase.</h3>
+            <p>PvP and PvE are active immediately. Packs begin far apart, then better loot and closing darkness pull them inward.</p>
+            <p class="why"><strong>Why:</strong> teleporting into a final arena broke the journey. Early encounters should be lucky, skilful, disastrous, and memorable.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay">
+            <span class="tag">Gameplay / identity</span>
+            <h3>Dogs, not classes.</h3>
+            <p>Every dog begins with equal health, speed, armour, regeneration, dash, and revive capability. Each has one starting weapon and one unique ability.</p>
+            <p class="why"><strong>Why:</strong> rigid tank/healer/damage labels make friends negotiate a composition before they have fun. Feats and loot should create the build during play.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay">
+            <span class="tag">Gameplay / leadership</span>
+            <h3>Alpha is honour, not power.</h3>
+            <p>Every pack begins with a random alpha. Leadership changes through broad recent contribution, and total alpha time becomes a score.</p>
+            <p class="why"><strong>Why:</strong> a powerful alpha would snowball or invite abuse. Prestige celebrates helpful play without deciding who receives loot or who wins a fight.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay">
+            <span class="tag">Gameplay / survival</span>
+            <h3>You can always rescue the pack.</h3>
+            <p>Dogs go down and may crawl. Enemies cannot finish them. Any standing packmate can revive them; the pack loses only when everyone is down.</p>
+            <p class="why"><strong>Why:</strong> revival turns proximity into action. It produces last stands and rescues without asking eliminated players to wait through most of a match.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay interface">
+            <span class="tag">Gameplay / equipment</span>
+            <h3>One weapon. One armour. One relic.</h3>
+            <p>No inventory grid and no loot vote. Drop what you have; another dog can pick it up. Only weapons drop when a whole enemy pack is eliminated.</p>
+            <p class="why"><strong>Why:</strong> physical exchange keeps cooperation inside the world. Three slots make every object legible and every hand-off consequential.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay interface">
+            <span class="tag">Gameplay / skill</span>
+            <h3>Reloading asks a question.</h3>
+            <p>Ignore the timing line for a normal reload, hit the window for speed, land the perfect mark for near-instant recovery, or mistime it and fumble.</p>
+            <p class="why"><strong>Why:</strong> limited ammunition should create skill and tension rather than downtime. Choosing to attempt the input is itself a tactical risk.</p>
+          </article>
+
+          <article class="decision reveal" data-category="interface">
+            <span class="tag">Interface / clarity</span>
+            <h3>The compass is the HUD.</h3>
+            <p>Health, armour, ammunition, reloads, abilities, and equipment communicate through the dog and nearby world. Temporary descriptions appear only when needed.</p>
+            <p class="why"><strong>Why:</strong> attention belongs on the island. A compass preserves navigation and pack awareness without turning combat into dashboard reading.</p>
+          </article>
+
+          <article class="decision reveal" data-category="world technical">
+            <span class="tag">World / generation</span>
+            <h3>Authored spaces, shuffled carefully.</h3>
+            <p>One recognizable island and centre come first. Proven modular regions can later randomize paths, cover, creatures, loot, and sightlines under validation rules.</p>
+            <p class="why"><strong>Why:</strong> unconstrained procedural terrain creates unfair spawns and bad fights. Randomness should recombine good design, not replace it.</p>
+          </article>
+
+          <article class="decision reveal" data-category="world gameplay">
+            <span class="tag">World / darkness</span>
+            <h3>Leaving can be worth it.</h3>
+            <p>Packed dogs see and survive better. Isolated dogs attract swarms and lose reliable information, but darkness hides valuable bounty.</p>
+            <p class="why"><strong>Why:</strong> togetherness is meaningful only if separation remains a choice. Risk outside the pack creates scouting, rescue, and greed.</p>
+          </article>
+
+          <article class="decision reveal" data-category="world">
+            <span class="tag">World / art</span>
+            <h3>Compact occult-western heroes.</h3>
+            <p>Small upright dog gunslingers cross red earth under moonlight, carrying improvised armour and supernatural charms against angular creatures of night.</p>
+            <p class="why"><strong>Why:</strong> compact proportions read from an isometric camera; the occult western gives Terra Rossa an identity that supports firearms, relics, and darkness.</p>
+          </article>
+
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">Technical / web</span>
+            <h3>The browser sets the budget.</h3>
+            <p>Godot Compatibility rendering, authoritative WebSocket servers, low-poly enemies, pooled effects, hitscan weapons, and measured entity caps begin in the first prototype.</p>
+            <p class="why"><strong>Why:</strong> web performance cannot be bolted on later. Sixteen dogs are manageable; uncontrolled AI, animation, particles, shadows, and network traffic are not.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow">The match</p>
+            <h2>One continuous journey.</h2>
+          </div>
+          <p class="section-intro">No lobby composition puzzle. No ten-minute immunity wall. No teleport into a second game. The island applies pressure until one pack remains.</p>
+        </div>
+        <div class="loop reveal">
+          <article><h3>Form</h3><p>Random packs choose distinct dogs and begin far apart.</p></article>
+          <article><h3>Hunt</h3><p>Fight creatures for individual XP and personal feat choices.</p></article>
+          <article><h3>Risk</h3><p>Leave safety for weapons, armour, relics, and darkness bounty.</p></article>
+          <article><h3>Converge</h3><p>Better rewards and closing night pull every survivor inward.</p></article>
+          <article><h3>Endure</h3><p>Revive your dogs, break rival packs, and be the last standing.</p></article>
+        </div>
+        <div class="principle reveal">
+          <blockquote>Equal opportunity. Different stories. A tiny chance of a ridiculous bazooka.</blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="shell">
+        <div class="section-head reveal">
+          <div>
+            <p class="eyebrow">Still unresolved</p>
+            <h2>Questions are part of the record.</h2>
+          </div>
+          <p class="section-intro">Open decisions stay visible instead of quietly becoming assumptions. Prototypes and playtests should answer these—not confidence.</p>
+        </div>
+        <div class="open-list reveal">
+          <div><strong>Lore:</strong> What exactly are the dogs protecting or pursuing?</div>
+          <div><strong>Roster:</strong> Which six weapons and abilities create the first heroes?</div>
+          <div><strong>Relics:</strong> Is the shared attachment a belt charm, pendant, or stranger object?</div>
+          <div><strong>Darkness:</strong> How quickly should the island contract?</div>
+          <div><strong>Alpha:</strong> Which actions best identify helpful leadership?</div>
+          <div><strong>Performance:</strong> What entity caps survive the real browser spike?</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <span>Terra Rossa decision journal</span>
+    <span id="updated">A living record, revised with every meaningful commit.</span>
+  </footer>
+
+  <script>
+    const filters = document.querySelectorAll(".filter");
+    const decisions = document.querySelectorAll(".decision");
+
+    filters.forEach((button) => {
+      button.addEventListener("click", () => {
+        const selected = button.dataset.filter;
+        filters.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+
+        decisions.forEach((card) => {
+          const categories = card.dataset.category.split(" ");
+          card.hidden = selected !== "all" && !categories.includes(selected);
+        });
+      });
+    });
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reveals = document.querySelectorAll(".reveal");
+
+    if (reducedMotion || !("IntersectionObserver" in window)) {
+      reveals.forEach((item) => item.classList.add("visible"));
+    } else {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.08 });
+
+      reveals.forEach((item) => observer.observe(item));
+    }
+
+    document.getElementById("updated").title =
+      `Viewed ${new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(new Date())}`;
+  </script>
+</body>
+</html>
