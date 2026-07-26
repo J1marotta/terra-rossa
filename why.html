@@ -392,11 +392,12 @@
     <div class="moon" aria-hidden="true"></div>
     <div class="shell">
       <p class="eyebrow">Terra Rossa / decision journal</p>
-      <h1>Build the pack.<br><em>Explain why.</em></h1>
-      <p class="lede">A living, plain-English account of the choices behind a fast browser PvPvE game about armed dog heroes, dangerous darkness, and the friends you need to survive it.</p>
+      <h1>Build the feel.<br><em>Explain why.</em></h1>
+      <p class="lede">A living, plain-English account of the choices behind Terra Rossa: first a focused solo browser game, with the larger Pack Royale vision preserved for later.</p>
       <div class="hero-actions">
         <a class="button" href="#decisions">Explore the decisions</a>
-        <a class="button secondary" href="spec.md">Read the full specification</a>
+        <a class="button secondary" href="solo-spec.md">Read the solo specification</a>
+        <a class="button secondary" href="spec.md">Read Pack Royale</a>
       </div>
     </div>
   </header>
@@ -404,9 +405,9 @@
   <main>
     <div class="shell">
       <section class="stats reveal" aria-label="Current project constraints">
-        <div class="stat"><strong>16</strong><span>players at most</span></div>
-        <div class="stat"><strong>4</strong><span>dogs in a pack</span></div>
-        <div class="stat"><strong>1</strong><span>persistent HUD element</span></div>
+        <div class="stat"><strong>1</strong><span>dog in the first build</span></div>
+        <div class="stat"><strong>10m</strong><span>target solo run</span></div>
+        <div class="stat"><strong>3</strong><span>equipment slots</span></div>
         <div class="stat"><strong>Web</strong><span>the performance target</span></div>
       </section>
     </div>
@@ -430,6 +431,20 @@
         </div>
 
         <div class="decisions">
+          <article class="decision reveal" data-category="gameplay technical">
+            <span class="tag">Process / first product</span>
+            <h3>Solo first. Multiplayer preserved.</h3>
+            <p>The first game is a complete ten-minute solo survival run. Pack Royale remains documented separately, but servers, lobbies, replication, PvP, alpha, and revival leave the active learning scope.</p>
+            <p class="why"><strong>Why:</strong> networking made every gameplay lesson harder to see. A solo build lets the developer understand Godot and discover whether the combat is worth multiplying, without pretending multiplayer can simply be bolted on later.</p>
+          </article>
+
+          <article class="decision reveal" data-category="world technical">
+            <span class="tag">World / production</span>
+            <h3>Chunky 2D over strict isometric 3D.</h3>
+            <p>The working art direction is layered, low-resolution top-down sprites: compact dog, freely aimed weapon, visible armour, and effect-driven relics. Strict isometric tiles and frame-heavy eight-direction animation are out of the first build.</p>
+            <p class="why"><strong>Why:</strong> the creator is not an artist. Limited frames, strong silhouettes, and procedural recoil or squash make a coherent style achievable while keeping browser costs and asset multiplication under control.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay">
             <span class="tag">Gameplay / players</span>
             <h3>Sixteen dogs, packs of four.</h3>
@@ -510,15 +525,15 @@
           <article class="decision reveal" data-category="technical">
             <span class="tag">Technical / web</span>
             <h3>The browser sets the budget.</h3>
-            <p>Godot Compatibility rendering, authoritative WebSocket servers, low-poly enemies, pooled effects, hitscan weapons, and measured entity caps begin in the first prototype.</p>
-            <p class="why"><strong>Why:</strong> web performance cannot be bolted on later. Sixteen dogs are manageable; uncontrolled AI, animation, particles, shadows, and network traffic are not.</p>
+            <p>Godot Compatibility rendering, low-resolution sprites, pooled effects, hitscan weapons, and measured entity caps begin in the first solo prototype. Server costs return only if multiplayer earns a second roadmap.</p>
+            <p class="why"><strong>Why:</strong> web performance cannot be bolted on later, but network infrastructure should not obscure the first lessons. AI, effects, animation, and lifecycle still need hard budgets.</p>
           </article>
 
           <article class="decision reveal" data-category="technical">
             <span class="tag">Process / roadmap</span>
             <h3>Build evidence before content.</h3>
-            <p>The specification is now split into small, dependency-ordered tasks with explicit deliverables, acceptance checks, and exclusions. Performance, combat feel, and authority are gates rather than promises deferred until release.</p>
-            <p class="why"><strong>Why:</strong> an LLM works best with bounded scope and observable completion. Thin vertical slices expose expensive mistakes before they spread through dozens of characters, weapons, and maps.</p>
+            <p>The multiplayer backlog remains a long-term reference. The active solo roadmap starts with understanding Godot, then movement, one weapon, three creatures, builds, the night, and finally browser polish.</p>
+            <p class="why"><strong>Why:</strong> an LLM works best with bounded scope, but the human still needs to understand the result. Every milestone now ends with something the developer should be able to explain and play.</p>
           </article>
         </div>
       </div>
@@ -529,19 +544,19 @@
         <div class="section-head reveal">
           <div>
             <p class="eyebrow">The match</p>
-            <h2>One continuous journey.</h2>
+            <h2>One dog. One night.</h2>
           </div>
-          <p class="section-intro">No lobby composition puzzle. No ten-minute immunity wall. No teleport into a second game. The island applies pressure until one pack remains.</p>
+          <p class="section-intro">The first game removes every system that hides the central question: is it fun to move, shoot, reload, improvise a build, and risk the darkness?</p>
         </div>
         <div class="loop reveal">
-          <article><h3>Form</h3><p>Random packs choose distinct dogs and begin far apart.</p></article>
-          <article><h3>Hunt</h3><p>Fight creatures for individual XP and personal feat choices.</p></article>
-          <article><h3>Risk</h3><p>Leave safety for weapons, armour, relics, and darkness bounty.</p></article>
-          <article><h3>Converge</h3><p>Better rewards and closing night pull every survivor inward.</p></article>
-          <article><h3>Endure</h3><p>Revive your dogs, break rival packs, and be the last standing.</p></article>
+          <article><h3>Move</h3><p>Learn the dog, camera, aim, dash, and the shape of the map.</p></article>
+          <article><h3>Fight</h3><p>Spend ammunition, risk the reload, and fall back on melee.</p></article>
+          <article><h3>Build</h3><p>Choose feats and carry one weapon, one armour, and one relic.</p></article>
+          <article><h3>Risk</h3><p>Enter darker pockets for stronger equipment and scarce supplies.</p></article>
+          <article><h3>Survive</h3><p>Withstand the final assault and reach dawn—or restart quickly.</p></article>
         </div>
         <div class="principle reveal">
-          <blockquote>Equal opportunity. Different stories. A tiny chance of a ridiculous bazooka.</blockquote>
+          <blockquote>Make one gun feel good before building sixteen networked dogs.</blockquote>
         </div>
       </div>
     </section>
@@ -556,12 +571,12 @@
           <p class="section-intro">Open decisions stay visible instead of quietly becoming assumptions. Prototypes and playtests should answer these—not confidence.</p>
         </div>
         <div class="open-list reveal">
-          <div><strong>Lore:</strong> What exactly are the dogs protecting or pursuing?</div>
-          <div><strong>Roster:</strong> Which six weapons and abilities create the first heroes?</div>
-          <div><strong>Relics:</strong> Is the shared attachment a belt charm, pendant, or stranger object?</div>
-          <div><strong>Darkness:</strong> How quickly should the island contract?</div>
-          <div><strong>Alpha:</strong> Which actions best identify helpful leadership?</div>
-          <div><strong>Performance:</strong> What entity caps survive the real browser spike?</div>
+          <div><strong>Hero:</strong> Which dog, starting weapon, and ability teach the game best?</div>
+          <div><strong>Sprites:</strong> Which resolution and layering workflow remains sustainable?</div>
+          <div><strong>Relics:</strong> Which three effects are visible and build-defining?</div>
+          <div><strong>Darkness:</strong> How does it tempt without merely hiding the game?</div>
+          <div><strong>Feats:</strong> Should choosing one pause the solo run?</div>
+          <div><strong>Performance:</strong> What creature cap survives the real browser spike?</div>
         </div>
       </div>
     </section>
