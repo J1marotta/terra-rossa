@@ -72,7 +72,7 @@ Goal: replace uncertainty about the starter repository with a documented, runnab
 
 ## T0.1 — Audit the repository and protect existing work
 
-- [ ] Inspect the repository root, Git history, tracked files, untracked Godot starter files, nested directories, ignore rules, and configured remote.
+- [x] Inspect the repository root, Git history, tracked files, untracked Godot starter files, nested directories, ignore rules, and configured remote.
 
 Prerequisites: none.
 

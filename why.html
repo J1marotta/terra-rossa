@@ -467,6 +467,13 @@
             <p class="why"><strong>Why:</strong> small code changes still fail at integration and deployment boundaries. Requiring a complete closeout keeps the repository, hosted game, documentation, and learning record aligned after every step.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">T0.1 / repository boundary</span>
+            <h3>The web game starts beside the Godot experiment.</h3>
+            <p>The outer repository is the one application root. The untracked Godot project stays in place as user-owned source, its <code>.godot</code> folder remains generated cache, and the nested folder remains reserved for conversation attachments. Death Race is a reference, never a source donor.</p>
+            <p class="why"><strong>Why:</strong> migration work is safest when ownership is explicit. Building beside the experiment lets us learn from it without deleting history, accidentally committing generated files, or hiding the real project inside another folder.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>
