@@ -249,6 +249,13 @@
 
     .decision[hidden] { display: none; }
 
+    .decision.archived {
+      border-style: dashed;
+      opacity: .72;
+    }
+
+    .decision.archived:hover { opacity: 1; }
+
     .tag {
       display: inline-block;
       color: var(--ember);
@@ -392,12 +399,12 @@
     <div class="moon" aria-hidden="true"></div>
     <div class="shell">
       <p class="eyebrow">Terra Rossa / decision journal</p>
-      <h1>Build the feel.<br><em>Explain why.</em></h1>
-      <p class="lede">A living, plain-English account of the choices behind Terra Rossa: first a focused solo browser game, with the larger Pack Royale vision preserved for later.</p>
+      <h1>Share the night.<br><em>Explain why.</em></h1>
+      <p class="lede">A living, plain-English account of Terra Rossa: now a deliberately small, continuous two-player PvPvE game built with Three.js and an authoritative Colyseus server.</p>
       <div class="hero-actions">
         <a class="button" href="#decisions">Explore the decisions</a>
-        <a class="button secondary" href="solo-spec.md">Read the solo specification</a>
-        <a class="button secondary" href="spec.md">Read Pack Royale</a>
+        <a class="button secondary" href="spec.md">Read the active specification</a>
+        <a class="button secondary" href="solo-spec.md">Read the archived solo study</a>
       </div>
     </div>
   </header>
@@ -405,9 +412,9 @@
   <main>
     <div class="shell">
       <section class="stats reveal" aria-label="Current project constraints">
-        <div class="stat"><strong>1</strong><span>dog in the first build</span></div>
-        <div class="stat"><strong>10m</strong><span>target solo run</span></div>
-        <div class="stat"><strong>3</strong><span>equipment slots</span></div>
+        <div class="stat"><strong>2</strong><span>players in the MVP</span></div>
+        <div class="stat"><strong>Always</strong><span>PvP and PvE active</span></div>
+        <div class="stat"><strong>0</strong><span>teleported final fights</span></div>
         <div class="stat"><strong>Web</strong><span>the performance target</span></div>
       </section>
     </div>
@@ -428,25 +435,47 @@
           <button class="filter" type="button" data-filter="world" aria-pressed="false">World</button>
           <button class="filter" type="button" data-filter="technical" aria-pressed="false">Technical</button>
           <button class="filter" type="button" data-filter="interface" aria-pressed="false">Interface</button>
+          <button class="filter" type="button" data-filter="archive" aria-pressed="false">Archived ideas</button>
         </div>
 
         <div class="decisions">
           <article class="decision reveal" data-category="gameplay technical">
+            <span class="tag">Product / active MVP</span>
+            <h3>Two players share one dangerous map.</h3>
+            <p>The active MVP is a continuous two-player PvPvE match. Both players and server-controlled creatures inhabit the same map from “Go,” and the last surviving player wins.</p>
+            <p class="why"><strong>Why:</strong> the uncertainty of another human is important to the game’s climax. Starting with two players preserves that premise while avoiding the coordination and scaling costs of sixteen-player packs.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay world">
+            <span class="tag">Gameplay / continuity</span>
+            <h3>No timer decides when rivalry starts.</h3>
+            <p>PvP is legal from the opening second. Opposite concealed spawns, multiple routes, creatures, central loot, and closing darkness shape when players meet without a preparation barrier or teleport.</p>
+            <p class="why"><strong>Why:</strong> a scheduled final duel made the match feel like two disconnected games. Continuous rules let luck, information, route choice, and aggression produce the confrontation.</p>
+          </article>
+
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">Technical / stack</span>
+            <h3>Three.js in front, Colyseus in charge.</h3>
+            <p>The browser uses TypeScript, Vite, Three.js, and a small React shell. Node and Colyseus own movement legality, creatures, ammunition, reloads, hits, pickups, darkness, death, and victory.</p>
+            <p class="why"><strong>Why:</strong> Death Race already proved this deployment and room architecture for the team. Reusing its lessons keeps one language across the stack while the server protects the human-versus-human result.</p>
+          </article>
+
+          <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
-            <h3>Solo first. Multiplayer preserved.</h3>
-            <p>The first game is a complete ten-minute solo survival run. Pack Royale remains documented separately, but servers, lobbies, replication, PvP, alpha, and revival leave the active learning scope.</p>
-            <p class="why"><strong>Why:</strong> networking made every gameplay lesson harder to see. A solo build lets the developer understand Godot and discover whether the combat is worth multiplying, without pretending multiplayer can simply be bolted on later.</p>
+            <h3>The solo study remains, but it is not the build.</h3>
+            <p>The solo specification is preserved as a record of scope reduction. The active build restores only the smallest server-backed feature that matters: one unpredictable human opponent.</p>
+            <p class="why"><strong>Why:</strong> pure solo would simplify learning, but it could not test whether the encounter with another player is the memorable payoff. Two players are the minimum honest experiment.</p>
           </article>
 
           <article class="decision reveal" data-category="world technical">
             <span class="tag">World / production</span>
-            <h3>Chunky 2D over strict isometric 3D.</h3>
-            <p>The working art direction is layered, low-resolution top-down sprites: compact dog, freely aimed weapon, visible armour, and effect-driven relics. Strict isometric tiles and frame-heavy eight-direction animation are out of the first build.</p>
-            <p class="why"><strong>Why:</strong> the creator is not an artist. Limited frames, strong silhouettes, and procedural recoil or squash make a coherent style achievable while keeping browser costs and asset multiplication under control.</p>
+            <h3>Chunky 2.5D without an art pipeline trap.</h3>
+            <p>Three.js uses an orthographic camera, low-resolution rendering, sprite or billboard characters, and simple geometry for depth and sightlines. Strict isometric tiles and frame-heavy animation remain out.</p>
+            <p class="why"><strong>Why:</strong> this preserves the compact pixel character while allowing simple browser-native geometry, occlusion, camera control, and effects without requiring a full model-and-rig workflow.</p>
           </article>
 
-          <article class="decision reveal" data-category="gameplay">
-            <span class="tag">Gameplay / players</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / sixteen-player vision</span>
             <h3>Sixteen dogs, packs of four.</h3>
             <p>Players are assigned randomly to balanced packs. No pack exceeds four dogs, and packs cannot be hand-picked.</p>
             <p class="why"><strong>Why:</strong> twenty people were too difficult to coordinate and read. Four is intimate enough for rescues and equipment sharing while still allowing four rival groups.</p>
@@ -459,29 +488,29 @@
             <p class="why"><strong>Why:</strong> teleporting into a final arena broke the journey. Early encounters should be lucky, skilful, disastrous, and memorable.</p>
           </article>
 
-          <article class="decision reveal" data-category="gameplay">
-            <span class="tag">Gameplay / identity</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / expanded roster</span>
             <h3>Dogs, not classes.</h3>
             <p>Every dog begins with equal health, speed, armour, regeneration, dash, and revive capability. Each has one starting weapon and one unique ability.</p>
             <p class="why"><strong>Why:</strong> rigid tank/healer/damage labels make friends negotiate a composition before they have fun. Feats and loot should create the build during play.</p>
           </article>
 
-          <article class="decision reveal" data-category="gameplay">
-            <span class="tag">Gameplay / leadership</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / pack leadership</span>
             <h3>Alpha is honour, not power.</h3>
             <p>Every pack begins with a random alpha. Leadership changes through broad recent contribution, and total alpha time becomes a score.</p>
             <p class="why"><strong>Why:</strong> a powerful alpha would snowball or invite abuse. Prestige celebrates helpful play without deciding who receives loot or who wins a fight.</p>
           </article>
 
-          <article class="decision reveal" data-category="gameplay">
-            <span class="tag">Gameplay / survival</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / pack revival</span>
             <h3>You can always rescue the pack.</h3>
             <p>Dogs go down and may crawl. Enemies cannot finish them. Any standing packmate can revive them; the pack loses only when everyone is down.</p>
             <p class="why"><strong>Why:</strong> revival turns proximity into action. It produces last stands and rescues without asking eliminated players to wait through most of a match.</p>
           </article>
 
-          <article class="decision reveal" data-category="gameplay interface">
-            <span class="tag">Gameplay / equipment</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / build system</span>
             <h3>One weapon. One armour. One relic.</h3>
             <p>No inventory grid and no loot vote. Drop what you have; another dog can pick it up. Only weapons drop when a whole enemy pack is eliminated.</p>
             <p class="why"><strong>Why:</strong> physical exchange keeps cooperation inside the world. Three slots make every object legible and every hand-off consequential.</p>
@@ -494,22 +523,22 @@
             <p class="why"><strong>Why:</strong> limited ammunition should create skill and tension rather than downtime. Choosing to attempt the input is itself a tactical risk.</p>
           </article>
 
-          <article class="decision reveal" data-category="interface">
-            <span class="tag">Interface / clarity</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / compass rule</span>
             <h3>The compass is the HUD.</h3>
             <p>Health, armour, ammunition, reloads, abilities, and equipment communicate through the dog and nearby world. Temporary descriptions appear only when needed.</p>
             <p class="why"><strong>Why:</strong> attention belongs on the island. A compass preserves navigation and pack awareness without turning combat into dashboard reading.</p>
           </article>
 
-          <article class="decision reveal" data-category="world technical">
-            <span class="tag">World / generation</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / procedural future</span>
             <h3>Authored spaces, shuffled carefully.</h3>
             <p>One recognizable island and centre come first. Proven modular regions can later randomize paths, cover, creatures, loot, and sightlines under validation rules.</p>
             <p class="why"><strong>Why:</strong> unconstrained procedural terrain creates unfair spawns and bad fights. Randomness should recombine good design, not replace it.</p>
           </article>
 
-          <article class="decision reveal" data-category="world gameplay">
-            <span class="tag">World / darkness</span>
+          <article class="decision archived reveal" data-category="archive">
+            <span class="tag">Archived / pack darkness</span>
             <h3>Leaving can be worth it.</h3>
             <p>Packed dogs see and survive better. Isolated dogs attract swarms and lose reliable information, but darkness hides valuable bounty.</p>
             <p class="why"><strong>Why:</strong> togetherness is meaningful only if separation remains a choice. Risk outside the pack creates scouting, rescue, and greed.</p>
@@ -519,21 +548,21 @@
             <span class="tag">World / art</span>
             <h3>Compact occult-western heroes.</h3>
             <p>Small upright dog gunslingers cross red earth under moonlight, carrying improvised armour and supernatural charms against angular creatures of night.</p>
-            <p class="why"><strong>Why:</strong> compact proportions read from an isometric camera; the occult western gives Terra Rossa an identity that supports firearms, relics, and darkness.</p>
+            <p class="why"><strong>Why:</strong> compact proportions read from an orthographic top-down camera; the occult western gives Terra Rossa an identity that supports firearms, scarcity, and darkness.</p>
           </article>
 
           <article class="decision reveal" data-category="technical">
             <span class="tag">Technical / web</span>
             <h3>The browser sets the budget.</h3>
-            <p>Godot Compatibility rendering, low-resolution sprites, pooled effects, hitscan weapons, and measured entity caps begin in the first solo prototype. Server costs return only if multiplayer earns a second roadmap.</p>
-            <p class="why"><strong>Why:</strong> web performance cannot be bolted on later, but network infrastructure should not obscure the first lessons. AI, effects, animation, and lifecycle still need hard budgets.</p>
+            <p>Three.js renders two players and a deliberately small creature population. Colyseus runs a measured 30 Hz simulation and synchronizes at a lower patch rate. Entity, effect, message, and memory caps begin in the first slice.</p>
+            <p class="why"><strong>Why:</strong> web performance and network traffic cannot be bolted on later. Starting with 10–20 creatures and two players provides useful evidence without pretending the old horde scale is free.</p>
           </article>
 
           <article class="decision reveal" data-category="technical">
             <span class="tag">Process / roadmap</span>
             <h3>Build evidence before content.</h3>
-            <p>The multiplayer backlog remains a long-term reference. The active solo roadmap starts with understanding Godot, then movement, one weapon, three creatures, builds, the night, and finally browser polish.</p>
-            <p class="why"><strong>Why:</strong> an LLM works best with bounded scope, but the human still needs to understand the result. Every milestone now ends with something the developer should be able to explain and play.</p>
+            <p>The old Pack Royale backlog is explicitly superseded. The active path is handshake, one authoritative mover, a combat toy, a two-player match, PvPvE pressure, then browser polish.</p>
+            <p class="why"><strong>Why:</strong> an LLM works best with bounded scope, while the human needs to understand each boundary. Every milestone produces one playable, explainable layer before the next is introduced.</p>
           </article>
         </div>
       </div>
@@ -544,19 +573,19 @@
         <div class="section-head reveal">
           <div>
             <p class="eyebrow">The match</p>
-            <h2>One dog. One night.</h2>
+            <h2>One map. No truce.</h2>
           </div>
-          <p class="section-intro">The first game removes every system that hides the central question: is it fun to move, shoot, reload, improvise a build, and risk the darkness?</p>
+          <p class="section-intro">The first game asks whether creatures, scarcity, information, and one unpredictable opponent create a match worth replaying—without packs, progression trees, or sixteen-player infrastructure.</p>
         </div>
         <div class="loop reveal">
-          <article><h3>Move</h3><p>Learn the dog, camera, aim, dash, and the shape of the map.</p></article>
-          <article><h3>Fight</h3><p>Spend ammunition, risk the reload, and fall back on melee.</p></article>
-          <article><h3>Build</h3><p>Choose feats and carry one weapon, one armour, and one relic.</p></article>
-          <article><h3>Risk</h3><p>Enter darker pockets for stronger equipment and scarce supplies.</p></article>
-          <article><h3>Survive</h3><p>Withstand the final assault and reach dawn—or restart quickly.</p></article>
+          <article><h3>Spawn</h3><p>Begin far apart, concealed by geography rather than immunity.</p></article>
+          <article><h3>Scavenge</h3><p>Spend ammunition on creatures and move toward better supplies.</p></article>
+          <article><h3>Listen</h3><p>Infer the opponent through gunfire, disturbed enemies, and traces.</p></article>
+          <article><h3>Converge</h3><p>Central loot and closing darkness narrow every safe route.</p></article>
+          <article><h3>Survive</h3><p>Choose when to engage; the last living player wins.</p></article>
         </div>
         <div class="principle reveal">
-          <blockquote>Make one gun feel good before building sixteen networked dogs.</blockquote>
+          <blockquote>Make one unpredictable opponent matter before building sixteen players.</blockquote>
         </div>
       </div>
     </section>
@@ -571,12 +600,12 @@
           <p class="section-intro">Open decisions stay visible instead of quietly becoming assumptions. Prototypes and playtests should answer these—not confidence.</p>
         </div>
         <div class="open-list reveal">
-          <div><strong>Hero:</strong> Which dog, starting weapon, and ability teach the game best?</div>
-          <div><strong>Sprites:</strong> Which resolution and layering workflow remains sustainable?</div>
-          <div><strong>Relics:</strong> Which three effects are visible and build-defining?</div>
-          <div><strong>Darkness:</strong> How does it tempt without merely hiding the game?</div>
-          <div><strong>Feats:</strong> Should choosing one pause the solo run?</div>
-          <div><strong>Performance:</strong> What creature cap survives the real browser spike?</div>
+          <div><strong>Hero:</strong> Which dog silhouette reads best in the Three.js camera?</div>
+          <div><strong>Rendering:</strong> Which sprite, billboard, and geometry mix remains sustainable?</div>
+          <div><strong>Visibility:</strong> How should Colyseus filter hidden opponent state?</div>
+          <div><strong>Darkness:</strong> When should it close, and what boundary shape fits the map?</div>
+          <div><strong>Disconnects:</strong> How much grace belongs in a five-minute duel?</div>
+          <div><strong>Performance:</strong> What creature and patch rates survive hosted latency?</div>
         </div>
       </div>
     </section>

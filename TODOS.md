@@ -1,8 +1,8 @@
-# Terra Rossa — Pack Royale LLM Build Backlog
+# Terra Rossa — Superseded Pack Royale LLM Build Backlog
 
 This document converts the multiplayer `spec.md` into small, dependency-ordered tasks that an LLM agent can implement safely.
 
-> **Not the active first build:** the current learning project is the single-player game defined in `solo-spec.md`. Do not execute this multiplayer backlog unless the user explicitly resumes Pack Royale. The solo specification contains its own learning milestones; a separate solo task backlog may be created when requested.
+> **Do not execute this backlog:** it describes the former sixteen-player Pack Royale plan and no longer matches the active two-player Three.js/Colyseus `spec.md`. It remains only as historical design material. A new implementation backlog should be derived from the current specification before game work begins.
 
 ## How an agent should use this backlog
 

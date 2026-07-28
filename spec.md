@@ -1,634 +1,861 @@
-# Terra Rossa — Game Specification
+# Terra Rossa — Continuous PvPvE MVP Specification
 
-Status: Draft
+Status: Draft; active implementation target
 
 Target: Desktop web browsers
 
-Engine: Godot 4.x, typed GDScript, Compatibility renderer
+Client: TypeScript, Vite, Three.js, React application shell
 
-Players: 1–16
+Server: Node.js, Colyseus 0.17, authoritative room simulation
 
-Primary mode: Pack Royale
+Players: Two
 
-Genre: Isometric PvPvE horde shooter with run-based progression
+Genre: Continuous top-down PvPvE survival shooter
 
-## 1. Product statement
+## 1. Purpose
 
-Terra Rossa is a fast, punchy isometric shooter in which compact anthropomorphic dog heroes form rival packs, fight dark creatures, recover scarce equipment, and push inward across a shrinking occult-western island. Packs can encounter and fight one another at any time. The last pack standing wins.
+This specification defines the smallest networked version of Terra Rossa that can test its central multiplayer idea:
 
-The game takes inspiration from Crimsonland's immediate twin-stick combat and Path of Exile: Royale's riskier, richer inward progression. It must retain its own characters, world, equipment, enemies, rules, art, audio, interface, and balance.
+> Two armed dog heroes enter the same hostile night, fight creatures for survival and supplies, and may discover, avoid, stalk, or kill one another at any time.
 
-The public experience is browser-first: open a URL, enter a display name, join a room, and play without an account or installation.
+There is no protected preparation phase and no teleport into a final duel. PvE and PvP coexist from the opening second. The map, creatures, ammunition, loot, sightlines, and closing darkness should cause an eventual confrontation naturally.
 
-## 2. Design pillars
+This MVP is not the former sixteen-player Pack Royale design. It is an evidence-gathering two-player game. Scaling beyond two players is a later decision earned through playtesting and measurement.
 
-1. **The pack matters:** dogs are safer, braver, and better informed together.
-2. **Risk lives in the darkness:** isolation reduces visibility and invites swarms, but dangerous routes offer valuable loot.
-3. **Punchy, skillful combat:** fast movement, strong reactions, limited ammunition, melee, and active reload timing reward execution.
-4. **Builds emerge during the match:** character choice establishes a starting style; feats and scarce equipment transform it.
-5. **Unscripted rivalry:** packs may meet, avoid, ambush, or fight from the opening minute.
-6. **Minimal interface:** the world, animation, sound, and equipment communicate state; a compass is the only persistent HUD.
-7. **Web performance is a feature:** entity counts, art, effects, simulation, and networking stay inside measured browser budgets.
+## 2. Product hypothesis
 
-## 3. World and visual direction
+Terra Rossa can be compelling if these systems reinforce one another:
 
-### 3.1 Theme
+- limited ammunition makes every shot and route matter;
+- active reload makes downtime skillful and risky;
+- infinite melee prevents helplessness but requires dangerous proximity;
+- creatures create pressure and reveal player activity;
+- stronger supplies toward the centre encourage movement;
+- darkness hides information while compressing the battlefield;
+- another human creates uncertainty that scripted enemies cannot.
 
-The provisional direction is a graphic occult western:
+The game succeeds when a player can tell a memorable story about when they first detected the opponent, why they chose to engage or retreat, and how PvE pressure affected the fight.
 
-- red-earth island under cold moonlight;
-- compact, upright, anthropomorphic dog heroes;
-- frontier clothing, improvised armour, firearms, iron, bone, bells, and warding symbols;
-- dark creatures made from angular shadow, bone, and earth;
-- bold silhouettes, limited palettes, and expressive animation;
-- restrained environments that keep dogs, attacks, loot, and telegraphs readable.
+The game fails if the optimal strategy is routinely to rush the opposing spawn, hide until the final boundary, or ignore creatures and loot.
 
-Lore, final title treatment, and the exact level of gore remain open.
+## 3. Design pillars
 
-### 3.2 Rendering
+1. **Continuous danger:** PvP and PvE are active throughout the match.
+2. **Combat before content:** movement, shooting, reloading, melee, damage feedback, and enemy response must feel good with placeholder art.
+3. **Information is a resource:** darkness, sightlines, sound, creature behaviour, and muzzle flashes help players infer danger without a minimap.
+4. **Scarcity creates movement:** limited ammunition and stronger central loot produce routes and conflict.
+5. **No scripted final duel:** the map closes, but players retain agency over when and how they meet.
+6. **The server decides outcomes:** movement legality, creatures, ammunition, reloads, hits, damage, pickups, darkness, death, and victory are authoritative.
+7. **Small enough to understand:** the human developer should be able to explain the client, protocol, room, simulation, and rendering flow.
+8. **Browser performance is a feature:** rendering, simulation, bandwidth, memory, and download size are measured from the first slice.
 
-- Stylized low-poly 3D with an orthographic isometric camera.
-- Dog heroes receive the highest visual detail.
-- Elites and bosses receive medium detail.
-- common creatures use extremely low-poly meshes, shared skeletons, atlases, and minimal materials.
-- Swappable weapons and armour must visibly alter the character.
-- Relics use a consistent attachment point, likely a belt charm, plus a clear activation effect.
-- Baked lighting, blob shadows, limited real-time shadows, and tightly capped particles are the default.
-- No volumetric fog, global illumination, or effects that require non-Compatibility renderers.
+## 4. MVP scope
 
-## 4. Match structure
+The complete MVP contains:
 
-### 4.1 Pack Royale
+- exactly two human players;
+- one shared Colyseus room per match;
+- one handcrafted map;
+- two concealed and widely separated spawn regions;
+- one compact anthropomorphic dog presentation shared by both players;
+- one starting firearm;
+- one stronger centre-biased weapon pickup;
+- limited ammunition;
+- normal, good, perfect, and failed reload outcomes;
+- one infinite-use melee attack;
+- health, damage, death, and victory;
+- two simple server-controlled creature roles;
+- a small set of ammunition and healing pickups;
+- darkness that gradually compresses the playable area;
+- immediate PvP with no damage-immunity phase;
+- minimal lobby, countdown, results, and rematch flow;
+- temporary contextual interface and minimal persistent HUD;
+- automated simulation, protocol, room, and integration tests;
+- browser client deployment and Node server deployment.
 
-- Supports 2–16 players.
-- Players are assigned randomly; players cannot choose their pack.
-- Packs contain no more than four dogs.
-- Pack count is `max(2, ceil(player_count / 4))`.
-- Pack sizes differ by at most one player.
-- PvP and PvE are active from the opening second.
-- Packs spawn at maximally separated outer-island locations without direct sightlines.
-- Danger and loot quality increase toward the centre.
-- Darkness gradually consumes the island from outside inward.
-- Creatures remain active for the entire match.
-- A pack is eliminated when every member is down simultaneously.
-- The last living pack wins.
+Anything beyond this list requires an explicit scope decision.
 
-Pack distribution:
+## 5. Explicit non-goals
 
-| Players | Distribution |
-|---:|---|
-| 2 | 1–1 |
-| 3 | 2–1 |
-| 4 | 2–2 |
-| 5 | 3–2 |
-| 6 | 3–3 |
-| 7 | 4–3 |
-| 8 | 4–4 |
-| 9 | 3–3–3 |
-| 10 | 4–3–3 |
-| 11 | 4–4–3 |
-| 12 | 4–4–4 |
-| 13 | 4–3–3–3 |
-| 14 | 4–4–3–3 |
-| 15 | 4–4–4–3 |
-| 16 | 4–4–4–4 |
+The MVP does not include:
 
-### 4.2 Solo
+- more than two human players;
+- packs, teams, alpha, courage, revival, or downed states;
+- a protected PvE preparation timer;
+- teleporting players into a final arena;
+- XP, levels, feats, armour, or relics;
+- multiple playable dogs or active abilities;
+- procedural maps;
+- public matchmaking or skill ratings;
+- accounts, permanent progression, purchases, or inventory persistence;
+- reconnection unless ordinary disconnects make basic testing impractical;
+- spectators;
+- text or voice chat;
+- mobile browser support;
+- native desktop or console clients;
+- a unique boss;
+- production art or a large content catalogue;
+- sixteen-player scaling;
+- copying Death Race game rules or presentation.
 
-- A one-player lobby runs as solo survival.
-- The run ends on the player's first down unless a later solo-specific rule changes this.
+## 6. Match structure
 
-### 4.3 Lone Dogs — post-MVP candidate
+### 6.1 Flow
 
-- Up to 16 solo competitors.
-- No packs, alphas, pack courage, or revival.
-- Loot is immediately personal.
-- Last dog standing wins.
+1. Player enters a display name.
+2. Player creates a private match and receives a short room code, or joins with that code.
+3. Lobby displays both players and ready state.
+4. Host starts after both players are ready.
+5. A short server-timed countdown begins.
+6. Both players enter the same map at concealed opposite spawn regions.
+7. PvP and PvE are active immediately after “Go.”
+8. Creatures, ammunition pressure, central loot, and darkness drive movement.
+9. A player dies at zero health.
+10. The remaining player wins.
+11. Results show the decisive events and offer a fast rematch.
 
-Lone Dogs should be added only after Pack Royale combat and equipment are balanced.
+### 6.2 Target length
 
-### 4.4 Session flow
+- Target match duration: 5–8 minutes.
+- Hard maximum target: 10 minutes.
+- Darkness begins closing after an initial exploration window determined through playtesting.
+- Closing pressure accelerates until hiding outside the remaining area is fatal.
+- There is no arbitrary score victory while both players remain alive.
 
-1. Load and explicit user interaction to start browser audio.
-2. Enter a display name.
-3. Create or join a private room; public room discovery may follow.
-4. Server assigns packs.
-5. Pack privately chooses dogs; the same dog may appear in rival packs but not twice in one pack.
-6. Short ready countdown.
-7. Continuous PvPvE match.
-8. Results and rematch.
+### 6.3 Victory
 
-Late joining is not supported after a match starts.
+- Last living human player wins.
+- Death is immediate; there is no downed or revive state.
+- Simultaneous lethal damage resolves deterministically on the server.
+- If both players die on the same authoritative simulation step, the result is a draw unless a clear causal ordering exists.
+- A disconnected player loses after a short, explicit grace period or immediately in the first prototype; final behaviour remains an implementation decision.
 
-## 5. Island and darkness
+## 7. Shared map
 
-### 5.1 Map approach
+### 7.1 Layout goals
 
-MVP starts with one recognizable island footprint and one authored central arena.
+The first map is fixed and handcrafted.
 
-The first playable map should be handcrafted. Once its combat spaces work, deterministic generation can rearrange authored modules and randomize:
+It contains:
 
-- internal region connections;
-- paths, walls, ruins, trees, and cover;
-- creature species, dens, and encounter budgets;
-- loot locations and loot-table results;
-- darkness bounty pockets;
-- sightlines and centre approaches.
+- two outer spawn regions with no direct sightline between them;
+- at least two inward routes from each spawn;
+- simple landmarks for orientation;
+- sightline breaks and flank routes;
+- outer supplies sufficient to begin moving;
+- stronger weapon and resupply opportunities closer to the centre;
+- creature zones that make direct spawn rushing expensive;
+- one central conflict space with cover and multiple entries;
+- a darkness boundary that can contract cleanly.
 
-The server owns the match seed and authoritative structural description.
+### 7.2 Spawn-rush mitigation
 
-### 5.2 Generation validation
+Early combat is legal, but the map should make blind spawn rushing a risky strategy.
 
-A generated map is accepted only if:
+- Spawn points are maximally separated.
+- Players never receive the opponent’s spawn marker.
+- Walls, terrain, and props block opening sightlines.
+- Direct cross-map routes pass through creature pressure.
+- Useful supplies appear along several inward routes.
+- The centre offers more reliable value than searching an enemy spawn.
+- Spawn protection is not used unless testing proves unavoidable.
 
-- every spawn can reach the centre;
-- spawn-to-centre path lengths are within a fair tolerance;
-- no spawn pair has an initial direct line of sight;
-- starting regions receive comparable basic opportunity budgets;
-- every pack has at least two viable inward routes;
-- no essential loot is unreachable;
-- no spawn is trapped behind one choke point;
-- the centre has meaningful cover;
-- darkness cannot cut an essential route too early.
+The goal is to discourage spawn rushing through geography and opportunity cost, not an invisible rule.
 
-### 5.3 Darkness
+### 7.3 No procedural generation
 
-- Packed dogs have better visibility and mutual safety.
-- Isolated dogs see less, receive fewer reliable enemy cues, and attract more aggressive swarms.
-- Darkness must obscure information without allowing unreadable attacks; silhouettes, eyes, sound, or telegraphs precede danger.
-- Valuable bounty may appear outside the comfortable pack perimeter.
-- Recovered bounty counts only after it is brought back to the pack.
-- Darkness closes in readable stages and ultimately becomes lethal enough to prevent camping.
-- Environmental cues announce movement: fading moonlight, wind, particles, creature behaviour, and a visible centre landmark.
+The MVP uses one authored layout. Loot and creature placements may vary within authored spawn points using a server seed, but structural map generation is deferred.
 
-### 5.4 Pack courage
+## 8. Darkness and information
 
-Pack courage is formed by overlapping proximity among packmates, not solely by the alpha.
+Darkness is both a visibility system and a match-compression system.
 
-- Nearby packmates improve visibility and resistance to being overwhelmed.
-- Temporary separation is allowed and can be profitable.
-- The isolated dog suffers; it does not directly weaken distant teammates.
-- Exact bonuses and radii are tuning values.
+### 8.1 Visibility
 
-## 6. Dogs, alpha, and controls
+- The client renders only information the server permits it to know.
+- Walls and major obstacles can occlude enemy players.
+- Darkness limits reliable detection range.
+- Hidden enemy positions must not remain available in inspectable client state.
+- Required attacks always provide a visible or audible warning before damage.
+- Gunfire, impacts, disturbed creatures, and environmental audio may reveal approximate activity without exposing an exact position.
+- The opponent is not shown on a minimap or compass.
 
-### 6.1 Dog roster
+### 8.2 Contraction
 
-There are no classes and no class composition requirements.
+- The playable region contracts in server-controlled stages.
+- Environmental warnings precede each movement.
+- Outside pressure escalates from reduced information to creature danger and finally lethal damage.
+- Both clients receive the same authoritative boundary state.
+- The final region preserves cover and more than one viable approach.
+- The boundary is not required to be a perfect battle-royale circle if the authored map supports a better shape.
 
-Every dog shares the same starting:
+## 9. Player controls and state
 
-- maximum health;
-- movement speed;
-- armour baseline;
-- regeneration baseline, if regeneration is retained;
-- dash;
-- revive capability;
-- equipment capacity;
-- melee power budget.
-
-Each selectable dog differs through:
-
-- a strong visual identity;
-- one starting weapon;
-- one unique active ability;
-- a distinct melee animation with approximately equivalent baseline effectiveness.
-
-Starting weapons are balanced sidegrades. Weapons may be replaced during the run; the unique ability remains tied to the selected dog.
-
-Initial roster target: six dogs. Duplicates are prohibited within a pack but allowed across rival packs.
-
-### 6.2 Alpha
-
-- Each pack has exactly one alpha.
-- The first alpha is chosen randomly.
-- Alpha changes at fixed evaluation intervals based on recent, broad gameplay contribution.
-- Candidate inputs include fighting, assisting, reviving, rescuing, recovering bounty, protecting packmates, and surviving danger.
-- Raw damage alone must not dominate selection.
-- Alpha grants no combat power and no loot authority.
-- Alpha is a prestige, presentation, and scoring role.
-- Total time spent as alpha is tracked for results.
-- Succession occurs immediately if the alpha disconnects or the pack can no longer treat it as active.
-
-### 6.3 Controls
+### 9.1 Controls
 
 Provisional keyboard and mouse controls:
 
 - Move: WASD.
-- Aim: mouse.
-- Fire: left mouse.
-- Melee: right mouse.
+- Aim: mouse cursor in world space.
+- Fire: left mouse button.
+- Melee: right mouse button.
 - Dash: Space.
 - Start reload: R.
 - Reload timing input: X.
-- Active ability: Q or middle mouse.
-- Interact, pick up, and revive: E.
-- Pause/settings: Escape; online simulation continues.
+- Interact/pick up: E.
+- Pause/settings: Escape; the online match continues.
 
-Movement and aiming are independent. Friendly player collision is disabled.
+Movement and aiming are independent.
 
-## 7. Combat
+### 9.2 Player state
 
-### 7.1 Combat goals
+Authoritative player state includes only what the MVP needs:
 
-Combat should feel fast, physical, and readable through:
+- stable player ID;
+- connection/session association;
+- display name;
+- position and facing/aim direction;
+- movement and dash state;
+- health and alive state;
+- equipped weapon;
+- magazine and reserve ammunition;
+- reload state and authoritative timing window;
+- melee recovery;
+- relevant collision state.
 
-- short input response;
-- clear recoil and weapon cadence;
-- strong hit reactions and knockback;
-- restrained local hit-stop;
-- layered impact audio;
+Client-only presentation state includes camera, local animation blending, particles, audio, screen shake, and other non-consequential feedback.
+
+## 10. Combat
+
+### 10.1 Combat goals
+
+Combat should be readable and punchy with a small number of entities.
+
+Feedback may include:
+
+- immediate local muzzle flash and recoil;
+- directional hit reaction;
+- knockback;
+- restrained hit-stop in presentation only;
+- layered but capped impact audio;
 - controlled camera shake;
-- sharp attack telegraphs;
-- short, readable ability effects;
-- meaningful ammunition pressure.
+- clear death feedback;
+- simple enemy telegraphs.
 
-### 7.2 Weapon rules
+Presentation must never decide whether a hit occurred.
 
-- A dog equips exactly one weapon.
-- Weapons require magazines, reserve ammunition, and reloads.
-- Ammunition is limited.
-- Broad ammunition categories are preferred over a unique type for every gun.
-- Starting weapons are bound and disappear when replaced.
-- Found weapons can be dropped, thrown a short distance, or picked up by another dog.
-- Picking up a weapon while equipped drops the current found weapon in its place.
-- Hitscan is preferred for pistols and rifles; visible projectiles are reserved for weapons that need them.
-- The server validates ammunition, fire rate, reload result, hit, and damage.
+### 10.2 Starting firearm
 
-When a pack is eliminated, each defeated dog drops only its equipped found weapon. Armour, relics, feats, and reserve ammunition do not drop.
+The first weapon should be mechanically simple and suitable for learning the full pipeline.
 
-### 7.3 Active reload
+Required data:
 
-Starting a reload presents a short world-attached timing line near the local dog or reticle.
+- damage;
+- fire interval;
+- magazine capacity;
+- reserve capacity;
+- reload duration;
+- good and perfect timing windows;
+- failed-reload penalty;
+- spread;
+- range;
+- knockback;
+- PvE and PvP damage values if separate tuning becomes necessary.
 
-- No input: normal reload.
+The starting firearm should use server ray tests rather than networked bullet entities.
+
+### 10.3 Centre weapon
+
+The map offers one stronger or more situational weapon closer to the centre.
+
+It should:
+
+- have a distinct silhouette and firing rhythm;
+- create a reason to approach the centre;
+- remain constrained by ammunition;
+- not guarantee victory merely because one player reaches it first;
+- replace the equipped weapon when picked up;
+- drop the previous found weapon if one exists.
+
+The initial candidate is a shotgun because it tests spread, short-range risk, knockback, and different reload pacing without requiring explosive projectiles.
+
+### 10.4 Ammunition
+
+- Firearms use limited magazines and reserve ammunition.
+- The server owns all ammunition values.
+- The client may predict audiovisual firing feedback but cannot invent a valid shot.
+- Ammunition pickups are consumed once on the server.
+- Pickup placement should prevent a player from being permanently unable to participate after ordinary expenditure.
+- The MVP uses one ammunition category unless the second weapon proves a category distinction necessary.
+
+### 10.5 Active reload
+
+Starting a reload creates an authoritative reload timeline and a client-side timing presentation.
+
+- No timing input: normal reload.
 - Input in the success zone: fast reload.
-- Input in the small perfect zone: near-instant reload.
-- Bad input: approximately 35% longer than the normal reload.
-- Only one timing attempt is allowed per reload.
-- A failed reload receives an obvious fumble animation and sound.
-- Timing uses position/shape and an optional audio cue, never colour alone.
-- The client timestamps its displayed timing result for latency-tolerant server validation.
+- Input in the smaller perfect zone: near-instant reload.
+- Bad input: approximately 35 percent longer than the normal reload.
+- One timing attempt per reload.
+- Failed input receives an obvious fumble animation and sound.
+- The timing cue uses position and shape, not colour alone.
+- The server validates a client timestamp against bounded latency compensation.
+- The client cannot choose or directly submit the result category.
 
-Example for a two-second base reload:
+Initial example for a two-second base reload:
 
-| Result | Completion |
+| Result | Completion time |
 |---|---:|
-| Perfect | 0.25 s |
-| Good | 0.8 s |
-| No attempt | 2.0 s |
-| Failed | 2.7 s |
+| Perfect | 0.25 seconds |
+| Good | 0.8 seconds |
+| No attempt | 2.0 seconds |
+| Failed | 2.7 seconds |
 
-Exact values and window widths differ by weapon and require playtesting.
+Exact timing remains data-driven and testable.
 
-### 7.4 Melee
+### 10.6 Melee
 
-Every dog has an infinite-use melee attack.
+Every player has an infinite-use melee attack.
 
-- Short forward arc or thrust.
-- Modest damage and strong knockback.
+- Short forward arc.
+- Modest damage.
+- Strong knockback.
 - Brief recovery.
-- Can interrupt weaker creatures.
-- Cannot permanently stun-lock players.
-- Does not cancel a committed or failed reload.
-- Visual execution differs by dog and starting weapon: knife, stock bash, bayonet, shoulder check, wrench, or similar.
-- Baseline damage-per-second remains approximately equivalent between dogs.
+- Useful against creatures and an empty firearm.
+- Cannot cancel a committed or failed reload.
+- Cannot permanently stun-lock the opponent.
+- Server validates range, arc, recovery, hit, and damage.
 
-### 7.5 Downing and elimination
+## 11. Creatures
 
-- Reaching zero health downs a dog.
-- Downed dogs cannot fire, melee, dash, or use their ability.
-- Downed dogs may crawl slowly.
-- Rival players cannot finish a downed dog.
-- Any standing packmate can revive a downed dog.
-- Revives restore partial health and grant brief protection.
-- A pack is eliminated immediately when all its dogs are down simultaneously.
-- Eliminated players may leave; an elaborate post-elimination activity is not required for MVP.
+The MVP contains two simple creature roles:
 
-## 8. Progression and equipment
+1. **Swarmer:** weak, fast, direct pressure.
+2. **Spitter:** fragile ranged pressure with a clearly telegraphed projectile.
 
-### 8.1 Individual levels and feats
+Creature purposes:
 
-- Every dog has an individual level and XP total.
-- Creatures grant XP.
-- Enemy-pack eliminations grant a larger XP award.
-- Creature XP is shared among nearby living and downed packmates.
-- PvP elimination XP is awarded across the victorious pack.
-- Personal score may track damage, assists, revives, bounty, survival, and alpha time without changing XP ownership.
-- At specified level intervals, each dog chooses one of three personal feats.
-- The online match does not pause.
-- Feat choices use a compact temporary panel and auto-resolve after a timeout.
-- One reroll per match is the initial recommendation.
+- make direct routes costly;
+- consume attention and ammunition;
+- expose player activity;
+- complicate PvP without deciding every fight;
+- encourage movement through the map.
 
-Feats provide most statistical and build variation. The initial pool should include reload, ammunition, melee, dash, weapon behaviour, survivability, visibility, revival, and ability synergies.
+The server owns target selection, movement, attacks, health, damage, death, and drops.
 
-### 8.2 Loadout
+Creature simulation requirements:
 
-Each dog can equip:
+- fixed or bounded simulation rate;
+- simple steering and spatial queries;
+- no expensive full pathfinding per creature per step;
+- deterministic behaviour where practical under a match seed;
+- hard population cap;
+- no client authority over creature outcomes.
 
-- one weapon;
-- one armour;
-- one relic.
+Initial normal target: 10–20 active creatures. Scale only after the full networked slice is measured.
 
-There is no inventory grid and no loot vote.
+## 12. Pickups
 
-- Hold interact to pick up equipment.
-- Equipping into an occupied slot drops the previous item.
-- Packmates coordinate by physically dropping and picking up items.
-- Looking at an item briefly shows its name and one-sentence effect.
-- Ordinary supplies resolve immediately and do not open allocation interfaces.
+MVP pickups:
 
-### 8.3 Armour
+- ammunition;
+- small healing supply;
+- one centre-biased weapon.
 
-Armour physically changes the dog and is communicated without a persistent UI.
+Rules:
 
-Initial effect families may include:
+- Spawned and consumed by the server.
+- Visible only when the client is eligible to know about them.
+- Consumed exactly once.
+- No inventory grid.
+- Equipped weapon is replaced through a deliberate hold interaction.
+- Pickups do not persist between matches.
+- Random placement uses authored points and a reproducible match seed.
 
-- plated: direct protection;
-- spiked: retaliation against melee attackers;
-- insulated: protection from supernatural or energy damage;
-- medic: improved revival;
-- shadow: reduced detection in darkness.
+## 13. Art and presentation
 
-Armour should not use durability in MVP. Its silhouette, material, activation feedback, and temporary inspection text explain its function.
+### 13.1 Rendering direction
 
-### 8.4 Relics
+The working client presentation is chunky, low-resolution 2.5D rendered with Three.js:
 
-MVP uses approximately six highly distinct relics rather than a large pool of statistical trinkets.
+- orthographic top-down camera;
+- low internal render resolution scaled cleanly to the browser;
+- nearest-neighbour sampling for sprite textures;
+- compact upright anthropomorphic dog sprites or billboarded planes;
+- freely aimed weapon layer or simple weapon mesh/sprite;
+- simple 3D ground and obstruction geometry where it improves depth and sightlines;
+- bold occult-western palette: red earth, cold moonlight, iron, bone, and shadow;
+- strong silhouettes rather than detailed animation;
+- simple shadows and tightly capped effects.
 
-Relic families:
+The MVP may begin with geometric placeholders. Final pixel art is not required to validate combat.
 
-1. reload;
-2. melee;
-3. dash;
-4. revival;
-5. darkness/visibility;
-6. active-ability cooldown or behaviour.
+### 13.2 React boundary
 
-Each relic:
+React is used for:
 
-- fits in one sentence;
-- changes behaviour rather than merely adding a hidden percentage;
-- has a unique dropped silhouette;
-- attaches consistently to the character, provisionally as a belt charm;
-- produces a distinct activation visual and sound;
-- exposes exact behaviour through temporary inspection text.
+- title and connection screens;
+- lobby and ready state;
+- settings;
+- temporary contextual panels;
+- results and rematch;
+- errors and connection status.
 
-## 9. Creatures and encounters
+React does not create or update every live game entity. Three.js owns the render scene and frame presentation.
 
-Initial roles:
+### 13.3 Minimal interface
 
-1. Swarmer — weak, fast, and dangerous in groups.
-2. Brute — slow, durable, and forceful.
-3. Spitter — ranged, with a readable projectile telegraph.
-4. Charger — commits to a clearly signalled line attack.
-5. Brood creature — produces smaller threats if ignored.
-6. Elite variants — larger silhouette plus one visible modifier.
-7. Centre boss — optional high-risk objective for superior loot, after core combat works.
+Persistent interface should be limited to information that cannot be read reliably from the world.
 
-Common creatures should use roughly 200–600 triangles as an initial art budget, one material, shared rigs, reduced distant animation frequency, blob shadows, and pooled lifecycle.
+Initial allowance:
 
-Enemy simulation uses spatial partitioning, batched decision updates, inexpensive steering, and simple local avoidance rather than a full navigation query per enemy per frame.
-
-## 10. Loot director
+- compact health state;
+- contextual ammunition near the reticle or weapon;
+- reload timing only while reloading;
+- darkness boundary/safety direction when required;
+- connection warning.
 
-Random loot should create different stories without making starting opportunity wildly unfair.
+There is no minimap, enemy marker, kill feed, XP bar, feat panel, armour display, or inventory.
 
-- Each spawn territory receives a comparable offered-value budget.
-- Loot is classified by functional category and power tier.
-- Exact items, positions, and modifiers are randomized.
-- Basic weapon opportunity is guaranteed near each starting region.
-- Better loot is increasingly likely toward the centre and in dangerous darkness pockets.
-- The director measures what it offered, not what a pack successfully collected.
-- A very small jackpot chance may promote an item above the normal local tier, allowing memorable early finds such as a bazooka.
-- Jackpot weapons should remain constrained by scarce ammunition.
+Clarity is more important than preserving a strict no-HUD rule during early tests.
 
-Suggested functional categories:
+## 14. Technology architecture
 
-- reliable;
-- close-control;
-- precision;
-- explosive;
-- support/utility;
-- exotic.
-
-## 11. Visibility and interface
-
-### 11.1 Persistent HUD
-
-The compass is the only persistent HUD element.
-
-It may show:
+### 14.1 Repository direction
 
-- cardinal directions;
-- island centre;
-- living packmates;
-- downed packmates with urgent treatment;
-- current alpha;
-- temporary pack pings.
-
-It does not automatically show enemy players, creatures, loot, or gunfire.
-
-### 11.2 World-attached information
-
-- Health uses an unobtrusive ring, pips, injury animation, or a combination beneath/on the dog.
-- Armour is visible on the character and through impact feedback.
-- Ammo is represented near the weapon or reticle only when relevant.
-- Reload timing appears only during reload.
-- Ability readiness uses character animation, effects, and sound.
-- Feat selection and item inspection are temporary contextual interfaces.
-- Colour is never the sole carrier of critical information.
-
-Server-authoritative visibility determines whether hidden enemy positions are replicated to a client. Darkness must not be merely a client-side overlay that a modified client can remove.
-
-## 12. Multiplayer architecture
-
-### 12.1 Network model
-
-- Authoritative dedicated server.
-- Secure WebSocket (`wss://`) clients for browser compatibility.
-- Headless Godot Linux server export.
-- Hard cap of 16 human players.
-- Target server simulation: 30 Hz.
-- Target snapshots: 15–20 Hz, tuned through profiling.
-- Client prediction and server reconciliation for the local dog.
-- Interpolation for remote dogs, creatures, and relevant projectiles.
-- Sector-based interest management and server-owned visibility filtering.
-- The server owns maps, entities, AI, collision, hits, damage, XP, feats, equipment, alpha selection, elimination, and results.
-
-### 12.2 Reconnect
-
-- Initial reconnect grace target: 30 seconds.
-- Disconnected dogs become inactive and cannot contribute.
-- If a disconnect makes every dog in a pack inactive/down, exact elimination handling must be decided before public play.
-- Private friend matches are the MVP priority; sophisticated ranked integrity is out of scope.
-
-### 12.3 Security
-
-- Validate every message type, size, frequency, state, ownership, and numeric range.
-- Never accept client-authored damage, XP, inventory, alpha score, or visibility.
-- Rate-limit joins, inputs, pings, and reconnect attempts.
-- Sanitize display names and use immutable server IDs.
-- Use HTTPS/WSS in production.
-- No voice or text chat in MVP.
+The implementation should use one TypeScript ecosystem with clear client, server, shared, and test boundaries.
 
-## 13. Web performance budgets
+Suggested logical areas:
 
-### 13.1 Client target
+- `client`: React shell, input, Three.js scene, interpolation, audiovisual presentation;
+- `server`: Colyseus room, authoritative simulation, validation, room lifecycle;
+- `shared`: protocol types, schemas where safe, data definitions, mathematical helpers, seeded randomness;
+- `tests`: unit, room, protocol, integration, and browser-facing smoke checks;
+- `public`: static client assets.
 
-- Compatibility renderer/WebGL 2 from the first prototype.
-- Single-threaded web export first; threaded export only after measured need and hosting-header validation.
-- 60 FPS target and 30 FPS hard minimum during the deliberate stress case.
-- Representative test: Apple Silicon MacBook Air and an integrated-graphics Windows laptop at 1280×720 internal resolution.
-- 16 visible dogs.
-- 40–80 visible common creatures during normal play.
-- Short stress spikes toward approximately 100 visible creatures.
-- 50–100 visible projectiles, with hitscan used where possible.
-- Strict pools and hard caps for creatures, projectiles, particles, decals, sounds, corpses, and item labels.
-- Quality settings may reduce resolution, shadows, particles, decals, and distant animation frequency.
-- Initial compressed download target: under 30 MB.
-- No sustained memory, node, or resource growth during a full match.
+The exact folder layout should be chosen after auditing the current repository and should not blindly copy Death Race paths.
 
-These are hypotheses until the feasibility spike measures a production-like browser build.
+### 14.2 Client stack
 
-### 13.2 Server target
+- TypeScript.
+- Vite.
+- Three.js.
+- React for application shell only.
+- Colyseus browser SDK.
+- Vitest for testable client and shared logic.
+- Web Audio or a small dedicated audio layer; no heavy audio framework required initially.
 
-- 30 Hz simulation with p95 tick below 25 ms.
-- 16 clients plus representative creatures and combat.
-- Stable memory across repeated matches and reconnects.
-- Initial per-client bandwidth target: p95 below 100 KB/s downstream and 20 KB/s upstream.
-- Metrics separated by snapshot, reliable event, lobby, and visibility traffic.
+### 14.3 Server stack
 
-If budgets fail, reduce visible/simulated entity fidelity before weakening server authority.
+- Node.js.
+- Colyseus 0.17 packages pinned to compatible versions.
+- Colyseus schema state for persistent synchronized match state.
+- Colyseus messages for commands and transient events.
+- Vitest for simulation, protocol, room, and integration tests.
+- WebSocket transport.
 
-## 14. Accessibility
+### 14.4 Death Race relationship
 
-- Remappable keyboard controls.
-- Gamepad after keyboard/mouse combat is accepted.
-- Independent volume controls.
-- Screen-shake and gore controls.
-- High-contrast, shape-supported telegraphs.
-- Active-reload audio cue option.
-- Reduced particles and decals.
-- Resolution scaling.
-- No essential rapid flashing.
-- Temporary descriptions remain readable at 1280×720.
+`C:\Users\James\Documents\Code\deathRace` is a reference implementation, not a source dependency.
 
-## 15. Testing
+Reuse its proven concepts:
 
-### 15.1 Automated
-
-- weapon ammunition, fire-rate, and active-reload outcomes;
-- melee and ability cooldowns;
-- damage, armour, down, revive, and pack elimination;
-- XP sharing, personal levels, feat offers, and scoring;
-- alpha evaluation and accumulated alpha time;
-- equipment swap/drop rules;
-- loot budget and jackpot bounds;
-- deterministic map assembly and validation;
-- visibility eligibility;
-- protocol round trips and invalid-message rejection;
-- reconnect state;
-- accelerated headless match completion.
-
-### 15.2 Bot harness
-
-Bots must be able to:
-
-- connect, ready, and receive random packs;
-- choose dogs;
-- move, aim, fire, melee, reload, and use abilities;
-- revive and interact with equipment;
-- choose feats;
-- explore inward and fight creatures/players;
-- disconnect and reconnect;
-- report tick, bandwidth, visibility, entity, and outcome metrics.
-
-Repeatable scenarios: 1, 4, 8, 12, and 16 clients, plus a 20-minute stress soak.
-
-## 16. Milestones
-
-### M0 — Web feasibility spike
-
-- Pin a supported Godot 4.x version.
-- Export a low-poly 3D Compatibility client to web.
-- Connect browser clients over WSS to a headless server.
-- Stress 16 dogs, 100 simple creatures, 100 pooled projectile/effect representatives, darkness, sightlines, one armour attachment, and one relic effect.
-- Measure FPS, tick cost, memory, load size, and bandwidth on target laptops.
-
-Exit: 60 FPS during representative load and at least 30 FPS during the deliberate stress case, or revise entity/effect budgets and retest.
-
-### M1 — Combat prototype
-
-- One dog, two starting weapons, melee, dash, active reload, one ability.
-- Two creatures and one small handcrafted region.
-- Authoritative movement, combat, prediction, and interpolation.
-- World-attached state plus compass.
-
-Exit: combat is responsive and punchy at 150 ms simulated round-trip latency.
-
-### M2 — Pack slice
-
-- Four dogs, random pack assignment, alpha tracking, courage, down/revive/wipe.
-- Individual XP, first feats, weapon/armour/relic slots, physical swapping.
-- Eight-player direct-connect Pack Royale test.
-
-Exit: two packs can complete a match without desync, unreadable state, or unbounded growth.
-
-### M3 — 16-player vertical slice
-
-- One complete island and centre arena.
-- Darkness contraction, inward loot progression, map validation.
-- Six dogs, six relics, representative armour, weapons, and creature roles.
-- Bot harness and 16-player browser soak.
-
-Exit: the complete match loop meets hard performance and network budgets.
-
-### M4 — MVP service and release candidate
-
-- Private rooms, reconnect, results, rematch, settings, onboarding, and errors.
-- Production art/audio pass within proven budgets.
-- Browser matrix, abuse checks, deployment, operations, and recovery testing.
-
-Exit: repeated hosted 16-player friend matches complete successfully.
-
-## 17. MVP acceptance criteria
-
-- A desktop browser user can join without installation or account creation.
-- 2–16 players complete lobby, Pack Royale, results, and rematch.
-- Random packs never exceed four dogs and remain balanced within one player.
-- PvP/PvE, darkness, down/revive/wipe, alpha, individual levels, feats, and physical equipment exchange function end to end.
-- Six distinct dog heroes, six relics, representative armour, weapons, common creatures, elites, and one island are playable.
-- A 16-bot stress run meets the hard client and server budgets.
-- Current target Chrome and Firefox pass; Safari is tested on the target MacBook and documented.
-- The server is authoritative for consequential state and hidden positions.
-- Production uses HTTPS/WSS.
-- All shipped audiovisual content is original, licensed, or marked temporary.
-
-## 18. Explicit non-goals for MVP
-
-- Ranked matchmaking or esports-grade balance.
-- Player-selected packs.
-- Mobile browsers.
-- Native desktop/console releases.
-- Peer hosting.
-- Permanent account progression, payments, or cosmetics store.
-- Text or voice chat.
-- User-generated maps.
-- Multiple production islands.
-- Lone Dogs mode before Pack Royale works.
-- Hundreds of guaranteed visible creatures.
-- Exact feature or content parity with any reference game.
-
-## 19. Open decisions
-
-- Final lore and title treatment.
-- Final dog roster, weapons, and abilities.
-- Exact feat cadence and initial feat pool.
-- Armour catalogue and whether base regeneration exists.
-- Final relic attachment presentation.
-- Darkness timing and total match duration.
-- Alpha evaluation interval and scoring weights.
-- Reconnect handling when all remaining pack members are inactive.
-- Hosting provider, regions, and lobby allocation service.
-- Godot minor version after M0 testing.
+- Vite and React application shell;
+- Colyseus room lifecycle;
+- authoritative simulation interval;
+- schema-based state;
+- validated command envelopes and input ordering;
+- short room codes and private lobbies;
+- room/server tests;
+- Cloudflare Pages and Fly.io deployment shape;
+- decision and architecture documentation.
+
+Do not copy its game-specific lane simulation, hidden identity, shot model, NPC rules, DOM playfield, scoring, or race state.
+
+### 14.5 Simulation and rendering boundary
+
+The authoritative simulation must not import Three.js, React, DOM APIs, or presentation assets.
+
+The Three.js renderer consumes an interpreted client view of synchronized state. It may predict local presentation but cannot mutate authoritative state.
+
+The simulation should use explicit data and functions for:
+
+- player input intent;
+- movement and collision;
+- dash;
+- reload timeline;
+- firing and melee;
+- creatures;
+- pickups;
+- darkness;
+- damage, death, and victory.
+
+## 15. Network model
+
+### 15.1 Room
+
+One Colyseus room represents one match.
+
+Room phases:
+
+- lobby;
+- countdown;
+- playing;
+- round over;
+- closed.
+
+Room rules:
+
+- maximum two clients;
+- automatically locks when the match begins;
+- automatically disposes when empty;
+- validates names and room options;
+- rejects commands invalid for the current phase;
+- has a bounded idle timeout;
+- emits structured close reasons.
+
+### 15.2 Commands
+
+Initial client commands:
+
+- ready;
+- start match, host only;
+- movement input;
+- aim input;
+- dash;
+- fire;
+- start reload;
+- reload timing attempt;
+- melee;
+- interact/pick up;
+- request rematch;
+- leave.
+
+Every command includes or is associated with:
+
+- authenticated session/player identity;
+- room identity;
+- match/round identity;
+- monotonically increasing input sequence where ordering matters;
+- validated bounded payload.
+
+### 15.3 State versus events
+
+Use synchronized schema state for durable current facts:
+
+- room phase and timer;
+- players;
+- creatures;
+- pickups;
+- darkness boundary;
+- winner.
+
+Use messages/events for transient occurrences:
+
+- shot fired;
+- melee swing;
+- impact;
+- reload result;
+- creature attack;
+- death;
+- announcement and error.
+
+Do not duplicate the same source of truth in both state and events.
+
+### 15.4 Tick and patch targets
+
+Initial targets:
+
+- authoritative simulation: 30 Hz;
+- synchronized patch rate: 20 Hz;
+- browser rendering: up to 60 FPS;
+- aim messages: capped, initially 20 Hz;
+- movement messages: on change plus bounded refresh;
+- commands per client: rate-limited.
+
+These targets change only after measurement.
+
+### 15.5 Prediction and interpolation
+
+- Local movement uses client prediction after the authoritative movement model exists.
+- Server acknowledgements permit reconciliation.
+- Remote player and creature motion uses interpolation.
+- Local firing and reload feedback may begin immediately, then resolve against server confirmation.
+- Damage, death, pickup ownership, and victory are never predicted as final.
+- Prototype progression may temporarily begin without prediction to validate rules, but responsive prediction is required for MVP acceptance.
+
+### 15.6 Visibility filtering
+
+The server must not synchronize exact hidden opponent positions merely for the client to conceal them visually.
+
+The implementation may use:
+
+- per-client filtered state;
+- private messages/snapshots;
+- visibility-specific view models;
+- another Colyseus-supported approach proven through tests.
+
+The chosen approach must be documented before darkness is considered complete.
+
+## 16. Authority and validation
+
+The server owns:
+
+- player identity and spawn;
+- map seed and authored spawn choices;
+- movement limits and collision;
+- dash legality;
+- health and death;
+- weapon, magazine, reserve ammunition, and reload state;
+- active-reload result;
+- fire rate and hit tests;
+- melee range, recovery, hits, and damage;
+- creatures and pickups;
+- darkness boundary and outside pressure;
+- match phase, winner, and rematch reset.
+
+The client owns only:
+
+- raw input capture;
+- local camera;
+- rendering and animation;
+- audio and cosmetic effects;
+- temporary interface state;
+- local settings.
+
+Validation rules:
+
+- reject non-finite numbers and out-of-bounds coordinates;
+- reject impossible command rates and stale sequences;
+- reject actions unavailable in the current phase or player state;
+- never accept client-supplied damage, health, ammunition, pickup success, reload category, creature state, or victory;
+- rate-limit messages before they can exhaust the room;
+- log protocol violations without logging unnecessary personal data.
+
+## 17. Web and server performance budgets
+
+### 17.1 Client
+
+- 60 FPS target at representative load.
+- 30 FPS hard minimum during deliberate stress.
+- Initial internal resolution: 1280×720 or lower pixel-art render target scaled to fit.
+- Representative hardware: Apple Silicon MacBook Air and integrated-graphics Windows laptop.
+- Two player presentations.
+- 10–20 normal active creatures.
+- Stress test with 40 simple creatures.
+- Hitscan starting weapon.
+- Hard caps and pools for projectiles, effects, decals, corpses, sounds, labels, and temporary objects.
+- Initial compressed client target: under 10 MB excluding optional large audio.
+- No sustained memory or object growth across repeated matches.
+
+### 17.2 Server
+
+- 30 Hz simulation with p95 step below 20 ms.
+- Stable memory across repeated room creation and disposal.
+- No unbounded entity, timer, listener, or room-code growth.
+- Record bandwidth by schema patches and message/event class.
+- Initial downstream target below 50 KB/s per client at normal load.
+- Initial upstream target below 15 KB/s per client at normal load.
+
+These are hypotheses until measured locally and in a hosted environment.
+
+## 18. Deployment
+
+The expected deployment shape follows the proven Death Race model:
+
+- static Vite client on Cloudflare Pages or an equivalent static host;
+- authoritative Colyseus Node server on Fly.io or an equivalent WebSocket-capable host;
+- production client connects over WSS;
+- endpoint selected through environment configuration;
+- no credentials committed to source control;
+- server exposes a health check;
+- deployment and rollback steps are documented and repeatable.
+
+Deployment is not required before local two-browser play works, but hosted latency must be tested before MVP completion.
+
+## 19. Testing
+
+### 19.1 Unit tests
+
+- movement and dash limits;
+- magazine and reserve accounting;
+- fire-rate enforcement;
+- reload normal, good, perfect, and failed timing;
+- melee range, arc, damage, and recovery;
+- creature steering and attack timing;
+- damage, death, simultaneous death, and winner resolution;
+- pickup single-consumption;
+- darkness boundary and outside damage;
+- seeded spawn selection.
+
+### 19.2 Protocol tests
+
+- message shape and numeric bounds;
+- command ordering and stale sequence rejection;
+- room/match identity;
+- invalid phase rejection;
+- client inability to submit authoritative outcomes;
+- message rate limits;
+- compatible schema definitions.
+
+### 19.3 Room tests
+
+- create and join by room code;
+- two-client maximum;
+- ready and host-only start;
+- server countdown;
+- spawn separation;
+- authoritative simulation progression;
+- disconnect result;
+- victory and exactly-once round ending;
+- rematch reset;
+- room disposal and cleanup.
+
+### 19.4 Integration tests
+
+- two clients join one room and receive distinct player identities;
+- both move and observe interpolated opponent state when visible;
+- hidden opponent state is not exposed;
+- both fight server-controlled creatures;
+- ammunition, reload, melee, pickup, damage, and death agree across clients;
+- a complete accelerated match produces one valid result;
+- repeated matches do not leak state.
+
+### 19.5 Playtest questions
+
+- Is movement enjoyable before combat?
+- Does shooting one creature feel good?
+- Is attempting the active reload meaningfully risky?
+- Does limited ammunition influence routes rather than merely frustrate?
+- Is melee useful without becoming the best default attack?
+- Can players infer the opponent’s activity without exact markers?
+- Are early encounters exciting rather than automatically decisive?
+- Does the centre weapon tempt both players without guaranteeing victory?
+- Do creatures improve PvP situations or mostly create random unfairness?
+- Does darkness end stalemates naturally?
+- Do players want an immediate rematch?
+- Can the developer explain the full input-to-server-to-render flow?
+
+## 20. Implementation milestones
+
+### M0 — Technology baseline
+
+- Replace or isolate the Godot starter without deleting unrelated user work.
+- Establish Vite, TypeScript, Three.js, React shell, Vitest, Node, and compatible Colyseus 0.17 packages.
+- Produce one browser-rendered placeholder scene.
+- Start one Colyseus server and complete a versioned browser handshake.
+
+Exit: a browser connects to the local server, receives identity, and renders a placeholder owned by synchronized state.
+
+### M1 — One-player authoritative movement
+
+- One dog placeholder.
+- Input commands.
+- Server movement and collision.
+- Orthographic Three.js presentation.
+- Local prediction and reconciliation.
+
+Exit: movement feels responsive at 150 ms simulated round-trip latency and remains server legal.
+
+### M2 — Combat toy
+
+- Starting firearm.
+- Limited ammunition.
+- Active reload.
+- Melee.
+- One server creature.
+- Health and death.
+- Punch feedback.
+
+Exit: shooting, reloading, and melee are enjoyable for ninety seconds in a browser build.
+
+### M3 — Two-player continuous match
+
+- Private room code.
+- Two clients.
+- Shared map with separated spawns.
+- PvP active from “Go.”
+- Authoritative hits, damage, death, victory, and rematch.
+- Opponent interpolation and basic visibility filtering.
+
+Exit: two players can complete repeated direct PvP matches with no PvE or darkness required.
+
+### M4 — PvPvE pressure
+
+- Swarmer and spitter.
+- Ammunition and healing pickups.
+- Centre-biased second weapon.
+- Creature and pickup budgets.
+- Darkness visibility and contraction.
+
+Exit: full matches produce different encounter timings and naturally converge without a protected phase or teleport.
+
+### M5 — Web MVP
+
+- Chunky 2.5D visual pass.
+- Audio and feedback.
+- Minimal lobby, settings, context interface, results, and errors.
+- Automated integration and soak tests.
+- Browser/hardware matrix.
+- Hosted client and server latency test.
+
+Exit: all MVP acceptance criteria pass.
+
+## 21. MVP acceptance criteria
+
+The MVP is complete when:
+
+- two desktop-browser players can create/join a private match without installation or accounts;
+- both occupy one continuously shared map;
+- PvP and PvE are active from the start with no teleport or protected preparation phase;
+- movement, dash, firing, limited ammunition, active reload, melee, damage, pickups, creatures, darkness, death, victory, and rematch work end to end;
+- the server is authoritative for every consequential outcome;
+- hidden opponent positions are not exposed through synchronized client state;
+- geography and creature pressure discourage blind spawn rushing without prohibiting early combat;
+- the centre weapon creates risk/reward without guaranteeing victory;
+- the match ends naturally within the target duration;
+- representative client load targets 60 FPS and remains above 30 FPS in stress;
+- server simulation and bandwidth remain inside measured budgets;
+- repeated matches and room disposal show no unbounded growth;
+- current Chrome and Firefox pass, with Safari results documented on the target MacBook;
+- a hosted WSS match completes at realistic latency;
+- all shipped audiovisual content is original, licensed, or clearly temporary;
+- the developer can explain the client, protocol, authoritative room, simulation, synchronization, and rendering boundaries.
+
+## 22. Evidence gates for expansion
+
+Do not increase the player cap or restore pack systems until the two-player MVP demonstrates:
+
+- enjoyable combat independent of progression;
+- multiple viable opening routes;
+- early encounters that are survivable and interesting;
+- creatures that improve rather than randomize PvP;
+- darkness that resolves hiding without feeling arbitrary;
+- stable browser and server performance;
+- player demand for more participants.
+
+If those gates pass, evaluate expansion in this order:
+
+1. Three- or four-player free-for-all.
+2. Additional weapons and creature roles.
+3. Feats and compact equipment builds.
+4. Two-versus-two packs and revival.
+5. Larger packs, alpha, and the former sixteen-player Pack Royale vision.
+
+Each step requires its own playtest and performance evidence.
+
+## 23. Open decisions
+
+- Final dog appearance and sprite workflow.
+- Exact map fiction and visual landmarks.
+- Starting firearm values.
+- Whether the centre weapon is a shotgun or another sidegrade.
+- Dash invulnerability, if any.
+- Initial darkness timing and shape.
+- Disconnect-loss grace period.
+- Exact visibility-filtering implementation in Colyseus.
+- Whether React remains necessary beyond the application shell.
+- Final Cloudflare/Fly project names and deployment environments.
+- Whether the repository uses npm workspaces or a simpler single-package layout.
+
+Open decisions should be answered through the smallest relevant implementation or playtest, not speculative infrastructure.

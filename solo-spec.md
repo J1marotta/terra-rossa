@@ -1,6 +1,6 @@
 # Terra Rossa — Solo Learning MVP Specification
 
-Status: Draft
+Status: Archived exploration track; superseded by the active continuous PvPvE `spec.md`
 
 Relationship to `spec.md`: separate single-player product track
 
@@ -14,7 +14,7 @@ Genre: Top-down survival shooter with active reloads and run-based progression
 
 ## 1. Purpose
 
-This is the first game to build.
+This document preserves the solo-first exploration. It is not the active implementation target unless the user explicitly restores it.
 
 The Solo Learning MVP exists to answer three questions:
 
