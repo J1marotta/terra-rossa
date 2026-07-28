@@ -400,7 +400,7 @@
     <div class="shell">
       <p class="eyebrow">Terra Rossa / decision journal</p>
       <h1>Share the night.<br><em>Explain why.</em></h1>
-      <p class="lede">A living, plain-English account of Terra Rossa: now a deliberately small, continuous two-player PvPvE game built with Three.js and an authoritative Colyseus server.</p>
+      <p class="lede">A living, plain-English account of Terra Rossa: a deliberately small, continuous four-player PvPvE game built with Three.js and an authoritative Colyseus server.</p>
       <div class="hero-actions">
         <a class="button" href="#decisions">Explore the decisions</a>
         <a class="button secondary" href="spec.md">Read the active specification</a>
@@ -412,7 +412,7 @@
   <main>
     <div class="shell">
       <section class="stats reveal" aria-label="Current project constraints">
-        <div class="stat"><strong>2</strong><span>players in the MVP</span></div>
+        <div class="stat"><strong>4</strong><span>players in the MVP</span></div>
         <div class="stat"><strong>Always</strong><span>PvP and PvE active</span></div>
         <div class="stat"><strong>0</strong><span>teleported final fights</span></div>
         <div class="stat"><strong>Web</strong><span>the performance target</span></div>
@@ -441,9 +441,9 @@
         <div class="decisions">
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Product / active MVP</span>
-            <h3>Two players share one dangerous map.</h3>
-            <p>The active MVP is a continuous two-player PvPvE match. Both players and server-controlled creatures inhabit the same map from “Go,” and the last surviving player wins.</p>
-            <p class="why"><strong>Why:</strong> the uncertainty of another human is important to the game’s climax. Starting with two players preserves that premise while avoiding the coordination and scaling costs of sixteen-player packs.</p>
+            <h3>Four players share one dangerous map.</h3>
+            <p>The active MVP is a continuous two-to-four-player free-for-all, designed and tested primarily with four. Every player and server-controlled creature inhabits the same map from “Go,” and the last survivor wins.</p>
+            <p class="why"><strong>Why:</strong> four players introduce third-party threats, conflicting routes, and shifting pressure while remaining small enough to understand, test, host, and balance without rebuilding the sixteen-player pack system.</p>
           </article>
 
           <article class="decision reveal" data-category="gameplay world">
@@ -458,6 +458,13 @@
             <h3>Three.js in front, Colyseus in charge.</h3>
             <p>The browser uses TypeScript, Vite, Three.js, and a small React shell. Node and Colyseus own movement legality, creatures, ammunition, reloads, hits, pickups, darkness, death, and victory.</p>
             <p class="why"><strong>Why:</strong> Death Race already proved this deployment and room architecture for the team. Reusing its lessons keeps one language across the stack while the server protects the human-versus-human result.</p>
+          </article>
+
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">Process / delivery</span>
+            <h3>Every task closes the whole loop.</h3>
+            <p>The active implementation plan gives each LLM task prerequisites, bounded deliverables, acceptance checks, exclusions, and the same finish line: update this journal, test, commit, push, deploy, and verify.</p>
+            <p class="why"><strong>Why:</strong> small code changes still fail at integration and deployment boundaries. Requiring a complete closeout keeps the repository, hosted game, documentation, and learning record aligned after every step.</p>
           </article>
 
           <article class="decision reveal" data-category="gameplay technical">
@@ -554,14 +561,14 @@
           <article class="decision reveal" data-category="technical">
             <span class="tag">Technical / web</span>
             <h3>The browser sets the budget.</h3>
-            <p>Three.js renders two players and a deliberately small creature population. Colyseus runs a measured 30 Hz simulation and synchronizes at a lower patch rate. Entity, effect, message, and memory caps begin in the first slice.</p>
-            <p class="why"><strong>Why:</strong> web performance and network traffic cannot be bolted on later. Starting with 10–20 creatures and two players provides useful evidence without pretending the old horde scale is free.</p>
+            <p>Three.js renders four players and a deliberately small creature population. Colyseus runs a measured 30 Hz simulation and synchronizes at a lower patch rate. Entity, effect, message, and memory caps begin in the first slice.</p>
+            <p class="why"><strong>Why:</strong> web performance and network traffic cannot be bolted on later. Starting with 12–24 creatures and four players provides useful evidence without pretending the old horde scale is free.</p>
           </article>
 
           <article class="decision reveal" data-category="technical">
             <span class="tag">Process / roadmap</span>
             <h3>Build evidence before content.</h3>
-            <p>The old Pack Royale backlog is explicitly superseded. The active path is handshake, one authoritative mover, a combat toy, a two-player match, PvPvE pressure, then browser polish.</p>
+            <p>The old Pack Royale backlog is explicitly superseded. The active path is handshake, authoritative movement, a combat toy, a four-player free-for-all, PvPvE pressure, then browser polish.</p>
             <p class="why"><strong>Why:</strong> an LLM works best with bounded scope, while the human needs to understand each boundary. Every milestone produces one playable, explainable layer before the next is introduced.</p>
           </article>
         </div>

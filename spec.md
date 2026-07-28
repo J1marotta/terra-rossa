@@ -8,7 +8,7 @@ Client: TypeScript, Vite, Three.js, React application shell
 
 Server: Node.js, Colyseus 0.17, authoritative room simulation
 
-Players: Two
+Players: Two to four; four-player free-for-all is the primary target
 
 Genre: Continuous top-down PvPvE survival shooter
 
@@ -16,11 +16,11 @@ Genre: Continuous top-down PvPvE survival shooter
 
 This specification defines the smallest networked version of Terra Rossa that can test its central multiplayer idea:
 
-> Two armed dog heroes enter the same hostile night, fight creatures for survival and supplies, and may discover, avoid, stalk, or kill one another at any time.
+> Up to four armed dog heroes enter the same hostile night, fight creatures for survival and supplies, and may discover, avoid, stalk, or kill one another at any time.
 
 There is no protected preparation phase and no teleport into a final duel. PvE and PvP coexist from the opening second. The map, creatures, ammunition, loot, sightlines, and closing darkness should cause an eventual confrontation naturally.
 
-This MVP is not the former sixteen-player Pack Royale design. It is an evidence-gathering two-player game. Scaling beyond two players is a later decision earned through playtesting and measurement.
+This MVP is not the former sixteen-player Pack Royale design. It is an evidence-gathering free-for-all for two to four players, designed and balanced primarily around a full four-player room. Teams and packs remain deferred.
 
 ## 2. Product hypothesis
 
@@ -32,9 +32,9 @@ Terra Rossa can be compelling if these systems reinforce one another:
 - creatures create pressure and reveal player activity;
 - stronger supplies toward the centre encourage movement;
 - darkness hides information while compressing the battlefield;
-- another human creates uncertainty that scripted enemies cannot.
+- several humans create uncertainty, temporary non-binding alliances, third-party threats, and route choices that scripted enemies cannot.
 
-The game succeeds when a player can tell a memorable story about when they first detected the opponent, why they chose to engage or retreat, and how PvE pressure affected the fight.
+The game succeeds when players can tell memorable stories about when they first detected an opponent, whether they engaged or retreated, how a third player changed the fight, and how PvE pressure affected the outcome.
 
 The game fails if the optimal strategy is routinely to rush the opposing spawn, hide until the final boundary, or ignore creatures and loot.
 
@@ -53,11 +53,11 @@ The game fails if the optimal strategy is routinely to rush the opposing spawn, 
 
 The complete MVP contains:
 
-- exactly two human players;
+- two to four human players, with four as the primary acceptance case;
 - one shared Colyseus room per match;
 - one handcrafted map;
-- two concealed and widely separated spawn regions;
-- one compact anthropomorphic dog presentation shared by both players;
+- four concealed and widely separated spawn regions;
+- one compact anthropomorphic dog presentation shared by all players, with distinct player colours or markers;
 - one starting firearm;
 - one stronger centre-biased weapon pickup;
 - limited ammunition;
@@ -79,7 +79,7 @@ Anything beyond this list requires an explicit scope decision.
 
 The MVP does not include:
 
-- more than two human players;
+- more than four human players;
 - packs, teams, alpha, courage, revival, or downed states;
 - a protected PvE preparation timer;
 - teleporting players into a final arena;
@@ -104,14 +104,14 @@ The MVP does not include:
 
 1. Player enters a display name.
 2. Player creates a private match and receives a short room code, or joins with that code.
-3. Lobby displays both players and ready state.
-4. Host starts after both players are ready.
+3. Lobby displays two to four players and their ready states.
+4. Host starts after at least two players have joined and every connected player is ready.
 5. A short server-timed countdown begins.
-6. Both players enter the same map at concealed opposite spawn regions.
+6. Each player enters the same map at a different concealed spawn region selected by the server.
 7. PvP and PvE are active immediately after “Go.”
 8. Creatures, ammunition pressure, central loot, and darkness drive movement.
-9. A player dies at zero health.
-10. The remaining player wins.
+9. Players die at zero health and leave the active simulation.
+10. The last living player wins.
 11. Results show the decisive events and offer a fast rematch.
 
 ### 6.2 Target length
@@ -120,15 +120,17 @@ The MVP does not include:
 - Hard maximum target: 10 minutes.
 - Darkness begins closing after an initial exploration window determined through playtesting.
 - Closing pressure accelerates until hiding outside the remaining area is fatal.
-- There is no arbitrary score victory while both players remain alive.
+- There is no arbitrary score victory while multiple players remain alive.
 
 ### 6.3 Victory
 
 - Last living human player wins.
+- A match requires at least two players and supports up to four.
 - Death is immediate; there is no downed or revive state.
 - Simultaneous lethal damage resolves deterministically on the server.
-- If both players die on the same authoritative simulation step, the result is a draw unless a clear causal ordering exists.
+- If all remaining players die on the same authoritative simulation step, the result is a draw unless a clear causal ordering leaves one valid survivor.
 - A disconnected player loses after a short, explicit grace period or immediately in the first prototype; final behaviour remains an implementation decision.
+- If disconnects leave exactly one living connected player, that player wins through the same authoritative last-survivor rule.
 
 ## 7. Shared map
 
@@ -138,8 +140,8 @@ The first map is fixed and handcrafted.
 
 It contains:
 
-- two outer spawn regions with no direct sightline between them;
-- at least two inward routes from each spawn;
+- four outer spawn regions with no opening direct sightline between any pair;
+- at least two inward routes from every spawn;
 - simple landmarks for orientation;
 - sightline breaks and flank routes;
 - outer supplies sufficient to begin moving;
@@ -152,8 +154,8 @@ It contains:
 
 Early combat is legal, but the map should make blind spawn rushing a risky strategy.
 
-- Spawn points are maximally separated.
-- Players never receive the opponent’s spawn marker.
+- Spawn points are distributed around the map perimeter and selected to maximize separation for the current player count.
+- Players never receive opponent spawn markers.
 - Walls, terrain, and props block opening sightlines.
 - Direct cross-map routes pass through creature pressure.
 - Useful supplies appear along several inward routes.
@@ -178,14 +180,14 @@ Darkness is both a visibility system and a match-compression system.
 - Hidden enemy positions must not remain available in inspectable client state.
 - Required attacks always provide a visible or audible warning before damage.
 - Gunfire, impacts, disturbed creatures, and environmental audio may reveal approximate activity without exposing an exact position.
-- The opponent is not shown on a minimap or compass.
+- Opponents are not shown on a minimap or compass.
 
 ### 8.2 Contraction
 
 - The playable region contracts in server-controlled stages.
 - Environmental warnings precede each movement.
 - Outside pressure escalates from reduced information to creature danger and finally lethal damage.
-- Both clients receive the same authoritative boundary state.
+- Every client receives the same authoritative boundary state.
 - The final region preserves cover and more than one viable approach.
 - The boundary is not required to be a perfect battle-royale circle if the authored map supports a better shape.
 
@@ -214,7 +216,7 @@ Authoritative player state includes only what the MVP needs:
 - stable player ID;
 - connection/session association;
 - display name;
-- position and facing/aim direction;
+- position and facing/aim direction for the local player and every currently visible opponent;
 - movement and dash state;
 - health and alive state;
 - equipped weapon;
@@ -352,7 +354,7 @@ Creature simulation requirements:
 - hard population cap;
 - no client authority over creature outcomes.
 
-Initial normal target: 10–20 active creatures. Scale only after the full networked slice is measured.
+Initial normal target: 12–24 active creatures. Scale only after the full four-player networked slice is measured.
 
 ## 12. Pickups
 
@@ -506,7 +508,8 @@ Room phases:
 
 Room rules:
 
-- maximum two clients;
+- maximum four clients;
+- minimum two connected ready players to start;
 - automatically locks when the match begins;
 - automatically disposes when empty;
 - validates names and room options;
@@ -640,9 +643,9 @@ Validation rules:
 - 30 FPS hard minimum during deliberate stress.
 - Initial internal resolution: 1280×720 or lower pixel-art render target scaled to fit.
 - Representative hardware: Apple Silicon MacBook Air and integrated-graphics Windows laptop.
-- Two player presentations.
-- 10–20 normal active creatures.
-- Stress test with 40 simple creatures.
+- Four player presentations.
+- 12–24 normal active creatures.
+- Stress test with four players and 48 simple creatures.
 - Hitscan starting weapon.
 - Hard caps and pools for projectiles, effects, decals, corpses, sounds, labels, and temporary objects.
 - Initial compressed client target: under 10 MB excluding optional large audio.
@@ -654,7 +657,7 @@ Validation rules:
 - Stable memory across repeated room creation and disposal.
 - No unbounded entity, timer, listener, or room-code growth.
 - Record bandwidth by schema patches and message/event class.
-- Initial downstream target below 50 KB/s per client at normal load.
+- Initial downstream target below 65 KB/s per client at normal four-player load.
 - Initial upstream target below 15 KB/s per client at normal load.
 
 These are hypotheses until measured locally and in a hosted environment.
@@ -671,7 +674,7 @@ The expected deployment shape follows the proven Death Race model:
 - server exposes a health check;
 - deployment and rollback steps are documented and repeatable.
 
-Deployment is not required before local two-browser play works, but hosted latency must be tested before MVP completion.
+Deployment is not required before local four-browser play works, but hosted latency must be tested before MVP completion.
 
 ## 19. Testing
 
@@ -701,10 +704,10 @@ Deployment is not required before local two-browser play works, but hosted laten
 ### 19.3 Room tests
 
 - create and join by room code;
-- two-client maximum;
+- four-client maximum and two-client minimum to start;
 - ready and host-only start;
 - server countdown;
-- spawn separation;
+- unique spawn allocation and separation for two, three, and four players;
 - authoritative simulation progression;
 - disconnect result;
 - victory and exactly-once round ending;
@@ -713,11 +716,11 @@ Deployment is not required before local two-browser play works, but hosted laten
 
 ### 19.4 Integration tests
 
-- two clients join one room and receive distinct player identities;
-- both move and observe interpolated opponent state when visible;
-- hidden opponent state is not exposed;
-- both fight server-controlled creatures;
-- ammunition, reload, melee, pickup, damage, and death agree across clients;
+- four clients join one room and receive distinct player identities;
+- every client moves and observes interpolated opponent state only when visible;
+- hidden opponent state is not exposed to any client;
+- all players fight server-controlled creatures;
+- ammunition, reload, melee, pickup, damage, elimination, and victory agree across all clients;
 - a complete accelerated match produces one valid result;
 - repeated matches do not leak state.
 
@@ -728,9 +731,9 @@ Deployment is not required before local two-browser play works, but hosted laten
 - Is attempting the active reload meaningfully risky?
 - Does limited ammunition influence routes rather than merely frustrate?
 - Is melee useful without becoming the best default attack?
-- Can players infer the opponent’s activity without exact markers?
+- Can players infer opponents’ activity without exact markers?
 - Are early encounters exciting rather than automatically decisive?
-- Does the centre weapon tempt both players without guaranteeing victory?
+- Does the centre weapon attract conflict without guaranteeing victory to its first owner?
 - Do creatures improve PvP situations or mostly create random unfairness?
 - Does darkness end stalemates naturally?
 - Do players want an immediate rematch?
@@ -769,16 +772,16 @@ Exit: movement feels responsive at 150 ms simulated round-trip latency and remai
 
 Exit: shooting, reloading, and melee are enjoyable for ninety seconds in a browser build.
 
-### M3 — Two-player continuous match
+### M3 — Two-to-four-player continuous match
 
 - Private room code.
-- Two clients.
+- Two, three, and four clients.
 - Shared map with separated spawns.
 - PvP active from “Go.”
 - Authoritative hits, damage, death, victory, and rematch.
-- Opponent interpolation and basic visibility filtering.
+- Opponent interpolation and per-client visibility filtering.
 
-Exit: two players can complete repeated direct PvP matches with no PvE or darkness required.
+Exit: two-, three-, and four-player rooms complete repeated free-for-all matches with no PvE or darkness required, and the four-player case is the primary performance test.
 
 ### M4 — PvPvE pressure
 
@@ -805,12 +808,12 @@ Exit: all MVP acceptance criteria pass.
 
 The MVP is complete when:
 
-- two desktop-browser players can create/join a private match without installation or accounts;
-- both occupy one continuously shared map;
+- two to four desktop-browser players can create/join a private match without installation or accounts;
+- all players occupy one continuously shared map;
 - PvP and PvE are active from the start with no teleport or protected preparation phase;
 - movement, dash, firing, limited ammunition, active reload, melee, damage, pickups, creatures, darkness, death, victory, and rematch work end to end;
 - the server is authoritative for every consequential outcome;
-- hidden opponent positions are not exposed through synchronized client state;
+- hidden opponent positions are not exposed through synchronized client state to any player;
 - geography and creature pressure discourage blind spawn rushing without prohibiting early combat;
 - the centre weapon creates risk/reward without guaranteeing victory;
 - the match ends naturally within the target duration;
@@ -824,7 +827,7 @@ The MVP is complete when:
 
 ## 22. Evidence gates for expansion
 
-Do not increase the player cap or restore pack systems until the two-player MVP demonstrates:
+Do not increase the player cap beyond four or restore pack systems until the four-player MVP demonstrates:
 
 - enjoyable combat independent of progression;
 - multiple viable opening routes;
@@ -836,10 +839,10 @@ Do not increase the player cap or restore pack systems until the two-player MVP 
 
 If those gates pass, evaluate expansion in this order:
 
-1. Three- or four-player free-for-all.
-2. Additional weapons and creature roles.
-3. Feats and compact equipment builds.
-4. Two-versus-two packs and revival.
+1. Additional weapons and creature roles.
+2. Feats and compact equipment builds.
+3. Two-versus-two packs and revival.
+4. Eight-player experiments.
 5. Larger packs, alpha, and the former sixteen-player Pack Royale vision.
 
 Each step requires its own playtest and performance evidence.
