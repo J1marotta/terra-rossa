@@ -5,6 +5,12 @@
     "lib": ["ES2023", "DOM"],
     "types": ["node", "vitest/globals"]
   },
-  "include": ["tests/**/*.ts", "vitest.config.ts"],
+  "include": [
+    "tests/**/*.ts",
+    "client/src/config.ts",
+    "client/src/vite-env.d.ts",
+    "server/config.ts",
+    "vitest.config.ts"
+  ],
   "references": [{ "path": "./tsconfig.shared.json" }]
 }

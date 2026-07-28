@@ -481,6 +481,13 @@
             <p class="why"><strong>Why:</strong> a monorepo manager would add another concept before it solves a real problem. Plain folders make authority easy to see: the browser presents, the server decides, and shared code knows about neither UI nor transport.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">T0.3 / configuration</span>
+            <h3>Local defaults are friendly; hosted mistakes are loud.</h3>
+            <p>Development runs without credentials, while staging and production require a public secure game endpoint, explicit browser origins, and identifiable health metadata. Both configuration parsers accept injected values and report the exact invalid setting.</p>
+            <p class="why"><strong>Why:</strong> environment bugs often survive a local demo and only appear after release. A production browser silently connecting to localhost is especially confusing, so the safest default is to stop early and explain what the deploy is missing.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

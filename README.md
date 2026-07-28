@@ -60,3 +60,22 @@ Use Node.js 24.14.x and pnpm 10.15.1. The Node policy is pinned in `.node-versio
 | `pnpm build` | Type-check and build the browser bundle. |
 
 The workspace intentionally has no gameplay, database, authentication, CSS framework, state framework, or physics engine yet.
+
+### Environment configuration
+
+Copy `.env.example` to `.env.local` for personal overrides; never commit the copied file. Local development needs no credentials and defaults to a client endpoint of `ws://localhost:2567`, a server on `127.0.0.1:2567`, and the Vite origin `http://localhost:5173`.
+
+The client reads only `VITE_COLYSEUS_URL`. A `staging` or `production` client rejects missing, insecure, and local endpoints; hosted values must use public `wss://` URLs. Vite exposes `VITE_` values to browser code, so never place secrets in them.
+
+The server accepts these process variables:
+
+| Variable | Local default | Hosted rule |
+| --- | --- | --- |
+| `APP_ENV` | `development` | Use `staging` or `production`. |
+| `HOST` | `127.0.0.1` | Set the interface required by the host, commonly `0.0.0.0`. |
+| `PORT` | `2567` | Must be an integer from 1 to 65535. |
+| `ALLOWED_ORIGINS` | `http://localhost:5173` | Required comma-separated HTTP(S) origins. |
+| `SERVICE_NAME` | `terra-rossa-server` | Required health-check identity. |
+| `SERVICE_VERSION` | `dev` | Required deploy or commit identity. |
+
+Configuration parsers accept an explicit value source, so tests are isolated from each developer’s machine. Invalid hosted configuration fails at startup with the missing or malformed variable named in the error.

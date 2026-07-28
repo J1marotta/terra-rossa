@@ -130,7 +130,7 @@ Do not:
 
 ## T0.3 — Define configuration and environment boundaries
 
-- [ ] Establish safe configuration for local, test, staging, and production environments.
+- [x] Establish safe configuration for local, test, staging, and production environments.
 
 Prerequisites: T0.2.
 
