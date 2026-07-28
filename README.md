@@ -32,3 +32,31 @@ Tracked files are the current repository source of truth. Untracked files listed
 The browser implementation will be added alongside the retained Godot starter, using clearly named client, server, shared, test, and public-asset locations. Each scaffolding task must inspect Git status first, add only the files it intentionally creates, and avoid broad staging commands. Generated dependency folders, build output, coverage, logs, local environment files, and Godot caches must be ignored; source, tests, manifests, lockfiles, examples, and documentation should be tracked.
 
 No migration task may delete the Godot starter or nested attachments. Removing or archiving them requires a separate user-approved decision after the web version is established.
+
+## Web workspace
+
+The active web application uses one root pnpm workspace with explicit source boundaries:
+
+- `client/` contains the Vite, React, and Three.js browser application.
+- `server/` contains the Node.js and Colyseus authoritative server.
+- `shared/` contains framework-neutral contracts and deterministic logic used by either side.
+- `tests/` contains cross-boundary and workspace tests.
+
+Use Node.js 24.14.x and pnpm 10.15.1. The Node policy is pinned in `.node-version` and `package.json`; dependency versions are exact in `package.json` and reproducible through `pnpm-lock.yaml`. The initial pinned runtime packages are React 19.2.8, Three.js 0.185.1, Colyseus 0.17.45, Colyseus SDK 0.17.43, and Colyseus WebSocket transport 0.17.13.
+
+### Local commands
+
+| Command | Purpose |
+| --- | --- |
+| `pnpm install --frozen-lockfile` | Reproduce the locked dependency tree. |
+| `pnpm dev` | Start the Vite client. |
+| `pnpm dev:server` | Start the server in watch mode. |
+| `pnpm dev:all` | Run client and server together. |
+| `pnpm start:server` | Start the server once. |
+| `pnpm typecheck` | Check every strict TypeScript project. |
+| `pnpm lint` | Check source lint and formatting rules. |
+| `pnpm test` | Run the Vitest suite, including import-boundary checks. |
+| `pnpm build:client` | Produce the browser bundle in `dist/client`. |
+| `pnpm build` | Type-check and build the browser bundle. |
+
+The workspace intentionally has no gameplay, database, authentication, CSS framework, state framework, or physics engine yet.

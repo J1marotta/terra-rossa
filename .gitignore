@@ -1,0 +1,17 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Node and web build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local configuration and logs
+.env
+.env.*
+!.env.example
+*.local
+*.log
+*.err

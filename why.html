@@ -474,6 +474,13 @@
             <p class="why"><strong>Why:</strong> migration work is safest when ownership is explicit. Building beside the experiment lets us learn from it without deleting history, accidentally committing generated files, or hiding the real project inside another folder.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">T0.2 / foundation</span>
+            <h3>One workspace, three visible boundaries.</h3>
+            <p>A single pinned pnpm project now contains a Vite and React client, a Node and Colyseus server, and a framework-neutral shared layer. Strict TypeScript, Vitest, Oxlint, Prettier, production building, and an automated cross-import check form the first quality gate.</p>
+            <p class="why"><strong>Why:</strong> a monorepo manager would add another concept before it solves a real problem. Plain folders make authority easy to see: the browser presents, the server decides, and shared code knows about neither UI nor transport.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

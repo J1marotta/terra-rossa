@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2023"],
+    "types": ["node"]
+  },
+  "include": ["server/**/*.ts"],
+  "references": [{ "path": "./tsconfig.shared.json" }]
+}

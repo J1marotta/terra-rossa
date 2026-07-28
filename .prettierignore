@@ -1,0 +1,6 @@
+dist
+coverage
+node_modules
+.godot
+terra-rossa/.codex-remote-attachments
+pnpm-lock.yaml

@@ -1,0 +1,47 @@
+{
+  "name": "terra-rossa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=24.14.0 <25"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:all": "concurrently -n client,server -c cyan,magenta \"pnpm dev\" \"pnpm dev:server\"",
+    "build": "pnpm typecheck && vite build",
+    "build:client": "vite build",
+    "start:server": "tsx server/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -b",
+    "lint": "oxlint client server shared tests vite.config.ts vitest.config.ts && prettier --check client server shared tests package.json tsconfig*.json vite.config.ts vitest.config.ts .oxlintrc.json .prettierrc.json",
+    "format": "prettier --write client server shared tests package.json tsconfig*.json vite.config.ts vitest.config.ts .oxlintrc.json .prettierrc.json"
+  },
+  "dependencies": {
+    "@colyseus/core": "0.17.45",
+    "@colyseus/schema": "4.0.30",
+    "@colyseus/sdk": "0.17.43",
+    "@colyseus/ws-transport": "0.17.13",
+    "express": "5.2.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.6",
+    "@types/node": "26.1.2",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "0.185.1",
+    "@vitejs/plugin-react": "6.0.4",
+    "concurrently": "10.0.4",
+    "oxlint": "1.76.0",
+    "prettier": "3.9.6",
+    "tsx": "4.23.1",
+    "typescript": "7.0.2",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
+  }
+}

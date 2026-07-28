@@ -99,7 +99,7 @@ Do not:
 
 ## T0.2 — Establish the TypeScript workspace
 
-- [ ] Create the minimal package structure for client, server, shared logic, tests, and static assets.
+- [x] Create the minimal package structure for client, server, shared logic, tests, and static assets.
 
 Prerequisites: T0.1.
 
