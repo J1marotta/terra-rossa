@@ -180,7 +180,7 @@ Do not:
 
 ## T0.5 — Start the minimal Colyseus server
 
-- [ ] Create one versioned Colyseus room that accepts a browser connection and assigns a server identity.
+- [x] Create one versioned Colyseus room that accepts a browser connection and assigns a server identity.
 
 Prerequisites: T0.2 and T0.3.
 

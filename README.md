@@ -79,3 +79,11 @@ The server accepts these process variables:
 | `SERVICE_VERSION` | `dev` | Required deploy or commit identity. |
 
 Configuration parsers accept an explicit value source, so tests are isolated from each developer’s machine. Invalid hosted configuration fails at startup with the missing or malformed variable named in the error.
+
+### Minimal multiplayer server
+
+The versioned room name is `terra_rossa_v1`, and its protocol version is `0.1.0`. A client joins with that protocol version and an optional display name. The server sanitizes the name, assigns a UUID that is deliberately different from the transport session ID, and synchronizes the waiting room plus up to four connected players. A mismatched client receives an error naming both versions; a fifth client is rejected.
+
+The server exposes `GET /health` with service, release, environment, and protocol metadata. Requests carrying a browser origin are accepted only when that exact origin appears in `ALLOWED_ORIGINS`. Startup, room creation, joins, leaves, room disposal, and shutdown use one-line JSON logs so local and hosted events can be searched and correlated.
+
+There is no movement or gameplay in this room yet. The server owns identity and lifecycle only, creating the smallest trustworthy network boundary for the next slice.

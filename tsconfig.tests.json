@@ -10,6 +10,9 @@
     "client/src/config.ts",
     "client/src/vite-env.d.ts",
     "server/config.ts",
+    "server/index.ts",
+    "server/logger.ts",
+    "server/rooms/**/*.ts",
     "vitest.config.ts"
   ],
   "references": [{ "path": "./tsconfig.shared.json" }]

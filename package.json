@@ -30,6 +30,7 @@
     "three": "0.185.1"
   },
   "devDependencies": {
+    "@colyseus/testing": "0.17.11",
     "@types/express": "5.0.6",
     "@types/node": "26.1.2",
     "@types/react": "19.2.17",

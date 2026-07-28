@@ -488,6 +488,13 @@
             <p class="why"><strong>Why:</strong> environment bugs often survive a local demo and only appear after release. A production browser silently connecting to localhost is especially confusing, so the safest default is to stop early and explain what the deploy is missing.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">T0.5 / server identity</span>
+            <h3>The first authority is identity, not movement.</h3>
+            <p>A versioned Colyseus room now accepts four clients, cleans their display names, assigns server-owned UUIDs, publishes a tiny waiting-room schema, rejects incompatible protocols, and disposes itself when empty. Health and lifecycle events carry searchable release metadata.</p>
+            <p class="why"><strong>Why:</strong> identity is the smallest consequential fact worth protecting. Proving it before movement exposes room limits, schema compatibility, failed joins, and cleanup behavior without hiding those lessons beneath gameplay code. Current <code>schema()</code> definitions also replace the legacy metadata API that failed under the pinned TypeScript runtime.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>
