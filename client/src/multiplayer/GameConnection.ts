@@ -193,6 +193,7 @@ export class GameConnection {
   };
 
   sendReloadStart = () => this.#sendEmptyCommand('reload_start');
+  sendMelee = () => this.#sendEmptyCommand('melee');
 
   sendReloadAttempt = (clientElapsedMilliseconds: number) => {
     const room = this.#room;
@@ -209,7 +210,7 @@ export class GameConnection {
     return sequence;
   };
 
-  #sendEmptyCommand(type: 'reload_start') {
+  #sendEmptyCommand(type: 'reload_start' | 'melee') {
     const room = this.#room;
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;

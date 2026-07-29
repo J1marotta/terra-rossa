@@ -27,6 +27,11 @@ export interface PlayerView {
   readonly reloadAttempted: boolean;
   readonly reloadOutcome: string;
   readonly reloadEvent: number;
+  readonly meleeWindupTicksRemaining: number;
+  readonly meleeRecoveryTicksRemaining: number;
+  readonly meleeAngleRadians: number;
+  readonly meleeEvent: number;
+  readonly meleeTargetId: string;
 }
 
 export interface RoomView {

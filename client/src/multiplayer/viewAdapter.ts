@@ -34,6 +34,11 @@ export function adaptRoomState(
         reloadAttempted: player.reloadAttempted,
         reloadOutcome: player.reloadOutcome,
         reloadEvent: player.reloadEvent,
+        meleeWindupTicksRemaining: player.meleeWindupTicksRemaining,
+        meleeRecoveryTicksRemaining: player.meleeRecoveryTicksRemaining,
+        meleeAngleRadians: player.meleeAngleRadians,
+        meleeEvent: player.meleeEvent,
+        meleeTargetId: player.meleeTargetId,
       }),
     );
   });

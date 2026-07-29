@@ -32,6 +32,8 @@ export class GameScene {
   readonly #localPrediction = new LocalPrediction();
   readonly #lastDashEvent = new Map<string, number>();
   readonly #dashPulseUntil = new Map<string, number>();
+  readonly #lastMeleeEvent = new Map<string, number>();
+  readonly #meleePulseUntil = new Map<string, number>();
   readonly #reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   );
@@ -115,6 +117,8 @@ export class GameScene {
       if (!activeIds.has(id)) {
         this.#lastDashEvent.delete(id);
         this.#dashPulseUntil.delete(id);
+        this.#lastMeleeEvent.delete(id);
+        this.#meleePulseUntil.delete(id);
       }
     });
     players.forEach((player) => {
@@ -123,6 +127,11 @@ export class GameScene {
         this.#dashPulseUntil.set(player.id, receivedAt + 180);
       }
       this.#lastDashEvent.set(player.id, player.dashEvent);
+      const previousMelee = this.#lastMeleeEvent.get(player.id);
+      if (previousMelee !== undefined && player.meleeEvent > previousMelee) {
+        this.#meleePulseUntil.set(player.id, receivedAt + 180);
+      }
+      this.#lastMeleeEvent.set(player.id, player.meleeEvent);
     });
     const localPlayer = players.find((player) => player.isLocal);
     if (localPlayer === undefined) {
@@ -246,7 +255,13 @@ export class GameScene {
         }
       }
       const dashing = (this.#dashPulseUntil.get(entry.player.id) ?? 0) > time;
-      entry.object.scale.set(dashing ? 1.15 : 1, dashing ? 0.82 : 1, 1);
+      const melee = (this.#meleePulseUntil.get(entry.player.id) ?? 0) > time;
+      entry.object.scale.set(
+        dashing ? 1.15 : melee ? 1.25 : 1,
+        dashing ? 0.82 : melee ? 0.9 : 1,
+        1,
+      );
+      entry.object.rotation.y = melee ? -entry.player.meleeAngleRadians : 0;
     });
     this.#renderer.render(this.#scene, this.#camera);
     this.#animationFrame = requestAnimationFrame(this.#render);
@@ -261,6 +276,8 @@ export class GameScene {
     this.#players.disposeAll((group) => this.#removeDog(group));
     this.#lastDashEvent.clear();
     this.#dashPulseUntil.clear();
+    this.#lastMeleeEvent.clear();
+    this.#meleePulseUntil.clear();
     this.#scene.traverse((object) => {
       if (!(object instanceof Mesh)) return;
       object.geometry.dispose();

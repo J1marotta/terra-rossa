@@ -32,6 +32,11 @@ describe('room view adapter', () => {
     player.reloadAttempted = false;
     player.reloadOutcome = 'normal';
     player.reloadEvent = 1;
+    player.meleeWindupTicksRemaining = 2;
+    player.meleeRecoveryTicksRemaining = 0;
+    player.meleeAngleRadians = 1;
+    player.meleeEvent = 3;
+    player.meleeTargetId = 'player-a';
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
@@ -63,6 +68,11 @@ describe('room view adapter', () => {
         reloadAttempted: false,
         reloadOutcome: 'normal',
         reloadEvent: 1,
+        meleeWindupTicksRemaining: 2,
+        meleeRecoveryTicksRemaining: 0,
+        meleeAngleRadians: 1,
+        meleeEvent: 3,
+        meleeTargetId: 'player-a',
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

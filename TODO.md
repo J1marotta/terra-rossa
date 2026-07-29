@@ -517,7 +517,7 @@ Acceptance:
 
 ## T2.4 — Implement infinite melee
 
-- [ ] Add the server-validated fallback melee attack.
+- [x] Add the server-validated fallback melee attack.
 
 Prerequisites: T2.1 and T1.7.
 

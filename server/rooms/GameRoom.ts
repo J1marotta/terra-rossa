@@ -8,14 +8,16 @@ import {
   type GameCommand,
 } from '../../shared/commands';
 import { TERRA_ROSSA_MAP } from '../../shared/map';
-import { STARTING_PISTOL } from '../../shared/combat';
+import { SHARED_MELEE, STARTING_PISTOL } from '../../shared/combat';
 import { traceHitscan } from '../../shared/hitscan';
+import { selectMeleeTarget } from '../../shared/melee';
 import {
   FixedStepAccumulator,
   applyMovementInput,
   attemptDash,
   initializeMovementState,
   integratePlayerMovement,
+  applyPlayerDisplacement,
 } from '../../shared/movement';
 import {
   MAX_PLAYERS,
@@ -68,6 +70,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
             player.fireCooldownTicksRemaining -= 1;
           }
           advanceReload(player);
+          this.#advanceMelee(player);
         });
       });
     }, FIXED_STEP_MILLISECONDS);
@@ -111,6 +114,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.shotEndZ = player.z;
     player.shotTargetId = '';
     initializeReloadState(player);
+    player.meleeWindupTicksRemaining = 0;
+    player.meleeRecoveryTicksRemaining = 0;
+    player.meleeAngleRadians = 0;
+    player.meleeEvent = 0;
+    player.meleeTargetId = '';
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
@@ -184,6 +192,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         readonly clientElapsedMilliseconds: number;
       };
       attemptActiveReload(player, payload.clientElapsedMilliseconds);
+    } else if (command.type === 'melee') {
+      this.#attemptMelee(player);
     }
   }
 
@@ -221,5 +231,54 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.shotEndZ = hit.endZ;
     player.shotTargetId = hit.targetId ?? '';
     player.shotEvent += 1;
+  }
+
+  #attemptMelee(player: InstanceType<typeof PlayerState>) {
+    if (
+      player.reloadCompletionTick > 0 ||
+      player.meleeWindupTicksRemaining > 0 ||
+      player.meleeRecoveryTicksRemaining > 0
+    )
+      return;
+    player.meleeAngleRadians = player.aimAngleRadians;
+    player.meleeWindupTicksRemaining = millisecondsToTicks(
+      SHARED_MELEE.windupMilliseconds,
+    );
+  }
+
+  #advanceMelee(player: InstanceType<typeof PlayerState>) {
+    if (player.meleeWindupTicksRemaining > 0) {
+      player.meleeWindupTicksRemaining -= 1;
+      if (player.meleeWindupTicksRemaining === 0) this.#resolveMelee(player);
+    } else if (player.meleeRecoveryTicksRemaining > 0) {
+      player.meleeRecoveryTicksRemaining -= 1;
+    }
+  }
+
+  #resolveMelee(player: InstanceType<typeof PlayerState>) {
+    const target = selectMeleeTarget(
+      player,
+      [...this.state.players.values()]
+        .filter((candidate) => candidate.id !== player.id)
+        .map((candidate) => ({
+          id: candidate.id,
+          x: candidate.x,
+          z: candidate.z,
+          radius: candidate.collisionRadius,
+        })),
+    );
+    player.meleeTargetId = target?.id ?? '';
+    player.meleeEvent += 1;
+    player.meleeRecoveryTicksRemaining = millisecondsToTicks(
+      SHARED_MELEE.recoveryMilliseconds,
+    );
+    if (target === null) return;
+    const targetPlayer = this.state.players.get(target.id);
+    if (targetPlayer === undefined) return;
+    applyPlayerDisplacement(
+      targetPlayer,
+      Math.cos(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
+      Math.sin(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
+    );
   }
 }

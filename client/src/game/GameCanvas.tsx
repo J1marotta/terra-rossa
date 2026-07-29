@@ -13,6 +13,7 @@ interface GameCanvasProps {
   sendFire: () => number | null;
   sendReloadStart: () => number | null;
   sendReloadAttempt: (clientElapsedMilliseconds: number) => number | null;
+  sendMelee: () => number | null;
 }
 
 export function GameCanvas({
@@ -23,6 +24,7 @@ export function GameCanvas({
   sendFire,
   sendReloadStart,
   sendReloadAttempt,
+  sendMelee,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
@@ -63,17 +65,21 @@ export function GameCanvas({
       sendAim(angle);
     };
     const onPointerDown = (event: PointerEvent) => {
-      if (event.button !== 0) return;
-      sendFire();
+      if (event.button === 0) sendFire();
+      else if (event.button === 2) sendMelee();
+      else return;
       event.preventDefault();
     };
+    const onContextMenu = (event: MouseEvent) => event.preventDefault();
     container.addEventListener('pointermove', onPointerMove);
     container.addEventListener('pointerdown', onPointerDown);
+    container.addEventListener('contextmenu', onContextMenu);
     return () => {
       container.removeEventListener('pointermove', onPointerMove);
       container.removeEventListener('pointerdown', onPointerDown);
+      container.removeEventListener('contextmenu', onContextMenu);
     };
-  }, [sendAim, sendFire]);
+  }, [sendAim, sendFire, sendMelee]);
 
   useEffect(() => {
     const input = new ReloadInput(sendReloadStart, sendReloadAttempt);

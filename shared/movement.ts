@@ -140,6 +140,23 @@ export function integratePlayerMovement(
     : canWalk
       ? player.moveZ * scale * player.speed * seconds
       : 0;
+  applyPlayerDisplacement(player, deltaX, deltaZ, map);
+  if (dashing) {
+    player.dashTicksRemaining -= 1;
+    if (player.dashTicksRemaining === 0) {
+      player.dashRecoveryTicksRemaining = DASH_RECOVERY_TICKS;
+    }
+  } else if (recovering) {
+    player.dashRecoveryTicksRemaining -= 1;
+  }
+}
+
+export function applyPlayerDisplacement(
+  player: Pick<MovingPlayer, 'x' | 'z' | 'collisionRadius'>,
+  deltaX: number,
+  deltaZ: number,
+  map: AuthoredMap = TERRA_ROSSA_MAP,
+) {
   const minimumX = map.bounds.minX + player.collisionRadius;
   const maximumX = map.bounds.maxX - player.collisionRadius;
   const minimumZ = map.bounds.minZ + player.collisionRadius;
@@ -153,14 +170,6 @@ export function integratePlayerMovement(
   const nextZ = Math.max(minimumZ, Math.min(maximumZ, player.z + deltaZ));
   if (!collides(map, player.x, nextZ, player.collisionRadius)) {
     player.z = nextZ;
-  }
-  if (dashing) {
-    player.dashTicksRemaining -= 1;
-    if (player.dashTicksRemaining === 0) {
-      player.dashRecoveryTicksRemaining = DASH_RECOVERY_TICKS;
-    }
-  } else if (recovering) {
-    player.dashRecoveryTicksRemaining -= 1;
   }
 }
 

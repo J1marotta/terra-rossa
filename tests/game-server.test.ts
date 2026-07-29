@@ -303,6 +303,68 @@ describe.sequential('minimal game server', () => {
     await client.leave();
   });
 
+  it('resolves empty-gun melee after wind-up with knockback and recovery', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const attackerClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Brawler',
+    });
+    const targetClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Target',
+    });
+    const attacker = [...room.state.players.values()].find(
+      (player) => player.sessionId === attackerClient.sessionId,
+    );
+    const target = [...room.state.players.values()].find(
+      (player) => player.sessionId === targetClient.sessionId,
+    );
+    expect(attacker).toBeDefined();
+    expect(target).toBeDefined();
+    if (attacker === undefined || target === undefined) return;
+    attacker.x = -20;
+    attacker.z = -10;
+    attacker.aimAngleRadians = 0;
+    attacker.magazineAmmo = 0;
+    target.x = -18.5;
+    target.z = -10;
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'melee', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(attacker.meleeEvent).toBe(1);
+    expect(attacker.meleeTargetId).toBe(target.id);
+    expect(target.x).toBeGreaterThan(-18.5);
+    expect(attacker.meleeRecoveryTicksRemaining).toBeGreaterThan(0);
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'melee', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(attacker.meleeEvent).toBe(1);
+
+    attacker.meleeRecoveryTicksRemaining = 0;
+    attacker.magazineAmmo = 3;
+    attacker.reserveAmmo = 10;
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand(
+        { roomId: room.roomId, matchId: null },
+        3,
+        'reload_start',
+        {},
+      ),
+    );
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 4, 'melee', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(attacker.meleeEvent).toBe(1);
+    await Promise.all([attackerClient.leave(), targetClient.leave()]);
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;

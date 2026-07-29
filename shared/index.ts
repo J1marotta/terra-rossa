@@ -4,6 +4,7 @@ export * from './commands';
 export * from './coordinates';
 export * from './hitscan';
 export * from './map';
+export * from './melee';
 export * from './movement';
 export * from './numeric';
 export * from './protocol';

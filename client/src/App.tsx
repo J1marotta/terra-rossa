@@ -35,6 +35,7 @@ export function App() {
         sendFire={connection.sendFire}
         sendReloadStart={connection.sendReloadStart}
         sendReloadAttempt={connection.sendReloadAttempt}
+        sendMelee={connection.sendMelee}
       />
       <section className="title-panel">
         <p className="eyebrow">Terra Rossa</p>

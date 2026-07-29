@@ -46,6 +46,15 @@ export const STARTING_PISTOL = validateWeaponDefinition({
   },
 });
 
+export const SHARED_MELEE = Object.freeze({
+  damage: 30,
+  rangeMetres: 2.1,
+  arcRadians: (100 * Math.PI) / 180,
+  knockbackMetres: 1.25,
+  windupMilliseconds: 100,
+  recoveryMilliseconds: 450,
+});
+
 function requireFinitePositive(value: number, field: string) {
   if (!Number.isFinite(value) || value <= 0) {
     throw new Error(`${field} must be a finite number greater than zero`);

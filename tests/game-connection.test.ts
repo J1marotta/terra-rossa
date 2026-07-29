@@ -38,6 +38,11 @@ function createFakeRoom() {
   player.reloadAttempted = false;
   player.reloadOutcome = 'none';
   player.reloadEvent = 0;
+  player.meleeWindupTicksRemaining = 0;
+  player.meleeRecoveryTicksRemaining = 0;
+  player.meleeAngleRadians = 0;
+  player.meleeEvent = 0;
+  player.meleeTargetId = '';
   state.players.set(player.id, player);
 
   let stateListener: ((state: GameRoomStateInstance) => void) | undefined;
@@ -109,6 +114,11 @@ describe('game connection', () => {
       reloadAttempted: false,
       reloadOutcome: 'none',
       reloadEvent: 0,
+      meleeWindupTicksRemaining: 0,
+      meleeRecoveryTicksRemaining: 0,
+      meleeAngleRadians: 0,
+      meleeEvent: 0,
+      meleeTargetId: '',
     });
 
     connection.disconnect();
@@ -132,14 +142,15 @@ describe('game connection', () => {
     expect(connection.sendFire()).toBe(4);
     expect(connection.sendReloadStart()).toBe(5);
     expect(connection.sendReloadAttempt(1_000)).toBe(6);
-    expect(fake.room.send).toHaveBeenCalledTimes(7);
+    expect(connection.sendMelee()).toBe(7);
+    expect(fake.room.send).toHaveBeenCalledTimes(8);
     expect(fake.room.send).toHaveBeenLastCalledWith(
       'command',
       expect.objectContaining({
         roomId: 'room-test',
-        sequence: 6,
-        type: 'reload_attempt',
-        payload: { clientElapsedMilliseconds: 1_000 },
+        sequence: 7,
+        type: 'melee',
+        payload: {},
       }),
     );
     expect(fake.room.send).not.toHaveBeenCalledWith(
