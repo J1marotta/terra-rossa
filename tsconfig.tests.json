@@ -15,6 +15,7 @@
     "server/index.ts",
     "server/logger.ts",
     "server/rooms/**/*.ts",
+    "server/simulation/**/*.ts",
     "vitest.config.ts"
   ],
   "references": [{ "path": "./tsconfig.shared.json" }]

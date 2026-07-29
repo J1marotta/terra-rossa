@@ -348,7 +348,7 @@ Acceptance:
 
 ## T1.4 — Implement authoritative player movement
 
-- [ ] Process movement intent in the Colyseus simulation.
+- [x] Process movement intent in the Colyseus simulation.
 
 Prerequisites: T1.2 and T1.3.
 

@@ -7,6 +7,13 @@ export const PlayerState = schema(
     id: 'string',
     sessionId: 'string',
     displayName: 'string',
+    x: 'float32',
+    z: 'float32',
+    moveX: 'float32',
+    moveZ: 'float32',
+    speed: 'float32',
+    collisionRadius: 'float32',
+    lastProcessedSequence: 'int64',
   },
   'PlayerState',
 );

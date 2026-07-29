@@ -6,6 +6,7 @@ import { resolveServerConfig } from '../server/config';
 import { createGameServer } from '../server/index';
 import type { GameLogger, LogFields } from '../server/logger';
 import type { GameRoom } from '../server/rooms/GameRoom';
+import { COMMAND_MESSAGE } from '../server/rooms/GameRoom';
 
 describe.sequential('minimal game server', () => {
   const events: Array<{ event: string; fields: LogFields | undefined }> = [];
@@ -88,6 +89,44 @@ describe.sequential('minimal game server', () => {
     await Promise.all(clients.map((client) => client.leave()));
   });
 
+  it('applies ordered movement commands and synchronizes acknowledgement', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const initialPatch = room.waitForNextPatch();
+    const client = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Mover',
+    });
+    await initialPatch;
+    const local = () =>
+      Array.from(client.state.players.values()).find(
+        (player) => player.sessionId === client.sessionId,
+      );
+    const startX = local()?.x;
+    expect(startX).toBeTypeOf('number');
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'move', {
+        x: 1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(local()?.x).toBeGreaterThan(startX ?? Number.POSITIVE_INFINITY);
+    expect(local()?.lastProcessedSequence).toBe(1);
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'move', {
+        x: -1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(local()?.moveX).toBe(1);
+    expect(local()?.lastProcessedSequence).toBe(1);
+    await client.leave();
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;
@@ -109,3 +148,4 @@ describe.sequential('minimal game server', () => {
     );
   });
 });
+import { createCommand } from '../shared/commands';

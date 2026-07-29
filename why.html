@@ -544,6 +544,13 @@
             <p class="why"><strong>Why:</strong> a handcrafted arena lets early playtests ask whether routes and information are interesting instead of whether a generator happened to be kind. Blocking every initial sightline prevents a loading-screen death, while paired paths preserve agency. Keeping decorative geometry derived from collision data gives the client character without letting an invisible server wall drift away from what players see.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical gameplay">
+            <span class="tag">T1.4 / server movement</span>
+            <h3>The room moves every dog.</h3>
+            <p>Players supply a normalized direction; the server owns position, six-metre-per-second speed, collision radius, fixed-step integration, map bounds, obstacle response, and sequence acknowledgement. Thirty simulation steps occur per second no matter how Node timer callbacks are partitioned.</p>
+            <p class="why"><strong>Why:</strong> accepting a client position would make speed limits and walls suggestions. Keeping only input on the wire lets one deterministic simulation decide where every dog can be. Axis-separated circle collision is intentionally modest: it supports sliding and the authored boxes without introducing a physics engine before combat proves one is needed.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

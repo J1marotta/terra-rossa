@@ -15,15 +15,15 @@ Audited for task T0.1 on 28 July 2026.
 
 ### Existing file ownership
 
-| Path | Kind | Decision |
-| --- | --- | --- |
-| `AGENTS.md`, `spec.md`, `TODO.md`, `why.html` | Tracked project documentation | Maintain as the active instructions, specification, roadmap, and decision journal. |
-| `TODOS.md`, `solo-spec.md` | Tracked historical documentation | Preserve for context; do not implement unless explicitly restored. |
+| Path                                            | Kind                                                      | Decision                                                                                                  |
+| ----------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `AGENTS.md`, `spec.md`, `TODO.md`, `why.html`   | Tracked project documentation                             | Maintain as the active instructions, specification, roadmap, and decision journal.                        |
+| `TODOS.md`, `solo-spec.md`                      | Tracked historical documentation                          | Preserve for context; do not implement unless explicitly restored.                                        |
 | `.editorconfig`, `.gitattributes`, `.gitignore` | Untracked repository configuration from the Godot starter | Leave untouched until the web workspace task deliberately reconciles and tracks repository configuration. |
-| `project.godot`, `node_2d.tscn`, `icon.svg` | Untracked Godot source assets | Retain temporarily and do not overwrite, move, or delete. They are not part of the active web build. |
-| `icon.svg.import` | Untracked Godot-generated import metadata | Leave untouched with the starter; do not treat it as web source. |
-| `.godot/` | Ignored Godot editor and import cache | Generated output. Keep ignored and never commit it. |
-| `terra-rossa/.codex-remote-attachments/` | Untracked conversation attachments | User-owned inputs. Do not use as the application root or commit without an explicit asset decision. |
+| `project.godot`, `node_2d.tscn`, `icon.svg`     | Untracked Godot source assets                             | Retain temporarily and do not overwrite, move, or delete. They are not part of the active web build.      |
+| `icon.svg.import`                               | Untracked Godot-generated import metadata                 | Leave untouched with the starter; do not treat it as web source.                                          |
+| `.godot/`                                       | Ignored Godot editor and import cache                     | Generated output. Keep ignored and never commit it.                                                       |
+| `terra-rossa/.codex-remote-attachments/`        | Untracked conversation attachments                        | User-owned inputs. Do not use as the application root or commit without an explicit asset decision.       |
 
 Tracked files are the current repository source of truth. Untracked files listed above remain user-owned even when a later task creates adjacent web files.
 
@@ -46,18 +46,18 @@ Use Node.js 24.14.x and pnpm 10.15.1. The Node policy is pinned in `.node-versio
 
 ### Local commands
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm install --frozen-lockfile` | Reproduce the locked dependency tree. |
-| `pnpm dev` | Start the Vite client. |
-| `pnpm dev:server` | Start the server in watch mode. |
-| `pnpm dev:all` | Run client and server together. |
-| `pnpm start:server` | Start the server once. |
-| `pnpm typecheck` | Check every strict TypeScript project. |
-| `pnpm lint` | Check source lint and formatting rules. |
-| `pnpm test` | Run the Vitest suite, including import-boundary checks. |
-| `pnpm build:client` | Produce the browser bundle in `dist/client`. |
-| `pnpm build` | Type-check and build the browser bundle. |
+| Command                          | Purpose                                                 |
+| -------------------------------- | ------------------------------------------------------- |
+| `pnpm install --frozen-lockfile` | Reproduce the locked dependency tree.                   |
+| `pnpm dev`                       | Start the Vite client.                                  |
+| `pnpm dev:server`                | Start the server in watch mode.                         |
+| `pnpm dev:all`                   | Run client and server together.                         |
+| `pnpm start:server`              | Start the server once.                                  |
+| `pnpm typecheck`                 | Check every strict TypeScript project.                  |
+| `pnpm lint`                      | Check source lint and formatting rules.                 |
+| `pnpm test`                      | Run the Vitest suite, including import-boundary checks. |
+| `pnpm build:client`              | Produce the browser bundle in `dist/client`.            |
+| `pnpm build`                     | Type-check and build the browser bundle.                |
 
 The workspace intentionally has no gameplay, database, authentication, CSS framework, state framework, or physics engine yet.
 
@@ -69,14 +69,14 @@ The client reads only `VITE_COLYSEUS_URL`. A `staging` or `production` client re
 
 The server accepts these process variables:
 
-| Variable | Local default | Hosted rule |
-| --- | --- | --- |
-| `APP_ENV` | `development` | Use `staging` or `production`. |
-| `HOST` | `127.0.0.1` | Set the interface required by the host, commonly `0.0.0.0`. |
-| `PORT` | `2567` | Must be an integer from 1 to 65535. |
-| `ALLOWED_ORIGINS` | `http://localhost:5173` | Required comma-separated HTTP(S) origins. |
-| `SERVICE_NAME` | `terra-rossa-server` | Required health-check identity. |
-| `SERVICE_VERSION` | `dev` | Required deploy or commit identity. |
+| Variable          | Local default           | Hosted rule                                                 |
+| ----------------- | ----------------------- | ----------------------------------------------------------- |
+| `APP_ENV`         | `development`           | Use `staging` or `production`.                              |
+| `HOST`            | `127.0.0.1`             | Set the interface required by the host, commonly `0.0.0.0`. |
+| `PORT`            | `2567`                  | Must be an integer from 1 to 65535.                         |
+| `ALLOWED_ORIGINS` | `http://localhost:5173` | Required comma-separated HTTP(S) origins.                   |
+| `SERVICE_NAME`    | `terra-rossa-server`    | Required health-check identity.                             |
+| `SERVICE_VERSION` | `dev`                   | Required deploy or commit identity.                         |
 
 Configuration parsers accept an explicit value source, so tests are isolated from each developer’s machine. Invalid hosted configuration fails at startup with the missing or malformed variable named in the error.
 
@@ -140,3 +140,11 @@ The parser rejects unknown or extra fields, unsafe IDs, invalid numbers, diagona
 `red_hollow_v1` is a fixed 60-by-44-metre collision map loaded directly from `shared/map.ts`. Northwest, northeast, southeast, and southwest spawn regions sit around the perimeter. Short screening ruins block all six opening spawn-to-spawn sightlines; each spawn has two authored, collision-free waypoint routes into a 20-by-16-metre central conflict area with three cover structures and entries from every side.
 
 The authoritative map contains only bounds, spawn data, routes, and axis-aligned collision boxes. Three.js derives its ground and all obstacle meshes from those records, adding a decorative cap per box without creating a second hand-authored layout. Tests validate IDs, bounds, cover, route reachability, segment collision, and sightlines deterministically at build time; no runtime map editor or procedural geometry is involved.
+
+## Authoritative movement
+
+Each synchronized player now owns position, movement input, speed, collision radius, and last processed command sequence. The room validates a movement envelope against its room identity and per-client order, acknowledges the accepted sequence in schema state, and advances all players at exactly 30 fixed steps per second. A late or duplicate command receives a protocol error and cannot replace current input.
+
+Movement is capped at six metres per second with a 0.55-metre collision circle. Axis-separated circle-versus-box resolution blocks Red Hollow’s simple collision obstacles while allowing wall sliding, and map bounds include the full player radius. The integrator normalizes input defensively even after protocol validation. A millisecond accumulator produces the same number of fixed steps regardless of callback partitioning, separating simulation results from Node timer or browser frame cadence.
+
+Until the dedicated spawn-allocation task, join order assigns the four authored regions cyclically. This is only a visible movement-testing baseline; it does not claim the later maximally separated allocation rule.
