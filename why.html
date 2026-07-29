@@ -1310,6 +1310,31 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T3.7 / four-client harness</span>
+              <h3>The whole round is now one repeatable test.</h3>
+              <p>
+                Four real SDK clients create and join one private room, assert
+                their distinct hidden-state perspectives, ready, traverse the
+                authored routes, reveal opponents, fight to a shared winner,
+                rematch, leave, and repeat. A seed plus optional latency and
+                jitter make the same run reproducible locally or over hosted
+                WSS.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> isolated mechanic tests cannot prove that
+                room locks, match IDs, visibility views, combat, victory, and
+                rematch compose correctly. Driving only public client commands
+                keeps this gate honest. It immediately found eliminated bodies
+                still participating in later attack traces, so dead dogs are now
+                excluded before firearm and melee targeting rather than becoming
+                invisible shields.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

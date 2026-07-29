@@ -192,3 +192,11 @@ Gunfire does not grant an additional exact-position reveal in this slice. Existi
 Disconnecting during countdown or play is an immediate forfeit. The server removes that session's input authority, stops every active movement and combat timer, marks the dog disconnected and eliminated, increments public disconnect and elimination events, and reevaluates last-dog-standing immediately. There is deliberately no reconnect grace period in the short friend-game MVP.
 
 The forfeited record remains through the result screen so survivors can understand what happened. Host ownership transfers to a connected player. When that host requests a rematch, disconnected records are removed before the remaining dogs return to a clean lobby; a lobby departure continues to remove the player immediately and clear readiness. Empty rooms still follow normal Colyseus disposal.
+
+## Four-client match harness
+
+Run `pnpm smoke:match` with `COLYSEUS_URL` set to a local `ws://` or hosted `wss://` endpoint. The harness creates one private room, joins exactly three friends by room ID, verifies that all four public rosters contain only the observing client's exact coordinates, readies every dog, waits through the authoritative countdown, and navigates the authored spawn routes.
+
+One deterministic hunter then uses ordinary movement, aim, fire, and reload commands until last-dog-standing. The harness requires opponent reveal transitions and real combat events, compares the public winner on every client, sends the host rematch command, verifies clean restored lobby state, leaves every connection, and repeats in a fresh room. `MATCH_HARNESS_REPEATS`, `MATCH_HARNESS_SEED`, `MATCH_HARNESS_LATENCY_MS`, and `MATCH_HARNESS_JITTER_MS` make cleanup and adverse-network runs repeatable. It emits one structured JSON result for CI or hosted evidence.
+
+While building this gate, completed bodies were found to remain in firearm and melee target candidate lists. The server now excludes eliminated dogs before tracing either attack, preventing an invisible corpse from shielding a living opponent.

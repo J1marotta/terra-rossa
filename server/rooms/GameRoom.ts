@@ -410,7 +410,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     }
     player.magazineAmmo -= 1;
     const targets = [...this.state.players.values()]
-      .filter((candidate) => candidate.id !== player.id)
+      .filter((candidate) => candidate.id !== player.id && candidate.alive)
       .map((candidate) => ({
         id: candidate.id,
         x: candidate.x,
@@ -465,7 +465,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     const target = selectMeleeTarget(
       player,
       [...this.state.players.values()]
-        .filter((candidate) => candidate.id !== player.id)
+        .filter((candidate) => candidate.id !== player.id && candidate.alive)
         .map((candidate) => ({
           id: candidate.id,
           x: candidate.x,

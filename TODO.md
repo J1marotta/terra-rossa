@@ -735,7 +735,7 @@ Acceptance:
 
 ## T3.7 — Complete the four-client integration harness
 
-- [ ] Automate complete free-for-all room scenarios without creatures.
+- [x] Automate complete free-for-all room scenarios without creatures.
 
 Prerequisites: T3.1 through T3.6.
 
