@@ -450,7 +450,7 @@ Goal: make firing, active reload, melee, health, and death satisfying before bui
 
 ## T2.1 — Define combat data and damage flow
 
-- [ ] Establish data-driven weapon and damage definitions without implementing the full weapon set.
+- [x] Establish data-driven weapon and damage definitions without implementing the full weapon set.
 
 Prerequisites: Phase 1 gate.
 

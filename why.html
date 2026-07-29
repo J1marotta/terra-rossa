@@ -1,776 +1,1416 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="An interactive decision journal explaining how Terra Rossa is being designed and built.">
-  <title>Why Terra Rossa?</title>
-  <style>
-    :root {
-      --ink: #f5ead5;
-      --muted: #c8b89d;
-      --night: #100f17;
-      --night-2: #191522;
-      --earth: #a83e27;
-      --ember: #f0783c;
-      --moon: #d9e7dc;
-      --moss: #688d63;
-      --line: rgba(245, 234, 213, 0.14);
-      --card: rgba(28, 23, 34, 0.78);
-      --shadow: 0 22px 70px rgba(0, 0, 0, 0.36);
-    }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="An interactive decision journal explaining how Terra Rossa is being designed and built."
+    />
+    <title>Why Terra Rossa?</title>
+    <style>
+      :root {
+        --ink: #f5ead5;
+        --muted: #c8b89d;
+        --night: #100f17;
+        --night-2: #191522;
+        --earth: #a83e27;
+        --ember: #f0783c;
+        --moon: #d9e7dc;
+        --moss: #688d63;
+        --line: rgba(245, 234, 213, 0.14);
+        --card: rgba(28, 23, 34, 0.78);
+        --shadow: 0 22px 70px rgba(0, 0, 0, 0.36);
+      }
 
-    * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
 
-    html {
-      color-scheme: dark;
-      scroll-behavior: smooth;
-    }
+      html {
+        color-scheme: dark;
+        scroll-behavior: smooth;
+      }
 
-    body {
-      margin: 0;
-      color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 73% 5%, rgba(217, 231, 220, 0.11), transparent 23rem),
-        radial-gradient(circle at 18% 35%, rgba(168, 62, 39, 0.2), transparent 30rem),
-        linear-gradient(150deg, var(--night), #0c0b11 68%);
-      min-height: 100vh;
-    }
+      body {
+        margin: 0;
+        color: var(--ink);
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        background:
+          radial-gradient(
+            circle at 73% 5%,
+            rgba(217, 231, 220, 0.11),
+            transparent 23rem
+          ),
+          radial-gradient(
+            circle at 18% 35%,
+            rgba(168, 62, 39, 0.2),
+            transparent 30rem
+          ),
+          linear-gradient(150deg, var(--night), #0c0b11 68%);
+        min-height: 100vh;
+      }
 
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: 0.35;
-      background-image: repeating-linear-gradient(117deg, transparent 0 31px, rgba(255,255,255,.018) 32px);
-      mask-image: linear-gradient(to bottom, black, transparent 78%);
-    }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.35;
+        background-image: repeating-linear-gradient(
+          117deg,
+          transparent 0 31px,
+          rgba(255, 255, 255, 0.018) 32px
+        );
+        mask-image: linear-gradient(to bottom, black, transparent 78%);
+      }
 
-    a { color: inherit; }
-    button, input { font: inherit; }
+      a {
+        color: inherit;
+      }
+      button,
+      input {
+        font: inherit;
+      }
 
-    .shell {
-      width: min(1160px, calc(100% - 32px));
-      margin: 0 auto;
-    }
+      .shell {
+        width: min(1160px, calc(100% - 32px));
+        margin: 0 auto;
+      }
 
-    .hero {
-      min-height: 94vh;
-      display: grid;
-      align-items: end;
-      padding: 80px 0 64px;
-      position: relative;
-      overflow: clip;
-    }
+      .hero {
+        min-height: 94vh;
+        display: grid;
+        align-items: end;
+        padding: 80px 0 64px;
+        position: relative;
+        overflow: clip;
+      }
 
-    .moon {
-      position: absolute;
-      width: clamp(180px, 25vw, 370px);
-      aspect-ratio: 1;
-      border-radius: 50%;
-      right: 6vw;
-      top: 8vh;
-      background: radial-gradient(circle at 37% 35%, #f8fff9, var(--moon) 43%, #8fa49d 76%);
-      box-shadow: 0 0 90px rgba(217,231,220,.18);
-      opacity: .86;
-    }
+      .moon {
+        position: absolute;
+        width: clamp(180px, 25vw, 370px);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        right: 6vw;
+        top: 8vh;
+        background: radial-gradient(
+          circle at 37% 35%,
+          #f8fff9,
+          var(--moon) 43%,
+          #8fa49d 76%
+        );
+        box-shadow: 0 0 90px rgba(217, 231, 220, 0.18);
+        opacity: 0.86;
+      }
 
-    .moon::after {
-      content: "";
-      position: absolute;
-      width: 35%;
-      aspect-ratio: 1.25;
-      border-radius: 50%;
-      background: rgba(57, 70, 68, .19);
-      left: 18%;
-      top: 52%;
-      transform: rotate(-18deg);
-      box-shadow: 85px -73px 0 -16px rgba(57,70,68,.12), 130px 21px 0 -25px rgba(57,70,68,.16);
-    }
+      .moon::after {
+        content: '';
+        position: absolute;
+        width: 35%;
+        aspect-ratio: 1.25;
+        border-radius: 50%;
+        background: rgba(57, 70, 68, 0.19);
+        left: 18%;
+        top: 52%;
+        transform: rotate(-18deg);
+        box-shadow:
+          85px -73px 0 -16px rgba(57, 70, 68, 0.12),
+          130px 21px 0 -25px rgba(57, 70, 68, 0.16);
+      }
 
-    .eyebrow {
-      color: var(--ember);
-      font-size: .74rem;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      font-weight: 800;
-    }
+      .eyebrow {
+        color: var(--ember);
+        font-size: 0.74rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        font-weight: 800;
+      }
 
-    h1, h2, h3 {
-      font-family: Georgia, "Times New Roman", serif;
-      font-weight: 500;
-      line-height: .98;
-      margin: 0;
-    }
+      h1,
+      h2,
+      h3 {
+        font-family: Georgia, 'Times New Roman', serif;
+        font-weight: 500;
+        line-height: 0.98;
+        margin: 0;
+      }
 
-    h1 {
-      max-width: 870px;
-      font-size: clamp(4.4rem, 13vw, 10.5rem);
-      letter-spacing: -.065em;
-      text-wrap: balance;
-      position: relative;
-    }
+      h1 {
+        max-width: 870px;
+        font-size: clamp(4.4rem, 13vw, 10.5rem);
+        letter-spacing: -0.065em;
+        text-wrap: balance;
+        position: relative;
+      }
 
-    h1 em {
-      color: var(--ember);
-      font-weight: 500;
-    }
+      h1 em {
+        color: var(--ember);
+        font-weight: 500;
+      }
 
-    .lede {
-      max-width: 680px;
-      margin: 28px 0 0;
-      color: var(--muted);
-      font-size: clamp(1.05rem, 2vw, 1.4rem);
-      line-height: 1.55;
-    }
+      .lede {
+        max-width: 680px;
+        margin: 28px 0 0;
+        color: var(--muted);
+        font-size: clamp(1.05rem, 2vw, 1.4rem);
+        line-height: 1.55;
+      }
 
-    .hero-actions {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 32px;
-    }
+      .hero-actions {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 32px;
+      }
 
-    .button {
-      border: 1px solid var(--line);
-      background: var(--ink);
-      color: #21141a;
-      padding: 12px 17px;
-      border-radius: 999px;
-      text-decoration: none;
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform .2s ease, background .2s ease;
-    }
+      .button {
+        border: 1px solid var(--line);
+        background: var(--ink);
+        color: #21141a;
+        padding: 12px 17px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 800;
+        cursor: pointer;
+        transition:
+          transform 0.2s ease,
+          background 0.2s ease;
+      }
 
-    .button:hover { transform: translateY(-2px); }
-    .button.secondary { background: transparent; color: var(--ink); }
+      .button:hover {
+        transform: translateY(-2px);
+      }
+      .button.secondary {
+        background: transparent;
+        color: var(--ink);
+      }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      margin: 0 0 96px;
-      background: var(--line);
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-    }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        margin: 0 0 96px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
 
-    .stat {
-      background: rgba(16,15,23,.94);
-      padding: 25px;
-    }
+      .stat {
+        background: rgba(16, 15, 23, 0.94);
+        padding: 25px;
+      }
 
-    .stat strong {
-      display: block;
-      font-family: Georgia, serif;
-      color: var(--ember);
-      font-size: 2.15rem;
-      font-weight: 500;
-    }
+      .stat strong {
+        display: block;
+        font-family: Georgia, serif;
+        color: var(--ember);
+        font-size: 2.15rem;
+        font-weight: 500;
+      }
 
-    .stat span { color: var(--muted); font-size: .9rem; }
+      .stat span {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
 
-    .section {
-      padding: 78px 0;
-      border-top: 1px solid var(--line);
-    }
+      .section {
+        padding: 78px 0;
+        border-top: 1px solid var(--line);
+      }
 
-    .section-head {
-      display: grid;
-      grid-template-columns: .7fr 1.3fr;
-      gap: 36px;
-      margin-bottom: 38px;
-    }
+      .section-head {
+        display: grid;
+        grid-template-columns: 0.7fr 1.3fr;
+        gap: 36px;
+        margin-bottom: 38px;
+      }
 
-    h2 {
-      font-size: clamp(2.5rem, 7vw, 5.4rem);
-      letter-spacing: -.045em;
-    }
+      h2 {
+        font-size: clamp(2.5rem, 7vw, 5.4rem);
+        letter-spacing: -0.045em;
+      }
 
-    .section-intro {
-      color: var(--muted);
-      font-size: 1.08rem;
-      line-height: 1.7;
-      max-width: 660px;
-      align-self: end;
-    }
+      .section-intro {
+        color: var(--muted);
+        font-size: 1.08rem;
+        line-height: 1.7;
+        max-width: 660px;
+        align-self: end;
+      }
 
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 22px;
-    }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
 
-    .filter {
-      border: 1px solid var(--line);
-      background: transparent;
-      color: var(--muted);
-      padding: 9px 13px;
-      border-radius: 999px;
-      cursor: pointer;
-    }
+      .filter {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--muted);
+        padding: 9px 13px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
 
-    .filter[aria-pressed="true"] {
-      background: var(--earth);
-      color: white;
-      border-color: transparent;
-    }
+      .filter[aria-pressed='true'] {
+        background: var(--earth);
+        color: white;
+        border-color: transparent;
+      }
 
-    .decisions {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap: 14px;
-    }
+      .decisions {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+      }
 
-    .decision {
-      grid-column: span 6;
-      min-height: 250px;
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 24px;
-      background:
-        linear-gradient(140deg, rgba(255,255,255,.035), transparent 45%),
-        var(--card);
-      box-shadow: var(--shadow);
-      transition: transform .25s ease, border-color .25s ease, opacity .2s ease;
-    }
+      .decision {
+        grid-column: span 6;
+        min-height: 250px;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 24px;
+        background:
+          linear-gradient(140deg, rgba(255, 255, 255, 0.035), transparent 45%),
+          var(--card);
+        box-shadow: var(--shadow);
+        transition:
+          transform 0.25s ease,
+          border-color 0.25s ease,
+          opacity 0.2s ease;
+      }
 
-    .decision:hover {
-      transform: translateY(-4px);
-      border-color: rgba(240,120,60,.5);
-    }
+      .decision:hover {
+        transform: translateY(-4px);
+        border-color: rgba(240, 120, 60, 0.5);
+      }
 
-    .decision[hidden] { display: none; }
+      .decision[hidden] {
+        display: none;
+      }
 
-    .decision.archived {
-      border-style: dashed;
-      opacity: .72;
-    }
+      .decision.archived {
+        border-style: dashed;
+        opacity: 0.72;
+      }
 
-    .decision.archived:hover { opacity: 1; }
+      .decision.archived:hover {
+        opacity: 1;
+      }
 
-    .tag {
-      display: inline-block;
-      color: var(--ember);
-      font-size: .7rem;
-      letter-spacing: .16em;
-      text-transform: uppercase;
-      font-weight: 800;
-      margin-bottom: 27px;
-    }
+      .tag {
+        display: inline-block;
+        color: var(--ember);
+        font-size: 0.7rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-bottom: 27px;
+      }
 
-    h3 {
-      font-size: clamp(1.65rem, 3.3vw, 2.7rem);
-      letter-spacing: -.025em;
-    }
+      h3 {
+        font-size: clamp(1.65rem, 3.3vw, 2.7rem);
+        letter-spacing: -0.025em;
+      }
 
-    .decision p {
-      color: var(--muted);
-      line-height: 1.62;
-      margin: 16px 0 0;
-    }
+      .decision p {
+        color: var(--muted);
+        line-height: 1.62;
+        margin: 16px 0 0;
+      }
 
-    .decision .why {
-      color: var(--ink);
-      border-left: 2px solid var(--earth);
-      padding-left: 14px;
-    }
+      .decision .why {
+        color: var(--ink);
+        border-left: 2px solid var(--earth);
+        padding-left: 14px;
+      }
 
-    .loop {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-      counter-reset: loop;
-    }
+      .loop {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+        counter-reset: loop;
+      }
 
-    .loop article {
-      counter-increment: loop;
-      border-top: 2px solid var(--earth);
-      padding: 18px 10px 0 0;
-    }
+      .loop article {
+        counter-increment: loop;
+        border-top: 2px solid var(--earth);
+        padding: 18px 10px 0 0;
+      }
 
-    .loop article::before {
-      content: "0" counter(loop);
-      display: block;
-      color: var(--ember);
-      font-family: Georgia, serif;
-      font-size: 2.2rem;
-      margin-bottom: 30px;
-    }
+      .loop article::before {
+        content: '0' counter(loop);
+        display: block;
+        color: var(--ember);
+        font-family: Georgia, serif;
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+      }
 
-    .loop h3 { font-size: 1.45rem; }
-    .loop p { color: var(--muted); line-height: 1.5; font-size: .92rem; }
+      .loop h3 {
+        font-size: 1.45rem;
+      }
+      .loop p {
+        color: var(--muted);
+        line-height: 1.5;
+        font-size: 0.92rem;
+      }
 
-    .principle {
-      margin: 56px 0 0;
-      padding: clamp(28px, 6vw, 70px);
-      border-radius: 30px;
-      background: var(--earth);
-      position: relative;
-      overflow: hidden;
-    }
+      .principle {
+        margin: 56px 0 0;
+        padding: clamp(28px, 6vw, 70px);
+        border-radius: 30px;
+        background: var(--earth);
+        position: relative;
+        overflow: hidden;
+      }
 
-    .principle::after {
-      content: "WHY?";
-      position: absolute;
-      right: -3vw;
-      bottom: -5vw;
-      font: 900 clamp(6rem, 20vw, 17rem)/1 sans-serif;
-      color: rgba(255,255,255,.07);
-      pointer-events: none;
-    }
+      .principle::after {
+        content: 'WHY?';
+        position: absolute;
+        right: -3vw;
+        bottom: -5vw;
+        font: 900 clamp(6rem, 20vw, 17rem)/1 sans-serif;
+        color: rgba(255, 255, 255, 0.07);
+        pointer-events: none;
+      }
 
-    .principle blockquote {
-      max-width: 850px;
-      margin: 0;
-      font: 500 clamp(2rem, 5vw, 4.4rem)/1.08 Georgia, serif;
-      letter-spacing: -.035em;
-      position: relative;
-    }
+      .principle blockquote {
+        max-width: 850px;
+        margin: 0;
+        font:
+          500 clamp(2rem, 5vw, 4.4rem)/1.08 Georgia,
+          serif;
+        letter-spacing: -0.035em;
+        position: relative;
+      }
 
-    .open-list {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--line);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      overflow: hidden;
-    }
+      .open-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--line);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        overflow: hidden;
+      }
 
-    .open-list div {
-      background: var(--night-2);
-      padding: 18px 20px;
-      color: var(--muted);
-    }
+      .open-list div {
+        background: var(--night-2);
+        padding: 18px 20px;
+        color: var(--muted);
+      }
 
-    .open-list strong { color: var(--ink); }
+      .open-list strong {
+        color: var(--ink);
+      }
 
-    footer {
-      padding: 55px 0 75px;
-      color: var(--muted);
-      display: flex;
-      justify-content: space-between;
-      gap: 24px;
-      border-top: 1px solid var(--line);
-    }
+      footer {
+        padding: 55px 0 75px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        border-top: 1px solid var(--line);
+      }
 
-    .reveal {
-      opacity: 0;
-      transform: translateY(18px);
-      transition: opacity .6s ease, transform .6s ease;
-    }
+      .reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition:
+          opacity 0.6s ease,
+          transform 0.6s ease;
+      }
 
-    .reveal.visible {
-      opacity: 1;
-      transform: none;
-    }
+      .reveal.visible {
+        opacity: 1;
+        transform: none;
+      }
 
-    @media (max-width: 760px) {
-      .hero { min-height: 84vh; }
-      .moon { right: -70px; top: 50px; opacity: .55; }
-      .stats { grid-template-columns: 1fr 1fr; }
-      .section-head { grid-template-columns: 1fr; }
-      .decision { grid-column: 1 / -1; min-height: auto; }
-      .loop { grid-template-columns: 1fr; }
-      .loop article { display: grid; grid-template-columns: 54px 1fr; column-gap: 14px; }
-      .loop article::before { grid-row: span 2; margin: 0; }
-      .loop p { margin-top: 7px; }
-      .open-list { grid-template-columns: 1fr; }
-      footer { flex-direction: column; }
-    }
+      @media (max-width: 760px) {
+        .hero {
+          min-height: 84vh;
+        }
+        .moon {
+          right: -70px;
+          top: 50px;
+          opacity: 0.55;
+        }
+        .stats {
+          grid-template-columns: 1fr 1fr;
+        }
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+        .decision {
+          grid-column: 1 / -1;
+          min-height: auto;
+        }
+        .loop {
+          grid-template-columns: 1fr;
+        }
+        .loop article {
+          display: grid;
+          grid-template-columns: 54px 1fr;
+          column-gap: 14px;
+        }
+        .loop article::before {
+          grid-row: span 2;
+          margin: 0;
+        }
+        .loop p {
+          margin-top: 7px;
+        }
+        .open-list {
+          grid-template-columns: 1fr;
+        }
+        footer {
+          flex-direction: column;
+        }
+      }
 
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      *, *::before, *::after { transition: none !important; }
-      .reveal { opacity: 1; transform: none; }
-    }
-  </style>
-</head>
-<body>
-  <header class="hero">
-    <div class="moon" aria-hidden="true"></div>
-    <div class="shell">
-      <p class="eyebrow">Terra Rossa / decision journal</p>
-      <h1>Share the night.<br><em>Explain why.</em></h1>
-      <p class="lede">A living, plain-English account of Terra Rossa: a deliberately small, continuous four-player PvPvE game built with Three.js and an authoritative Colyseus server.</p>
-      <div class="hero-actions">
-        <a class="button" href="#decisions">Explore the decisions</a>
-        <a class="button secondary" href="spec.md">Read the active specification</a>
-        <a class="button secondary" href="solo-spec.md">Read the archived solo study</a>
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+        }
+        .reveal {
+          opacity: 1;
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hero">
+      <div class="moon" aria-hidden="true"></div>
+      <div class="shell">
+        <p class="eyebrow">Terra Rossa / decision journal</p>
+        <h1>Share the night.<br /><em>Explain why.</em></h1>
+        <p class="lede">
+          A living, plain-English account of Terra Rossa: a deliberately small,
+          continuous four-player PvPvE game built with Three.js and an
+          authoritative Colyseus server.
+        </p>
+        <div class="hero-actions">
+          <a class="button" href="#decisions">Explore the decisions</a>
+          <a class="button secondary" href="spec.md"
+            >Read the active specification</a
+          >
+          <a class="button secondary" href="solo-spec.md"
+            >Read the archived solo study</a
+          >
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <div class="shell">
-      <section class="stats reveal" aria-label="Current project constraints">
-        <div class="stat"><strong>4</strong><span>players in the MVP</span></div>
-        <div class="stat"><strong>Always</strong><span>PvP and PvE active</span></div>
-        <div class="stat"><strong>0</strong><span>teleported final fights</span></div>
-        <div class="stat"><strong>Web</strong><span>the performance target</span></div>
+    <main>
+      <div class="shell">
+        <section class="stats reveal" aria-label="Current project constraints">
+          <div class="stat">
+            <strong>4</strong><span>players in the MVP</span>
+          </div>
+          <div class="stat">
+            <strong>Always</strong><span>PvP and PvE active</span>
+          </div>
+          <div class="stat">
+            <strong>0</strong><span>teleported final fights</span>
+          </div>
+          <div class="stat">
+            <strong>Web</strong><span>the performance target</span>
+          </div>
+        </section>
+      </div>
+
+      <section class="section" id="decisions">
+        <div class="shell">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">The decisions</p>
+              <h2>Constraints create character.</h2>
+            </div>
+            <p class="section-intro">
+              A good specification records what we chose. A useful decision
+              journal also records what we rejected, what risk the choice
+              creates, and what evidence could change our minds.
+            </p>
+          </div>
+
+          <div class="filters reveal" aria-label="Filter decisions">
+            <button
+              class="filter"
+              type="button"
+              data-filter="all"
+              aria-pressed="true"
+            >
+              Everything
+            </button>
+            <button
+              class="filter"
+              type="button"
+              data-filter="gameplay"
+              aria-pressed="false"
+            >
+              Gameplay
+            </button>
+            <button
+              class="filter"
+              type="button"
+              data-filter="world"
+              aria-pressed="false"
+            >
+              World
+            </button>
+            <button
+              class="filter"
+              type="button"
+              data-filter="technical"
+              aria-pressed="false"
+            >
+              Technical
+            </button>
+            <button
+              class="filter"
+              type="button"
+              data-filter="interface"
+              aria-pressed="false"
+            >
+              Interface
+            </button>
+            <button
+              class="filter"
+              type="button"
+              data-filter="archive"
+              aria-pressed="false"
+            >
+              Archived ideas
+            </button>
+          </div>
+
+          <div class="decisions">
+            <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">Product / active MVP</span>
+              <h3>Four players share one dangerous map.</h3>
+              <p>
+                The active MVP is a continuous two-to-four-player free-for-all,
+                designed and tested primarily with four. Every player and
+                server-controlled creature inhabits the same map from “Go,” and
+                the last survivor wins.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> four players introduce third-party
+                threats, conflicting routes, and shifting pressure while
+                remaining small enough to understand, test, host, and balance
+                without rebuilding the sixteen-player pack system.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay world">
+              <span class="tag">Gameplay / continuity</span>
+              <h3>No timer decides when rivalry starts.</h3>
+              <p>
+                PvP is legal from the opening second. Opposite concealed spawns,
+                multiple routes, creatures, central loot, and closing darkness
+                shape when players meet without a preparation barrier or
+                teleport.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a scheduled final duel made the match feel
+                like two disconnected games. Continuous rules let luck,
+                information, route choice, and aggression produce the
+                confrontation.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">Technical / stack</span>
+              <h3>Three.js in front, Colyseus in charge.</h3>
+              <p>
+                The browser uses TypeScript, Vite, Three.js, and a small React
+                shell. Node and Colyseus own movement legality, creatures,
+                ammunition, reloads, hits, pickups, darkness, death, and
+                victory.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> Death Race already proved this deployment
+                and room architecture for the team. Reusing its lessons keeps
+                one language across the stack while the server protects the
+                human-versus-human result.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">Process / delivery</span>
+              <h3>Every task closes the whole loop.</h3>
+              <p>
+                The active implementation plan gives each LLM task
+                prerequisites, bounded deliverables, acceptance checks,
+                exclusions, and the same finish line: update this journal, test,
+                commit, push, deploy, and verify.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> small code changes still fail at
+                integration and deployment boundaries. Requiring a complete
+                closeout keeps the repository, hosted game, documentation, and
+                learning record aligned after every step.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">T0.1 / repository boundary</span>
+              <h3>The web game starts beside the Godot experiment.</h3>
+              <p>
+                The outer repository is the one application root. The untracked
+                Godot project stays in place as user-owned source, its
+                <code>.godot</code> folder remains generated cache, and the
+                nested folder remains reserved for conversation attachments.
+                Death Race is a reference, never a source donor.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> migration work is safest when ownership is
+                explicit. Building beside the experiment lets us learn from it
+                without deleting history, accidentally committing generated
+                files, or hiding the real project inside another folder.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">T0.2 / foundation</span>
+              <h3>One workspace, three visible boundaries.</h3>
+              <p>
+                A single pinned pnpm project now contains a Vite and React
+                client, a Node and Colyseus server, and a framework-neutral
+                shared layer. Strict TypeScript, Vitest, Oxlint, Prettier,
+                production building, and an automated cross-import check form
+                the first quality gate.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a monorepo manager would add another
+                concept before it solves a real problem. Plain folders make
+                authority easy to see: the browser presents, the server decides,
+                and shared code knows about neither UI nor transport.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">T0.3 / configuration</span>
+              <h3>Local defaults are friendly; hosted mistakes are loud.</h3>
+              <p>
+                Development runs without credentials, while staging and
+                production require a public secure game endpoint, explicit
+                browser origins, and identifiable health metadata. Both
+                configuration parsers accept injected values and report the
+                exact invalid setting.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> environment bugs often survive a local
+                demo and only appear after release. A production browser
+                silently connecting to localhost is especially confusing, so the
+                safest default is to stop early and explain what the deploy is
+                missing.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">T0.5 / server identity</span>
+              <h3>The first authority is identity, not movement.</h3>
+              <p>
+                A versioned Colyseus room now accepts four clients, cleans their
+                display names, assigns server-owned UUIDs, publishes a tiny
+                waiting-room schema, rejects incompatible protocols, and
+                disposes itself when empty. Health and lifecycle events carry
+                searchable release metadata.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> identity is the smallest consequential
+                fact worth protecting. Proving it before movement exposes room
+                limits, schema compatibility, failed joins, and cleanup behavior
+                without hiding those lessons beneath gameplay code. Current
+                <code>schema()</code> definitions also replace the legacy
+                metadata API that failed under the pinned TypeScript runtime.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical world">
+              <span class="tag">T0.4 / first pixels</span>
+              <h3>One scene owner, one supported browser.</h3>
+              <p>
+                An orthographic Three.js world now renders a ground plane,
+                obstacle, and upright dog marker beneath a separate React title
+                layer. It preserves world scale while resizing, caps pixel
+                density for web performance, respects reduced motion, and
+                explicitly releases every frame callback and GPU resource.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> scene ownership is easier to learn when
+                creation and disposal live in one class. Chrome is the sole MVP
+                browser because cross-browser certification was blocking
+                core-game progress without testing the product hypothesis;
+                broader support can be earned after the loop is fun.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
+              data-category="technical interface"
+            >
+              <span class="tag">T0.6 / first synchronization</span>
+              <h3>Copy network truth before drawing it.</h3>
+              <p>
+                Chrome now joins the real Colyseus room, shows the identity
+                assigned by the server, and renders one dog placeholder per
+                stable player ID. A small transport owns connection states and
+                cleanup; an adapter turns live schema objects into sorted,
+                frozen view records before React or Three.js receives them.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> synchronized objects are live server
+                state, not convenient UI models. Copying at the boundary
+                prevents a renderer from accidentally changing network truth,
+                makes state updates testable without a canvas, and lets the
+                scene reconcile objects by identity instead of rebuilding
+                everything. Generation checks also close connections that finish
+                after a page teardown, avoiding the classic refresh leak.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">T0.7 / hosted baseline</span>
+              <h3>Static pixels and live authority deploy separately.</h3>
+              <p>
+                The browser ships to Cloudflare Pages while a small Node
+                container runs Colyseus on Fly.io in Sydney. Releases pin the
+                WSS endpoint at build time, expose a versioned health check, run
+                a real hosted join smoke, and document rollback for each
+                artifact.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> static files and long-lived WebSockets
+                have different hosting needs and failure modes. The first smoke
+                test also exposed why the server must remain one machine today:
+                in-memory matchmaking placed an HTTP reservation on one machine
+                and the socket on another. Explicitly disabling high
+                availability is safer than pretending the current room server
+                can scale; shared presence can be added only when real load
+                earns that complexity.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">Phase 0 gate / passed</span>
+              <h3>Intent goes in; truth comes back.</h3>
+              <p>
+                The foundation now has one explainable authority path: browser
+                controls become versioned commands sent to a room; the room
+                validates and changes schema state; Colyseus synchronizes it; an
+                immutable adapter feeds React and Three.js. Client and server
+                then release and roll back independently.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> multiplayer bugs become much easier to
+                reason about when every fact has one owner and every boundary
+                has one direction. Proving that path locally and over hosted WSS
+                before adding movement means later gameplay failures can be
+                isolated to commands, simulation, synchronization, or
+                presentation instead of an unknown deployment foundation.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical world">
+              <span class="tag">T1.1 / numeric contract</span>
+              <h3>The world runs on metres and ticks.</h3>
+              <p>
+                Simulation uses a flat X/Z plane, radians for direction,
+                immutable conversion into Three.js X/Y/Z, and integer ticks at a
+                fixed 30 Hz. Shared guards reject non-finite and out-of-bounds
+                values, while seeded randomness makes later spawn choices
+                exactly repeatable in tests.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> render frames speed up, slow down, and
+                disappear in background tabs; they cannot be the game clock. One
+                fixed step makes movement and combat reproducible on server,
+                client, and test runner. Explicit coordinate conversion also
+                prevents the common mistake where simulation Y means “forward”
+                but Three.js Y means “up,” and rejecting NaN early prevents one
+                malformed command from poisoning an entire room.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical gameplay">
+              <span class="tag">T1.2 / command contract</span>
+              <h3>Players send verbs, never results.</h3>
+              <p>
+                A strict, versioned envelope now carries twelve permitted
+                intentions with room, match, and sequence identity. Payloads
+                contain only what the player did—movement axes, aim angle, or
+                readiness—while exact-key validation rejects hidden extras,
+                claimed damage, duplicate order, stale matches, and malformed
+                numbers.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> “I fired” is a legitimate request; “I
+                dealt 50 damage to that player” is not. Keeping outcomes
+                impossible to express makes server authority a property of the
+                protocol instead of a convention developers must remember.
+                Strictly increasing sequence numbers also turn retries and
+                reordered packets into harmless, explainable errors before
+                simulation begins.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
+              data-category="world technical gameplay"
+            >
+              <span class="tag">T1.3 / Red Hollow</span>
+              <h3>One map, two routes, no opening shot.</h3>
+              <p>
+                Red Hollow places four named spawns behind perimeter screens,
+                gives each two verified paths inward, and surrounds a covered
+                centre with entries from every side. The server reads simple
+                collision boxes while Three.js derives capped visual ruins from
+                those exact same records.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a handcrafted arena lets early playtests
+                ask whether routes and information are interesting instead of
+                whether a generator happened to be kind. Blocking every initial
+                sightline prevents a loading-screen death, while paired paths
+                preserve agency. Keeping decorative geometry derived from
+                collision data gives the client character without letting an
+                invisible server wall drift away from what players see.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical gameplay">
+              <span class="tag">T1.4 / server movement</span>
+              <h3>The room moves every dog.</h3>
+              <p>
+                Players supply a normalized direction; the server owns position,
+                six-metre-per-second speed, collision radius, fixed-step
+                integration, map bounds, obstacle response, and sequence
+                acknowledgement. Thirty simulation steps occur per second no
+                matter how Node timer callbacks are partitioned.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> accepting a client position would make
+                speed limits and walls suggestions. Keeping only input on the
+                wire lets one deterministic simulation decide where every dog
+                can be. Axis-separated circle collision is intentionally modest:
+                it supports sliding and the authored boxes without introducing a
+                physics engine before combat proves one is needed.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T1.5 / synchronized presentation</span>
+              <h3>Snapshots move remote dogs, not React.</h3>
+              <p>
+                A renderer-owned registry creates one object per server UUID,
+                buffers authoritative positions, interpolates remote dogs 100
+                milliseconds behind real time, follows the local dog with the
+                camera, and disposes departures exactly once. React hands over
+                snapshots but never touches per-frame transforms.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> network patches arrive in steps while
+                displays redraw much faster. Interpolating between timestamped
+                truth makes remote motion smooth without guessing where an
+                opponent will go. Keeping that work inside Three.js avoids
+                rerendering the component tree sixty times a second and gives
+                every GPU object one obvious lifecycle owner.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T1.6 / prediction</span>
+              <h3>Immediate to you, authoritative to everyone.</h3>
+              <p>
+                WASD predicts one fixed movement step immediately and records it
+                by sequence. Each server snapshot discards acknowledged inputs,
+                resets to authoritative position, and replays the remainder.
+                Small drift settles quietly, ordinary drift blends, and errors
+                above two metres snap safely to truth.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> waiting a full network round trip makes
+                correct movement feel broken. Prediction removes that wait
+                without granting authority because no predicted position is sent
+                or shown to opponents. Reusing the same collision integrator
+                reduces ordinary disagreement, while explicit soft and hard
+                thresholds make correction behaviour testable under 150
+                milliseconds of latency and jitter instead of tuning it by hope.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T1.7 / dash</span>
+              <h3>Space asks; the room decides.</h3>
+              <p>
+                A dash covers 4.5 metres over six fixed ticks, respects the same
+                walls and bounds as walking, pauses movement briefly afterward,
+                and cannot begin again during its 1.2-second cooldown. Clients
+                predict the motion and squash the dog immediately, while a
+                server event confirms legal dashes to everyone.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> dash should feel like a sharp movement
+                verb, not a loophole through geometry or cooldown. Sharing
+                collision and replay logic keeps it responsive under latency
+                without accepting a client-authored destination. A monotonic
+                event counter gives presentation something distinct to celebrate
+                while remaining evidence of a server decision; no
+                invulnerability was smuggled into the mechanic.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical gameplay">
+              <span class="tag">Phase 1 gate / passed</span>
+              <h3>Four views, one movement truth.</h3>
+              <p>
+                Four hosted Chrome tabs received unique identities and corner
+                spawns while rendering the same four dogs. A separate real-WSS
+                harness moved and dashed every client, observed four accepted
+                dash events, and compared all final positions; the
+                150-millisecond jitter harness remained green beside it.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> prediction and interpolation are
+                deliberately different. Prediction lets your own intent appear
+                before the server answers, then reconciles it; interpolation
+                delays someone else slightly so two known server snapshots can
+                be blended smoothly. Neither changes the shared truth. Testing
+                four browser presentations plus four command-producing clients
+                proves those paths converge under both controlled and real
+                hosted latency.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical gameplay">
+              <span class="tag">T2.1 / combat foundation</span>
+              <h3>Every wound travels one road.</h3>
+              <p>
+                The first firearm is a validated, immutable data definition
+                covering damage, cadence, ammunition, range, spread, knockback,
+                and active-reload timing. Firearms, melee, creatures, and
+                darkness all feed ordered damage events into the same
+                authoritative resolver.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> combat values hidden inside rendering code
+                are difficult to balance and impossible for the server to
+                defend. A data boundary makes bad or contradictory tuning fail
+                during development. One deterministic damage queue also prevents
+                later systems from inventing their own health rules, while event
+                IDs and explicit ordering make duplicate and simultaneous
+                attacks testable.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">Process / first product</span>
+              <h3>The solo study remains, but it is not the build.</h3>
+              <p>
+                The solo specification is preserved as a record of scope
+                reduction. The active build restores only the smallest
+                server-backed feature that matters: one unpredictable human
+                opponent.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> pure solo would simplify learning, but it
+                could not test whether the encounter with another player is the
+                memorable payoff. Two players are the minimum honest experiment.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="world technical">
+              <span class="tag">World / production</span>
+              <h3>Chunky 2.5D without an art pipeline trap.</h3>
+              <p>
+                Three.js uses an orthographic camera, low-resolution rendering,
+                sprite or billboard characters, and simple geometry for depth
+                and sightlines. Strict isometric tiles and frame-heavy animation
+                remain out.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> this preserves the compact pixel character
+                while allowing simple browser-native geometry, occlusion, camera
+                control, and effects without requiring a full model-and-rig
+                workflow.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / sixteen-player vision</span>
+              <h3>Sixteen dogs, packs of four.</h3>
+              <p>
+                Players are assigned randomly to balanced packs. No pack exceeds
+                four dogs, and packs cannot be hand-picked.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> twenty people were too difficult to
+                coordinate and read. Four is intimate enough for rescues and
+                equipment sharing while still allowing four rival groups.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay world">
+              <span class="tag">Gameplay / match</span>
+              <h3>No safe preparation phase.</h3>
+              <p>
+                PvP and PvE are active immediately. Packs begin far apart, then
+                better loot and closing darkness pull them inward.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> teleporting into a final arena broke the
+                journey. Early encounters should be lucky, skilful, disastrous,
+                and memorable.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / expanded roster</span>
+              <h3>Dogs, not classes.</h3>
+              <p>
+                Every dog begins with equal health, speed, armour, regeneration,
+                dash, and revive capability. Each has one starting weapon and
+                one unique ability.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> rigid tank/healer/damage labels make
+                friends negotiate a composition before they have fun. Feats and
+                loot should create the build during play.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / pack leadership</span>
+              <h3>Alpha is honour, not power.</h3>
+              <p>
+                Every pack begins with a random alpha. Leadership changes
+                through broad recent contribution, and total alpha time becomes
+                a score.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a powerful alpha would snowball or invite
+                abuse. Prestige celebrates helpful play without deciding who
+                receives loot or who wins a fight.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / pack revival</span>
+              <h3>You can always rescue the pack.</h3>
+              <p>
+                Dogs go down and may crawl. Enemies cannot finish them. Any
+                standing packmate can revive them; the pack loses only when
+                everyone is down.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> revival turns proximity into action. It
+                produces last stands and rescues without asking eliminated
+                players to wait through most of a match.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / build system</span>
+              <h3>One weapon. One armour. One relic.</h3>
+              <p>
+                No inventory grid and no loot vote. Drop what you have; another
+                dog can pick it up. Only weapons drop when a whole enemy pack is
+                eliminated.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> physical exchange keeps cooperation inside
+                the world. Three slots make every object legible and every
+                hand-off consequential.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay interface">
+              <span class="tag">Gameplay / skill</span>
+              <h3>Reloading asks a question.</h3>
+              <p>
+                Ignore the timing line for a normal reload, hit the window for
+                speed, land the perfect mark for near-instant recovery, or
+                mistime it and fumble.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> limited ammunition should create skill and
+                tension rather than downtime. Choosing to attempt the input is
+                itself a tactical risk.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / compass rule</span>
+              <h3>The compass is the HUD.</h3>
+              <p>
+                Health, armour, ammunition, reloads, abilities, and equipment
+                communicate through the dog and nearby world. Temporary
+                descriptions appear only when needed.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> attention belongs on the island. A compass
+                preserves navigation and pack awareness without turning combat
+                into dashboard reading.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / procedural future</span>
+              <h3>Authored spaces, shuffled carefully.</h3>
+              <p>
+                One recognizable island and centre come first. Proven modular
+                regions can later randomize paths, cover, creatures, loot, and
+                sightlines under validation rules.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> unconstrained procedural terrain creates
+                unfair spawns and bad fights. Randomness should recombine good
+                design, not replace it.
+              </p>
+            </article>
+
+            <article class="decision archived reveal" data-category="archive">
+              <span class="tag">Archived / pack darkness</span>
+              <h3>Leaving can be worth it.</h3>
+              <p>
+                Packed dogs see and survive better. Isolated dogs attract swarms
+                and lose reliable information, but darkness hides valuable
+                bounty.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> togetherness is meaningful only if
+                separation remains a choice. Risk outside the pack creates
+                scouting, rescue, and greed.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="world">
+              <span class="tag">World / art</span>
+              <h3>Compact occult-western heroes.</h3>
+              <p>
+                Small upright dog gunslingers cross red earth under moonlight,
+                carrying improvised armour and supernatural charms against
+                angular creatures of night.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> compact proportions read from an
+                orthographic top-down camera; the occult western gives Terra
+                Rossa an identity that supports firearms, scarcity, and
+                darkness.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">Technical / web</span>
+              <h3>The browser sets the budget.</h3>
+              <p>
+                Three.js renders four players and a deliberately small creature
+                population. Colyseus runs a measured 30 Hz simulation and
+                synchronizes at a lower patch rate. Entity, effect, message, and
+                memory caps begin in the first slice.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> web performance and network traffic cannot
+                be bolted on later. Starting with 12–24 creatures and four
+                players provides useful evidence without pretending the old
+                horde scale is free.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="technical">
+              <span class="tag">Process / roadmap</span>
+              <h3>Build evidence before content.</h3>
+              <p>
+                The old Pack Royale backlog is explicitly superseded. The active
+                path is handshake, authoritative movement, a combat toy, a
+                four-player free-for-all, PvPvE pressure, then browser polish.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> an LLM works best with bounded scope,
+                while the human needs to understand each boundary. Every
+                milestone produces one playable, explainable layer before the
+                next is introduced.
+              </p>
+            </article>
+          </div>
+        </div>
       </section>
-    </div>
 
-    <section class="section" id="decisions">
-      <div class="shell">
-        <div class="section-head reveal">
-          <div>
-            <p class="eyebrow">The decisions</p>
-            <h2>Constraints create character.</h2>
+      <section class="section">
+        <div class="shell">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">The match</p>
+              <h2>One map. No truce.</h2>
+            </div>
+            <p class="section-intro">
+              The first game asks whether creatures, scarcity, information, and
+              one unpredictable opponent create a match worth replaying—without
+              packs, progression trees, or sixteen-player infrastructure.
+            </p>
           </div>
-          <p class="section-intro">A good specification records what we chose. A useful decision journal also records what we rejected, what risk the choice creates, and what evidence could change our minds.</p>
-        </div>
-
-        <div class="filters reveal" aria-label="Filter decisions">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">Everything</button>
-          <button class="filter" type="button" data-filter="gameplay" aria-pressed="false">Gameplay</button>
-          <button class="filter" type="button" data-filter="world" aria-pressed="false">World</button>
-          <button class="filter" type="button" data-filter="technical" aria-pressed="false">Technical</button>
-          <button class="filter" type="button" data-filter="interface" aria-pressed="false">Interface</button>
-          <button class="filter" type="button" data-filter="archive" aria-pressed="false">Archived ideas</button>
-        </div>
-
-        <div class="decisions">
-          <article class="decision reveal" data-category="gameplay technical">
-            <span class="tag">Product / active MVP</span>
-            <h3>Four players share one dangerous map.</h3>
-            <p>The active MVP is a continuous two-to-four-player free-for-all, designed and tested primarily with four. Every player and server-controlled creature inhabits the same map from “Go,” and the last survivor wins.</p>
-            <p class="why"><strong>Why:</strong> four players introduce third-party threats, conflicting routes, and shifting pressure while remaining small enough to understand, test, host, and balance without rebuilding the sixteen-player pack system.</p>
-          </article>
-
-          <article class="decision reveal" data-category="gameplay world">
-            <span class="tag">Gameplay / continuity</span>
-            <h3>No timer decides when rivalry starts.</h3>
-            <p>PvP is legal from the opening second. Opposite concealed spawns, multiple routes, creatures, central loot, and closing darkness shape when players meet without a preparation barrier or teleport.</p>
-            <p class="why"><strong>Why:</strong> a scheduled final duel made the match feel like two disconnected games. Continuous rules let luck, information, route choice, and aggression produce the confrontation.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">Technical / stack</span>
-            <h3>Three.js in front, Colyseus in charge.</h3>
-            <p>The browser uses TypeScript, Vite, Three.js, and a small React shell. Node and Colyseus own movement legality, creatures, ammunition, reloads, hits, pickups, darkness, death, and victory.</p>
-            <p class="why"><strong>Why:</strong> Death Race already proved this deployment and room architecture for the team. Reusing its lessons keeps one language across the stack while the server protects the human-versus-human result.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">Process / delivery</span>
-            <h3>Every task closes the whole loop.</h3>
-            <p>The active implementation plan gives each LLM task prerequisites, bounded deliverables, acceptance checks, exclusions, and the same finish line: update this journal, test, commit, push, deploy, and verify.</p>
-            <p class="why"><strong>Why:</strong> small code changes still fail at integration and deployment boundaries. Requiring a complete closeout keeps the repository, hosted game, documentation, and learning record aligned after every step.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">T0.1 / repository boundary</span>
-            <h3>The web game starts beside the Godot experiment.</h3>
-            <p>The outer repository is the one application root. The untracked Godot project stays in place as user-owned source, its <code>.godot</code> folder remains generated cache, and the nested folder remains reserved for conversation attachments. Death Race is a reference, never a source donor.</p>
-            <p class="why"><strong>Why:</strong> migration work is safest when ownership is explicit. Building beside the experiment lets us learn from it without deleting history, accidentally committing generated files, or hiding the real project inside another folder.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">T0.2 / foundation</span>
-            <h3>One workspace, three visible boundaries.</h3>
-            <p>A single pinned pnpm project now contains a Vite and React client, a Node and Colyseus server, and a framework-neutral shared layer. Strict TypeScript, Vitest, Oxlint, Prettier, production building, and an automated cross-import check form the first quality gate.</p>
-            <p class="why"><strong>Why:</strong> a monorepo manager would add another concept before it solves a real problem. Plain folders make authority easy to see: the browser presents, the server decides, and shared code knows about neither UI nor transport.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">T0.3 / configuration</span>
-            <h3>Local defaults are friendly; hosted mistakes are loud.</h3>
-            <p>Development runs without credentials, while staging and production require a public secure game endpoint, explicit browser origins, and identifiable health metadata. Both configuration parsers accept injected values and report the exact invalid setting.</p>
-            <p class="why"><strong>Why:</strong> environment bugs often survive a local demo and only appear after release. A production browser silently connecting to localhost is especially confusing, so the safest default is to stop early and explain what the deploy is missing.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">T0.5 / server identity</span>
-            <h3>The first authority is identity, not movement.</h3>
-            <p>A versioned Colyseus room now accepts four clients, cleans their display names, assigns server-owned UUIDs, publishes a tiny waiting-room schema, rejects incompatible protocols, and disposes itself when empty. Health and lifecycle events carry searchable release metadata.</p>
-            <p class="why"><strong>Why:</strong> identity is the smallest consequential fact worth protecting. Proving it before movement exposes room limits, schema compatibility, failed joins, and cleanup behavior without hiding those lessons beneath gameplay code. Current <code>schema()</code> definitions also replace the legacy metadata API that failed under the pinned TypeScript runtime.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical world">
-            <span class="tag">T0.4 / first pixels</span>
-            <h3>One scene owner, one supported browser.</h3>
-            <p>An orthographic Three.js world now renders a ground plane, obstacle, and upright dog marker beneath a separate React title layer. It preserves world scale while resizing, caps pixel density for web performance, respects reduced motion, and explicitly releases every frame callback and GPU resource.</p>
-            <p class="why"><strong>Why:</strong> scene ownership is easier to learn when creation and disposal live in one class. Chrome is the sole MVP browser because cross-browser certification was blocking core-game progress without testing the product hypothesis; broader support can be earned after the loop is fun.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical interface">
-            <span class="tag">T0.6 / first synchronization</span>
-            <h3>Copy network truth before drawing it.</h3>
-            <p>Chrome now joins the real Colyseus room, shows the identity assigned by the server, and renders one dog placeholder per stable player ID. A small transport owns connection states and cleanup; an adapter turns live schema objects into sorted, frozen view records before React or Three.js receives them.</p>
-            <p class="why"><strong>Why:</strong> synchronized objects are live server state, not convenient UI models. Copying at the boundary prevents a renderer from accidentally changing network truth, makes state updates testable without a canvas, and lets the scene reconcile objects by identity instead of rebuilding everything. Generation checks also close connections that finish after a page teardown, avoiding the classic refresh leak.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">T0.7 / hosted baseline</span>
-            <h3>Static pixels and live authority deploy separately.</h3>
-            <p>The browser ships to Cloudflare Pages while a small Node container runs Colyseus on Fly.io in Sydney. Releases pin the WSS endpoint at build time, expose a versioned health check, run a real hosted join smoke, and document rollback for each artifact.</p>
-            <p class="why"><strong>Why:</strong> static files and long-lived WebSockets have different hosting needs and failure modes. The first smoke test also exposed why the server must remain one machine today: in-memory matchmaking placed an HTTP reservation on one machine and the socket on another. Explicitly disabling high availability is safer than pretending the current room server can scale; shared presence can be added only when real load earns that complexity.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">Phase 0 gate / passed</span>
-            <h3>Intent goes in; truth comes back.</h3>
-            <p>The foundation now has one explainable authority path: browser controls become versioned commands sent to a room; the room validates and changes schema state; Colyseus synchronizes it; an immutable adapter feeds React and Three.js. Client and server then release and roll back independently.</p>
-            <p class="why"><strong>Why:</strong> multiplayer bugs become much easier to reason about when every fact has one owner and every boundary has one direction. Proving that path locally and over hosted WSS before adding movement means later gameplay failures can be isolated to commands, simulation, synchronization, or presentation instead of an unknown deployment foundation.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical world">
-            <span class="tag">T1.1 / numeric contract</span>
-            <h3>The world runs on metres and ticks.</h3>
-            <p>Simulation uses a flat X/Z plane, radians for direction, immutable conversion into Three.js X/Y/Z, and integer ticks at a fixed 30 Hz. Shared guards reject non-finite and out-of-bounds values, while seeded randomness makes later spawn choices exactly repeatable in tests.</p>
-            <p class="why"><strong>Why:</strong> render frames speed up, slow down, and disappear in background tabs; they cannot be the game clock. One fixed step makes movement and combat reproducible on server, client, and test runner. Explicit coordinate conversion also prevents the common mistake where simulation Y means “forward” but Three.js Y means “up,” and rejecting NaN early prevents one malformed command from poisoning an entire room.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical gameplay">
-            <span class="tag">T1.2 / command contract</span>
-            <h3>Players send verbs, never results.</h3>
-            <p>A strict, versioned envelope now carries twelve permitted intentions with room, match, and sequence identity. Payloads contain only what the player did—movement axes, aim angle, or readiness—while exact-key validation rejects hidden extras, claimed damage, duplicate order, stale matches, and malformed numbers.</p>
-            <p class="why"><strong>Why:</strong> “I fired” is a legitimate request; “I dealt 50 damage to that player” is not. Keeping outcomes impossible to express makes server authority a property of the protocol instead of a convention developers must remember. Strictly increasing sequence numbers also turn retries and reordered packets into harmless, explainable errors before simulation begins.</p>
-          </article>
-
-          <article class="decision reveal" data-category="world technical gameplay">
-            <span class="tag">T1.3 / Red Hollow</span>
-            <h3>One map, two routes, no opening shot.</h3>
-            <p>Red Hollow places four named spawns behind perimeter screens, gives each two verified paths inward, and surrounds a covered centre with entries from every side. The server reads simple collision boxes while Three.js derives capped visual ruins from those exact same records.</p>
-            <p class="why"><strong>Why:</strong> a handcrafted arena lets early playtests ask whether routes and information are interesting instead of whether a generator happened to be kind. Blocking every initial sightline prevents a loading-screen death, while paired paths preserve agency. Keeping decorative geometry derived from collision data gives the client character without letting an invisible server wall drift away from what players see.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical gameplay">
-            <span class="tag">T1.4 / server movement</span>
-            <h3>The room moves every dog.</h3>
-            <p>Players supply a normalized direction; the server owns position, six-metre-per-second speed, collision radius, fixed-step integration, map bounds, obstacle response, and sequence acknowledgement. Thirty simulation steps occur per second no matter how Node timer callbacks are partitioned.</p>
-            <p class="why"><strong>Why:</strong> accepting a client position would make speed limits and walls suggestions. Keeping only input on the wire lets one deterministic simulation decide where every dog can be. Axis-separated circle collision is intentionally modest: it supports sliding and the authored boxes without introducing a physics engine before combat proves one is needed.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical gameplay interface">
-            <span class="tag">T1.5 / synchronized presentation</span>
-            <h3>Snapshots move remote dogs, not React.</h3>
-            <p>A renderer-owned registry creates one object per server UUID, buffers authoritative positions, interpolates remote dogs 100 milliseconds behind real time, follows the local dog with the camera, and disposes departures exactly once. React hands over snapshots but never touches per-frame transforms.</p>
-            <p class="why"><strong>Why:</strong> network patches arrive in steps while displays redraw much faster. Interpolating between timestamped truth makes remote motion smooth without guessing where an opponent will go. Keeping that work inside Three.js avoids rerendering the component tree sixty times a second and gives every GPU object one obvious lifecycle owner.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical gameplay interface">
-            <span class="tag">T1.6 / prediction</span>
-            <h3>Immediate to you, authoritative to everyone.</h3>
-            <p>WASD predicts one fixed movement step immediately and records it by sequence. Each server snapshot discards acknowledged inputs, resets to authoritative position, and replays the remainder. Small drift settles quietly, ordinary drift blends, and errors above two metres snap safely to truth.</p>
-            <p class="why"><strong>Why:</strong> waiting a full network round trip makes correct movement feel broken. Prediction removes that wait without granting authority because no predicted position is sent or shown to opponents. Reusing the same collision integrator reduces ordinary disagreement, while explicit soft and hard thresholds make correction behaviour testable under 150 milliseconds of latency and jitter instead of tuning it by hope.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical gameplay interface">
-            <span class="tag">T1.7 / dash</span>
-            <h3>Space asks; the room decides.</h3>
-            <p>A dash covers 4.5 metres over six fixed ticks, respects the same walls and bounds as walking, pauses movement briefly afterward, and cannot begin again during its 1.2-second cooldown. Clients predict the motion and squash the dog immediately, while a server event confirms legal dashes to everyone.</p>
-            <p class="why"><strong>Why:</strong> dash should feel like a sharp movement verb, not a loophole through geometry or cooldown. Sharing collision and replay logic keeps it responsive under latency without accepting a client-authored destination. A monotonic event counter gives presentation something distinct to celebrate while remaining evidence of a server decision; no invulnerability was smuggled into the mechanic.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical gameplay">
-            <span class="tag">Phase 1 gate / passed</span>
-            <h3>Four views, one movement truth.</h3>
-            <p>Four hosted Chrome tabs received unique identities and corner spawns while rendering the same four dogs. A separate real-WSS harness moved and dashed every client, observed four accepted dash events, and compared all final positions; the 150-millisecond jitter harness remained green beside it.</p>
-            <p class="why"><strong>Why:</strong> prediction and interpolation are deliberately different. Prediction lets your own intent appear before the server answers, then reconciles it; interpolation delays someone else slightly so two known server snapshots can be blended smoothly. Neither changes the shared truth. Testing four browser presentations plus four command-producing clients proves those paths converge under both controlled and real hosted latency.</p>
-          </article>
-
-          <article class="decision reveal" data-category="gameplay technical">
-            <span class="tag">Process / first product</span>
-            <h3>The solo study remains, but it is not the build.</h3>
-            <p>The solo specification is preserved as a record of scope reduction. The active build restores only the smallest server-backed feature that matters: one unpredictable human opponent.</p>
-            <p class="why"><strong>Why:</strong> pure solo would simplify learning, but it could not test whether the encounter with another player is the memorable payoff. Two players are the minimum honest experiment.</p>
-          </article>
-
-          <article class="decision reveal" data-category="world technical">
-            <span class="tag">World / production</span>
-            <h3>Chunky 2.5D without an art pipeline trap.</h3>
-            <p>Three.js uses an orthographic camera, low-resolution rendering, sprite or billboard characters, and simple geometry for depth and sightlines. Strict isometric tiles and frame-heavy animation remain out.</p>
-            <p class="why"><strong>Why:</strong> this preserves the compact pixel character while allowing simple browser-native geometry, occlusion, camera control, and effects without requiring a full model-and-rig workflow.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / sixteen-player vision</span>
-            <h3>Sixteen dogs, packs of four.</h3>
-            <p>Players are assigned randomly to balanced packs. No pack exceeds four dogs, and packs cannot be hand-picked.</p>
-            <p class="why"><strong>Why:</strong> twenty people were too difficult to coordinate and read. Four is intimate enough for rescues and equipment sharing while still allowing four rival groups.</p>
-          </article>
-
-          <article class="decision reveal" data-category="gameplay world">
-            <span class="tag">Gameplay / match</span>
-            <h3>No safe preparation phase.</h3>
-            <p>PvP and PvE are active immediately. Packs begin far apart, then better loot and closing darkness pull them inward.</p>
-            <p class="why"><strong>Why:</strong> teleporting into a final arena broke the journey. Early encounters should be lucky, skilful, disastrous, and memorable.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / expanded roster</span>
-            <h3>Dogs, not classes.</h3>
-            <p>Every dog begins with equal health, speed, armour, regeneration, dash, and revive capability. Each has one starting weapon and one unique ability.</p>
-            <p class="why"><strong>Why:</strong> rigid tank/healer/damage labels make friends negotiate a composition before they have fun. Feats and loot should create the build during play.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / pack leadership</span>
-            <h3>Alpha is honour, not power.</h3>
-            <p>Every pack begins with a random alpha. Leadership changes through broad recent contribution, and total alpha time becomes a score.</p>
-            <p class="why"><strong>Why:</strong> a powerful alpha would snowball or invite abuse. Prestige celebrates helpful play without deciding who receives loot or who wins a fight.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / pack revival</span>
-            <h3>You can always rescue the pack.</h3>
-            <p>Dogs go down and may crawl. Enemies cannot finish them. Any standing packmate can revive them; the pack loses only when everyone is down.</p>
-            <p class="why"><strong>Why:</strong> revival turns proximity into action. It produces last stands and rescues without asking eliminated players to wait through most of a match.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / build system</span>
-            <h3>One weapon. One armour. One relic.</h3>
-            <p>No inventory grid and no loot vote. Drop what you have; another dog can pick it up. Only weapons drop when a whole enemy pack is eliminated.</p>
-            <p class="why"><strong>Why:</strong> physical exchange keeps cooperation inside the world. Three slots make every object legible and every hand-off consequential.</p>
-          </article>
-
-          <article class="decision reveal" data-category="gameplay interface">
-            <span class="tag">Gameplay / skill</span>
-            <h3>Reloading asks a question.</h3>
-            <p>Ignore the timing line for a normal reload, hit the window for speed, land the perfect mark for near-instant recovery, or mistime it and fumble.</p>
-            <p class="why"><strong>Why:</strong> limited ammunition should create skill and tension rather than downtime. Choosing to attempt the input is itself a tactical risk.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / compass rule</span>
-            <h3>The compass is the HUD.</h3>
-            <p>Health, armour, ammunition, reloads, abilities, and equipment communicate through the dog and nearby world. Temporary descriptions appear only when needed.</p>
-            <p class="why"><strong>Why:</strong> attention belongs on the island. A compass preserves navigation and pack awareness without turning combat into dashboard reading.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / procedural future</span>
-            <h3>Authored spaces, shuffled carefully.</h3>
-            <p>One recognizable island and centre come first. Proven modular regions can later randomize paths, cover, creatures, loot, and sightlines under validation rules.</p>
-            <p class="why"><strong>Why:</strong> unconstrained procedural terrain creates unfair spawns and bad fights. Randomness should recombine good design, not replace it.</p>
-          </article>
-
-          <article class="decision archived reveal" data-category="archive">
-            <span class="tag">Archived / pack darkness</span>
-            <h3>Leaving can be worth it.</h3>
-            <p>Packed dogs see and survive better. Isolated dogs attract swarms and lose reliable information, but darkness hides valuable bounty.</p>
-            <p class="why"><strong>Why:</strong> togetherness is meaningful only if separation remains a choice. Risk outside the pack creates scouting, rescue, and greed.</p>
-          </article>
-
-          <article class="decision reveal" data-category="world">
-            <span class="tag">World / art</span>
-            <h3>Compact occult-western heroes.</h3>
-            <p>Small upright dog gunslingers cross red earth under moonlight, carrying improvised armour and supernatural charms against angular creatures of night.</p>
-            <p class="why"><strong>Why:</strong> compact proportions read from an orthographic top-down camera; the occult western gives Terra Rossa an identity that supports firearms, scarcity, and darkness.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">Technical / web</span>
-            <h3>The browser sets the budget.</h3>
-            <p>Three.js renders four players and a deliberately small creature population. Colyseus runs a measured 30 Hz simulation and synchronizes at a lower patch rate. Entity, effect, message, and memory caps begin in the first slice.</p>
-            <p class="why"><strong>Why:</strong> web performance and network traffic cannot be bolted on later. Starting with 12–24 creatures and four players provides useful evidence without pretending the old horde scale is free.</p>
-          </article>
-
-          <article class="decision reveal" data-category="technical">
-            <span class="tag">Process / roadmap</span>
-            <h3>Build evidence before content.</h3>
-            <p>The old Pack Royale backlog is explicitly superseded. The active path is handshake, authoritative movement, a combat toy, a four-player free-for-all, PvPvE pressure, then browser polish.</p>
-            <p class="why"><strong>Why:</strong> an LLM works best with bounded scope, while the human needs to understand each boundary. Every milestone produces one playable, explainable layer before the next is introduced.</p>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="shell">
-        <div class="section-head reveal">
-          <div>
-            <p class="eyebrow">The match</p>
-            <h2>One map. No truce.</h2>
+          <div class="loop reveal">
+            <article>
+              <h3>Spawn</h3>
+              <p>
+                Begin far apart, concealed by geography rather than immunity.
+              </p>
+            </article>
+            <article>
+              <h3>Scavenge</h3>
+              <p>
+                Spend ammunition on creatures and move toward better supplies.
+              </p>
+            </article>
+            <article>
+              <h3>Listen</h3>
+              <p>
+                Infer the opponent through gunfire, disturbed enemies, and
+                traces.
+              </p>
+            </article>
+            <article>
+              <h3>Converge</h3>
+              <p>Central loot and closing darkness narrow every safe route.</p>
+            </article>
+            <article>
+              <h3>Survive</h3>
+              <p>Choose when to engage; the last living player wins.</p>
+            </article>
           </div>
-          <p class="section-intro">The first game asks whether creatures, scarcity, information, and one unpredictable opponent create a match worth replaying—without packs, progression trees, or sixteen-player infrastructure.</p>
-        </div>
-        <div class="loop reveal">
-          <article><h3>Spawn</h3><p>Begin far apart, concealed by geography rather than immunity.</p></article>
-          <article><h3>Scavenge</h3><p>Spend ammunition on creatures and move toward better supplies.</p></article>
-          <article><h3>Listen</h3><p>Infer the opponent through gunfire, disturbed enemies, and traces.</p></article>
-          <article><h3>Converge</h3><p>Central loot and closing darkness narrow every safe route.</p></article>
-          <article><h3>Survive</h3><p>Choose when to engage; the last living player wins.</p></article>
-        </div>
-        <div class="principle reveal">
-          <blockquote>Make one unpredictable opponent matter before building sixteen players.</blockquote>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="shell">
-        <div class="section-head reveal">
-          <div>
-            <p class="eyebrow">Still unresolved</p>
-            <h2>Questions are part of the record.</h2>
+          <div class="principle reveal">
+            <blockquote>
+              Make one unpredictable opponent matter before building sixteen
+              players.
+            </blockquote>
           </div>
-          <p class="section-intro">Open decisions stay visible instead of quietly becoming assumptions. Prototypes and playtests should answer these—not confidence.</p>
         </div>
-        <div class="open-list reveal">
-          <div><strong>Hero:</strong> Which dog silhouette reads best in the Three.js camera?</div>
-          <div><strong>Rendering:</strong> Which sprite, billboard, and geometry mix remains sustainable?</div>
-          <div><strong>Visibility:</strong> How should Colyseus filter hidden opponent state?</div>
-          <div><strong>Darkness:</strong> When should it close, and what boundary shape fits the map?</div>
-          <div><strong>Disconnects:</strong> How much grace belongs in a five-minute duel?</div>
-          <div><strong>Performance:</strong> What creature and patch rates survive hosted latency?</div>
+      </section>
+
+      <section class="section">
+        <div class="shell">
+          <div class="section-head reveal">
+            <div>
+              <p class="eyebrow">Still unresolved</p>
+              <h2>Questions are part of the record.</h2>
+            </div>
+            <p class="section-intro">
+              Open decisions stay visible instead of quietly becoming
+              assumptions. Prototypes and playtests should answer these—not
+              confidence.
+            </p>
+          </div>
+          <div class="open-list reveal">
+            <div>
+              <strong>Hero:</strong> Which dog silhouette reads best in the
+              Three.js camera?
+            </div>
+            <div>
+              <strong>Rendering:</strong> Which sprite, billboard, and geometry
+              mix remains sustainable?
+            </div>
+            <div>
+              <strong>Visibility:</strong> How should Colyseus filter hidden
+              opponent state?
+            </div>
+            <div>
+              <strong>Darkness:</strong> When should it close, and what boundary
+              shape fits the map?
+            </div>
+            <div>
+              <strong>Disconnects:</strong> How much grace belongs in a
+              five-minute duel?
+            </div>
+            <div>
+              <strong>Performance:</strong> What creature and patch rates
+              survive hosted latency?
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+    </main>
 
-  <footer class="shell">
-    <span>Terra Rossa decision journal</span>
-    <span id="updated">A living record, revised with every meaningful commit.</span>
-  </footer>
+    <footer class="shell">
+      <span>Terra Rossa decision journal</span>
+      <span id="updated"
+        >A living record, revised with every meaningful commit.</span
+      >
+    </footer>
 
-  <script>
-    const filters = document.querySelectorAll(".filter");
-    const decisions = document.querySelectorAll(".decision");
+    <script>
+      const filters = document.querySelectorAll('.filter');
+      const decisions = document.querySelectorAll('.decision');
 
-    filters.forEach((button) => {
-      button.addEventListener("click", () => {
-        const selected = button.dataset.filter;
-        filters.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      filters.forEach((button) => {
+        button.addEventListener('click', () => {
+          const selected = button.dataset.filter;
+          filters.forEach((item) =>
+            item.setAttribute('aria-pressed', String(item === button)),
+          );
 
-        decisions.forEach((card) => {
-          const categories = card.dataset.category.split(" ");
-          card.hidden = selected !== "all" && !categories.includes(selected);
+          decisions.forEach((card) => {
+            const categories = card.dataset.category.split(' ');
+            card.hidden = selected !== 'all' && !categories.includes(selected);
+          });
         });
       });
-    });
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const reveals = document.querySelectorAll(".reveal");
+      const reducedMotion = window.matchMedia(
+        '(prefers-reduced-motion: reduce)',
+      ).matches;
+      const reveals = document.querySelectorAll('.reveal');
 
-    if (reducedMotion || !("IntersectionObserver" in window)) {
-      reveals.forEach((item) => item.classList.add("visible"));
-    } else {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.08 });
+      if (reducedMotion || !('IntersectionObserver' in window)) {
+        reveals.forEach((item) => item.classList.add('visible'));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.08 },
+        );
 
-      reveals.forEach((item) => observer.observe(item));
-    }
+        reveals.forEach((item) => observer.observe(item));
+      }
 
-    document.getElementById("updated").title =
-      `Viewed ${new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(new Date())}`;
-  </script>
-</body>
+      document.getElementById('updated').title =
+        `Viewed ${new Intl.DateTimeFormat(undefined, { dateStyle: 'long' }).format(new Date())}`;
+    </script>
+  </body>
 </html>
