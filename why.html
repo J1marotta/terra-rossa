@@ -537,6 +537,13 @@
             <p class="why"><strong>Why:</strong> “I fired” is a legitimate request; “I dealt 50 damage to that player” is not. Keeping outcomes impossible to express makes server authority a property of the protocol instead of a convention developers must remember. Strictly increasing sequence numbers also turn retries and reordered packets into harmless, explainable errors before simulation begins.</p>
           </article>
 
+          <article class="decision reveal" data-category="world technical gameplay">
+            <span class="tag">T1.3 / Red Hollow</span>
+            <h3>One map, two routes, no opening shot.</h3>
+            <p>Red Hollow places four named spawns behind perimeter screens, gives each two verified paths inward, and surrounds a covered centre with entries from every side. The server reads simple collision boxes while Three.js derives capped visual ruins from those exact same records.</p>
+            <p class="why"><strong>Why:</strong> a handcrafted arena lets early playtests ask whether routes and information are interesting instead of whether a generator happened to be kind. Blocking every initial sightline prevents a loading-screen death, while paired paths preserve agency. Keeping decorative geometry derived from collision data gives the client character without letting an invisible server wall drift away from what players see.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

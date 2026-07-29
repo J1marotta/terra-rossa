@@ -325,7 +325,7 @@ Do not:
 
 ## T1.3 — Create the authored collision map
 
-- [ ] Define one fixed map suitable for two, three, and four-player testing.
+- [x] Define one fixed map suitable for two, three, and four-player testing.
 
 Prerequisites: T1.1.
 

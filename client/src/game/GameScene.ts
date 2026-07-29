@@ -13,6 +13,7 @@ import {
 } from 'three';
 
 import type { PlayerView } from '../multiplayer/types';
+import { createMapVisuals, TERRA_ROSSA_MAP } from '../../../shared/map';
 import { calculateOrthographicBounds } from './projection';
 
 const CAMERA_HEIGHT = 18;
@@ -53,19 +54,27 @@ export class GameScene {
   #buildWorld() {
     this.#scene.background = new Color('#17141d');
 
+    const mapWidth = TERRA_ROSSA_MAP.bounds.maxX - TERRA_ROSSA_MAP.bounds.minX;
+    const mapDepth = TERRA_ROSSA_MAP.bounds.maxZ - TERRA_ROSSA_MAP.bounds.minZ;
     const ground = new Mesh(
-      new PlaneGeometry(30, 22),
+      new PlaneGeometry(mapWidth, mapDepth),
       new MeshStandardMaterial({ color: '#322d36', roughness: 1 }),
     );
     ground.rotation.x = -Math.PI / 2;
     this.#scene.add(ground);
 
-    const obstacle = new Mesh(
-      new BoxGeometry(3.5, 2.5, 2.5),
-      new MeshStandardMaterial({ color: '#5f3134', roughness: 0.9 }),
-    );
-    obstacle.position.set(3, 1.25, -1.5);
-    this.#scene.add(obstacle);
+    createMapVisuals(TERRA_ROSSA_MAP).forEach((primitive) => {
+      const obstacle = new Mesh(
+        new BoxGeometry(primitive.width, primitive.height, primitive.depth),
+        new MeshStandardMaterial({ color: primitive.color, roughness: 0.9 }),
+      );
+      obstacle.position.set(
+        primitive.center.x,
+        primitive.elevation,
+        primitive.center.z,
+      );
+      this.#scene.add(obstacle);
+    });
 
     this.#scene.add(new AmbientLight('#c2b1d2', 1.6));
     const moonlight = new DirectionalLight('#f4d7ba', 2.8);

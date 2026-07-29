@@ -134,3 +134,9 @@ The server will advance integer ticks at a fixed 30 Hz (`1/30` second per tick),
 Every client intent uses one exact envelope: protocol version, Colyseus room ID, nullable match ID, unsigned sequence number, command type, and a command-specific payload. The allowed vocabulary is ready, start, move, aim, dash, fire, reload start, reload attempt, melee, interact, rematch, and leave. Movement carries only a normalized X/Z input vector, aim carries one canonical radian angle, and ready carries one boolean; every action command has an empty payload.
 
 The parser rejects unknown or extra fields, unsafe IDs, invalid numbers, diagonal movement above unit length, incompatible protocol versions, and any attempt to attach outcomes such as damage or a claimed hit. A room checks its own room/match context before consuming sequence order, then accepts only a strictly increasing sequence for that client. Replays, duplicates, and late commands return structured errors instead of affecting simulation twice.
+
+## Authored map
+
+`red_hollow_v1` is a fixed 60-by-44-metre collision map loaded directly from `shared/map.ts`. Northwest, northeast, southeast, and southwest spawn regions sit around the perimeter. Short screening ruins block all six opening spawn-to-spawn sightlines; each spawn has two authored, collision-free waypoint routes into a 20-by-16-metre central conflict area with three cover structures and entries from every side.
+
+The authoritative map contains only bounds, spawn data, routes, and axis-aligned collision boxes. Three.js derives its ground and all obstacle meshes from those records, adding a decorative cap per box without creating a second hand-authored layout. Tests validate IDs, bounds, cover, route reachability, segment collision, and sightlines deterministically at build time; no runtime map editor or procedural geometry is involved.
