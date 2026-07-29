@@ -581,7 +581,7 @@ Acceptance:
 
 ## Phase 2 gate
 
-- [ ] Run a ninety-second hosted combat toy with four connected clients and no match rules.
+- [x] Run a ninety-second hosted combat toy with four connected clients and no match rules.
 
 Pass only when:
 

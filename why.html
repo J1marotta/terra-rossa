@@ -1158,6 +1158,30 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">Phase 2 gate / passed</span>
+              <h3>Ninety seconds proved more than connection.</h3>
+              <p>
+                Four hosted WSS clients produced 72 shots, 21 reload
+                transitions, 133 melee resolutions, 19 observed damage changes,
+                and three eliminations during the required ninety-second combat
+                run. A separate Chrome check exercised the deployed presentation
+                and its accessible reload labels.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a combat gate must observe the whole path,
+                not merely join four sockets. The visual pass caught a perfect
+                reload label racing against client patch timing even though all
+                mechanics and tests were green. Moving the brief result lifetime
+                into synchronized simulation ticks made the cue deterministic
+                and demonstrated the value of testing what a player sees as well
+                as what the server counts.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

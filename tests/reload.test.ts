@@ -79,6 +79,11 @@ describe('active reload', () => {
     expect(attemptActiveReload(dog, 1_000)).toBe(true);
     expect(dog.reloadOutcome).toBe('perfect');
     expect(attemptActiveReload(dog, 1_000)).toBe(false);
+    expect(dog.reloadResultTicksRemaining).toBeGreaterThan(0);
+    while (dog.reloadResultTicksRemaining > 1) advanceReload(dog);
+    expect(dog.reloadResultTicksRemaining).toBe(1);
+    advanceReload(dog);
+    expect(dog.reloadResultTicksRemaining).toBe(0);
   });
 
   it('preserves rounds and rejects impossible reload starts', () => {

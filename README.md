@@ -172,3 +172,9 @@ The client predicts only after it has movement intent and replays dash commands 
 Phase 1 passed against release `9f79483`. Four current Chrome tabs joined `https://terra-rossa.pages.dev`, each rendered four dogs, received a different server UUID, and occupied one of the four authored coordinates. The hosted WSS harness then connected four independent SDK clients, moved and dashed all of them, observed four server dash events, and confirmed every client agreed on every final position within one centimetre.
 
 Run the real-network gate with `$env:COLYSEUS_URL='wss://terra-rossa-server.fly.dev'; pnpm smoke:four` in PowerShell. The deterministic unit harness separately covers 150 ms simulated round-trip latency plus jitter, so the gate exercises both repeatable adverse timing and actual Sydney hosting. Prediction affects only the local presentation; interpolation deliberately delays remote presentation between server snapshots. They solve different problems and never replace authoritative state.
+
+## Phase 2 verification
+
+The hosted combat gate runs four real WSS clients for ninety seconds through `npm run smoke:combat`. The passing run observed 72 shots, 246 dry fires, 21 reload transitions, 133 melee resolutions, 19 damage changes, and 3 eliminations. It exercises only public commands and synchronized room state.
+
+Chrome verification confirmed the live firing and labelled reload presentation. That check exposed an immediate reload grade disappearing too quickly, so completed grades now remain synchronized for 700 milliseconds of server simulation time. The complete path is: browser intent → validated ordered command → fixed-step server action → ordered damage queue → synchronized schema event/state → capped Three.js feedback.
