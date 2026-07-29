@@ -82,6 +82,10 @@ export class PlayerPresentationRegistry<T> {
     return this.#entries.size;
   }
 
+  get(id: string) {
+    return this.#entries.get(id);
+  }
+
   reconcile(
     players: readonly PlayerView[],
     receivedAt: number,

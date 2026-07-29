@@ -1034,6 +1034,30 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T2.2 / authoritative firearm</span>
+              <h3>The click is a request, not a hit.</h3>
+              <p>
+                The pointer sends a throttled aim angle and the primary button
+                sends an ordered fire intent. The room owns the eight-round
+                magazine, reserve count, 240-millisecond cadence, range,
+                authored-wall ray tests, player intersections, dry fire, and the
+                final shot endpoint synchronized for presentation.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> sending a claimed victim would let a
+                modified browser shoot through walls or across the map.
+                Reconstructing the ray from server position and last accepted
+                aim makes ammunition and cover enforceable. A compact shot
+                counter and endpoint tell every renderer what happened without
+                exposing mutable combat authority or requiring React to animate
+                it.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

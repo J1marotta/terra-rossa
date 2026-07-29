@@ -8,12 +8,16 @@ interface GameCanvasProps {
   players: readonly PlayerView[];
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
+  sendAim: (angleRadians: number) => number | null;
+  sendFire: () => number | null;
 }
 
 export function GameCanvas({
   players,
   sendMovement,
   sendDash,
+  sendAim,
+  sendFire,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
@@ -39,6 +43,32 @@ export function GameCanvas({
     );
     return () => input.dispose();
   }, [sendDash, sendMovement]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container === null) return;
+    let lastAimSentAt = 0;
+    const onPointerMove = (event: PointerEvent) => {
+      const angle = sceneRef.current?.aimAngleFromClientPoint(
+        event.clientX,
+        event.clientY,
+      );
+      if (angle === undefined || performance.now() - lastAimSentAt < 50) return;
+      lastAimSentAt = performance.now();
+      sendAim(angle);
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.button !== 0) return;
+      sendFire();
+      event.preventDefault();
+    };
+    container.addEventListener('pointermove', onPointerMove);
+    container.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      container.removeEventListener('pointermove', onPointerMove);
+      container.removeEventListener('pointerdown', onPointerDown);
+    };
+  }, [sendAim, sendFire]);
 
   useEffect(() => {
     sceneRef.current?.setPlayers(players, performance.now());

@@ -2,6 +2,7 @@ export const GAME_NAME = 'Terra Rossa';
 export * from './combat';
 export * from './commands';
 export * from './coordinates';
+export * from './hitscan';
 export * from './map';
 export * from './movement';
 export * from './numeric';

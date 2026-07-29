@@ -19,6 +19,14 @@ describe('room view adapter', () => {
     player.dashCooldownTicksRemaining = 20;
     player.dashRecoveryTicksRemaining = 0;
     player.dashEvent = 2;
+    player.aimAngleRadians = 1;
+    player.magazineAmmo = 7;
+    player.reserveAmmo = 32;
+    player.shotEvent = 1;
+    player.dryFireEvent = 0;
+    player.shotEndX = 15;
+    player.shotEndZ = -4;
+    player.shotTargetId = 'player-a';
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
@@ -37,6 +45,14 @@ describe('room view adapter', () => {
         dashCooldownTicksRemaining: 20,
         dashRecoveryTicksRemaining: 0,
         dashEvent: 2,
+        aimAngleRadians: 1,
+        magazineAmmo: 7,
+        reserveAmmo: 32,
+        shotEvent: 1,
+        dryFireEvent: 0,
+        shotEndX: 15,
+        shotEndZ: -4,
+        shotTargetId: 'player-a',
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

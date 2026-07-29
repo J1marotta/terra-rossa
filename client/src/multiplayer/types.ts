@@ -14,6 +14,14 @@ export interface PlayerView {
   readonly dashX: number;
   readonly dashZ: number;
   readonly dashEvent: number;
+  readonly aimAngleRadians: number;
+  readonly magazineAmmo: number;
+  readonly reserveAmmo: number;
+  readonly shotEvent: number;
+  readonly dryFireEvent: number;
+  readonly shotEndX: number;
+  readonly shotEndZ: number;
+  readonly shotTargetId: string;
 }
 
 export interface RoomView {

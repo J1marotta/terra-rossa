@@ -470,7 +470,7 @@ Acceptance:
 
 ## T2.2 — Implement server-authoritative firing and ammunition
 
-- [ ] Fire the starting hitscan weapon from validated client intent.
+- [x] Fire the starting hitscan weapon from validated client intent.
 
 Prerequisites: T2.1 and T1.2.
 

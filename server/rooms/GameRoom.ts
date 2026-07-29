@@ -8,6 +8,8 @@ import {
   type GameCommand,
 } from '../../shared/commands';
 import { TERRA_ROSSA_MAP } from '../../shared/map';
+import { STARTING_PISTOL } from '../../shared/combat';
+import { traceHitscan } from '../../shared/hitscan';
 import {
   FixedStepAccumulator,
   applyMovementInput,
@@ -28,6 +30,7 @@ import {
   type GameRoomStateInstance,
 } from '../../shared/state';
 import { FIXED_STEP_MILLISECONDS } from '../../shared/time';
+import { millisecondsToTicks } from '../../shared/time';
 import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
 
@@ -41,6 +44,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #playerIdBySession = new Map<string, string>();
   #commandOrderBySession = new Map<string, CommandOrder>();
   #fixedStep = new FixedStepAccumulator();
+  #simulationTick = 0;
+  #lastAimTickByPlayer = new Map<string, number>();
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
@@ -50,7 +55,13 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     });
     this.setSimulationInterval((elapsedMilliseconds) => {
       this.#fixedStep.advance(elapsedMilliseconds, () => {
-        this.state.players.forEach((player) => integratePlayerMovement(player));
+        this.#simulationTick += 1;
+        this.state.players.forEach((player) => {
+          integratePlayerMovement(player);
+          if (player.fireCooldownTicksRemaining > 0) {
+            player.fireCooldownTicksRemaining -= 1;
+          }
+        });
       });
     }, FIXED_STEP_MILLISECONDS);
     this.#logger.info('room_created', {
@@ -83,6 +94,15 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     if (spawn === undefined)
       throw new Error('Authored map has no spawn regions.');
     initializeMovementState(player, spawn.center.x, spawn.center.z);
+    player.aimAngleRadians = 0;
+    player.magazineAmmo = STARTING_PISTOL.magazineSize;
+    player.reserveAmmo = STARTING_PISTOL.reserveSize;
+    player.fireCooldownTicksRemaining = 0;
+    player.shotEvent = 0;
+    player.dryFireEvent = 0;
+    player.shotEndX = player.x;
+    player.shotEndZ = player.z;
+    player.shotTargetId = '';
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
@@ -98,6 +118,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     if (playerId !== undefined) {
       this.#playerIdBySession.delete(client.sessionId);
       this.#commandOrderBySession.delete(client.sessionId);
+      this.#lastAimTickByPlayer.delete(playerId);
       this.state.players.delete(playerId);
     }
     this.#logger.info('player_left', {
@@ -111,6 +132,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   override onDispose() {
     this.#playerIdBySession.clear();
     this.#commandOrderBySession.clear();
+    this.#lastAimTickByPlayer.clear();
     this.#logger.info('room_disposed', { roomId: this.roomId });
   }
 
@@ -139,6 +161,46 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       applyMovementInput(player, payload.x, payload.z, command.sequence);
     } else if (command.type === 'dash') {
       attemptDash(player);
+    } else if (command.type === 'aim') {
+      if (this.#lastAimTickByPlayer.get(player.id) === this.#simulationTick)
+        return;
+      const payload = command.payload as { readonly angleRadians: number };
+      player.aimAngleRadians = payload.angleRadians;
+      this.#lastAimTickByPlayer.set(player.id, this.#simulationTick);
+    } else if (command.type === 'fire') {
+      this.#attemptFire(player);
     }
+  }
+
+  #attemptFire(player: InstanceType<typeof PlayerState>) {
+    if (player.fireCooldownTicksRemaining > 0) return;
+    player.fireCooldownTicksRemaining = millisecondsToTicks(
+      STARTING_PISTOL.fireIntervalMilliseconds,
+    );
+    if (player.magazineAmmo === 0) {
+      player.dryFireEvent += 1;
+      return;
+    }
+    player.magazineAmmo -= 1;
+    const targets = [...this.state.players.values()]
+      .filter((candidate) => candidate.id !== player.id)
+      .map((candidate) => ({
+        id: candidate.id,
+        x: candidate.x,
+        z: candidate.z,
+        radius: candidate.collisionRadius,
+      }));
+    const hit = traceHitscan(
+      TERRA_ROSSA_MAP,
+      player.x,
+      player.z,
+      player.aimAngleRadians,
+      STARTING_PISTOL.rangeMetres,
+      targets,
+    );
+    player.shotEndX = hit.endX;
+    player.shotEndZ = hit.endZ;
+    player.shotTargetId = hit.targetId ?? '';
+    player.shotEvent += 1;
   }
 }

@@ -21,6 +21,14 @@ export function adaptRoomState(
         dashX: player.dashX,
         dashZ: player.dashZ,
         dashEvent: player.dashEvent,
+        aimAngleRadians: player.aimAngleRadians,
+        magazineAmmo: player.magazineAmmo,
+        reserveAmmo: player.reserveAmmo,
+        shotEvent: player.shotEvent,
+        dryFireEvent: player.dryFireEvent,
+        shotEndX: player.shotEndX,
+        shotEndZ: player.shotEndZ,
+        shotTargetId: player.shotTargetId,
       }),
     );
   });

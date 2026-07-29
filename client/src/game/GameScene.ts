@@ -8,6 +8,9 @@ import {
   MeshStandardMaterial,
   OrthographicCamera,
   PlaneGeometry,
+  Raycaster,
+  Vector2,
+  Vector3,
   Scene,
   WebGLRenderer,
 } from 'three';
@@ -38,6 +41,7 @@ export class GameScene {
   #disposed = false;
   #localPlayerId: string | null = null;
   #previousRenderTime = performance.now();
+  readonly #pointerRay = new Raycaster();
 
   constructor(container: HTMLElement) {
     this.#container = container;
@@ -156,6 +160,29 @@ export class GameScene {
     ) {
       this.#dashPulseUntil.set(this.#localPlayerId, performance.now() + 180);
     }
+  }
+
+  aimAngleFromClientPoint(clientX: number, clientY: number) {
+    const local = this.#localPlayerId;
+    if (local === null) return undefined;
+    const entry = this.#players.get(local);
+    if (entry === undefined) return undefined;
+    const bounds = this.#renderer.domElement.getBoundingClientRect();
+    this.#pointerRay.setFromCamera(
+      new Vector2(
+        ((clientX - bounds.left) / bounds.width) * 2 - 1,
+        -((clientY - bounds.top) / bounds.height) * 2 + 1,
+      ),
+      this.#camera,
+    );
+    const directionY = this.#pointerRay.ray.direction.y;
+    if (Math.abs(directionY) < 1e-6) return undefined;
+    const distance = -this.#pointerRay.ray.origin.y / directionY;
+    const point = this.#pointerRay.ray.at(distance, new Vector3());
+    return Math.atan2(
+      point.z - entry.object.position.z,
+      point.x - entry.object.position.x,
+    );
   }
 
   #createDog(player: PlayerView) {

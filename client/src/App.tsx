@@ -31,6 +31,8 @@ export function App() {
         players={snapshot.room?.players ?? []}
         sendMovement={connection.sendMovement}
         sendDash={connection.sendDash}
+        sendAim={connection.sendAim}
+        sendFire={connection.sendFire}
       />
       <section className="title-panel">
         <p className="eyebrow">Terra Rossa</p>

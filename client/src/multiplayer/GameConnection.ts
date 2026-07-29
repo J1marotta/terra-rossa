@@ -162,6 +162,36 @@ export class GameConnection {
     return sequence;
   };
 
+  sendAim = (angleRadians: number) => {
+    const room = this.#room;
+    if (room === null || this.#snapshot.status !== 'connected') return null;
+    const sequence = this.#nextSequence;
+    const command = createCommand(
+      { roomId: room.roomId, matchId: null },
+      sequence,
+      'aim',
+      { angleRadians },
+    );
+    room.send(COMMAND_MESSAGE, command);
+    this.#nextSequence += 1;
+    return sequence;
+  };
+
+  sendFire = () => {
+    const room = this.#room;
+    if (room === null || this.#snapshot.status !== 'connected') return null;
+    const sequence = this.#nextSequence;
+    const command = createCommand(
+      { roomId: room.roomId, matchId: null },
+      sequence,
+      'fire',
+      {},
+    );
+    room.send(COMMAND_MESSAGE, command);
+    this.#nextSequence += 1;
+    return sequence;
+  };
+
   #publish(snapshot: ConnectionSnapshot) {
     this.#snapshot = Object.freeze(snapshot);
     this.#listeners.forEach((listener) => listener(this.#snapshot));

@@ -25,6 +25,14 @@ function createFakeRoom() {
   player.dashCooldownTicksRemaining = 0;
   player.dashRecoveryTicksRemaining = 0;
   player.dashEvent = 0;
+  player.aimAngleRadians = 0;
+  player.magazineAmmo = 8;
+  player.reserveAmmo = 32;
+  player.shotEvent = 0;
+  player.dryFireEvent = 0;
+  player.shotEndX = 5;
+  player.shotEndZ = -3;
+  player.shotTargetId = '';
   state.players.set(player.id, player);
 
   let stateListener: ((state: GameRoomStateInstance) => void) | undefined;
@@ -83,6 +91,14 @@ describe('game connection', () => {
       dashCooldownTicksRemaining: 0,
       dashRecoveryTicksRemaining: 0,
       dashEvent: 0,
+      aimAngleRadians: 0,
+      magazineAmmo: 8,
+      reserveAmmo: 32,
+      shotEvent: 0,
+      dryFireEvent: 0,
+      shotEndX: 5,
+      shotEndZ: -3,
+      shotTargetId: '',
     });
 
     connection.disconnect();
@@ -102,13 +118,15 @@ describe('game connection', () => {
     expect(connection.sendMovement(1, 0)).toBe(0);
     expect(connection.sendMovement(0, -1)).toBe(1);
     expect(connection.sendDash()).toBe(2);
-    expect(fake.room.send).toHaveBeenCalledTimes(3);
+    expect(connection.sendAim(Math.PI / 2)).toBe(3);
+    expect(connection.sendFire()).toBe(4);
+    expect(fake.room.send).toHaveBeenCalledTimes(5);
     expect(fake.room.send).toHaveBeenLastCalledWith(
       'command',
       expect.objectContaining({
         roomId: 'room-test',
-        sequence: 2,
-        type: 'dash',
+        sequence: 4,
+        type: 'fire',
         payload: {},
       }),
     );

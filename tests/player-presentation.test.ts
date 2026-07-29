@@ -24,6 +24,14 @@ const view = (
   dashCooldownTicksRemaining: 0,
   dashRecoveryTicksRemaining: 0,
   dashEvent: 0,
+  aimAngleRadians: 0,
+  magazineAmmo: 8,
+  reserveAmmo: 32,
+  shotEvent: 0,
+  dryFireEvent: 0,
+  shotEndX: 0,
+  shotEndZ: 0,
+  shotTargetId: '',
 });
 
 describe('remote position presentation', () => {

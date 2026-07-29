@@ -181,6 +181,77 @@ describe.sequential('minimal game server', () => {
     await Promise.all(clients.map((client) => client.leave()));
   });
 
+  it('owns aim, ammunition, cadence, wall hits, and dry fire', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const shooterClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Shooter',
+    });
+    const targetClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Target',
+    });
+    const shooter = [...room.state.players.values()].find(
+      (player) => player.sessionId === shooterClient.sessionId,
+    );
+    const target = [...room.state.players.values()].find(
+      (player) => player.sessionId === targetClient.sessionId,
+    );
+    expect(shooter).toBeDefined();
+    expect(target).toBeDefined();
+    if (shooter === undefined || target === undefined) return;
+    shooter.x = -20;
+    shooter.z = -10;
+    target.x = -15;
+    target.z = -10;
+    shooterClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'aim', {
+        angleRadians: 0,
+      }),
+    );
+    shooterClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(shooter.magazineAmmo).toBe(7);
+    expect(shooter.shotEvent).toBe(1);
+    expect(shooter.shotTargetId).toBe(target.id);
+
+    shooterClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 3, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(shooter.magazineAmmo).toBe(7);
+    expect(shooter.shotEvent).toBe(1);
+
+    shooter.x = -28;
+    shooter.z = 0;
+    target.x = -20;
+    target.z = 0;
+    shooter.fireCooldownTicksRemaining = 0;
+    shooterClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 4, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(shooter.shotTargetId).toBe('');
+    expect(shooter.shotEndX).toBeCloseTo(-26.5, 4);
+
+    shooter.magazineAmmo = 0;
+    shooter.fireCooldownTicksRemaining = 0;
+    shooterClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 5, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(shooter.dryFireEvent).toBe(1);
+    expect(shooter.shotEvent).toBe(2);
+    await Promise.all([shooterClient.leave(), targetClient.leave()]);
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;
