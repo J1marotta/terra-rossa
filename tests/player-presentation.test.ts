@@ -16,6 +16,7 @@ const view = (
   displayName: id,
   ready: false,
   isLocal,
+  positionVisible: true,
   x,
   z,
   spawnRegionId: 'northwest',

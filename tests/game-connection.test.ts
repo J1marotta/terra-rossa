@@ -101,6 +101,7 @@ describe('game connection', () => {
       displayName: 'Scout',
       ready: false,
       isLocal: true,
+      positionVisible: true,
       x: 5,
       z: -3,
       spawnRegionId: 'northwest',

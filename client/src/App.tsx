@@ -40,7 +40,7 @@ export function App() {
     <main className="app-shell">
       {room !== null && room !== undefined && !inLobby && (
         <GameCanvas
-          players={room.players}
+          players={room.players.filter((player) => player.positionVisible)}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}

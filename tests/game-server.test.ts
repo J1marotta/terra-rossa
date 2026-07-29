@@ -69,6 +69,71 @@ describe.sequential('minimal game server', () => {
     await Promise.all([first.leave(), second.leave()]);
   });
 
+  it('gives four clients distinct position views and retracts concealed coordinates', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const clients = [];
+    for (let index = 0; index < 4; index += 1) {
+      clients.push(
+        await testServer.connectTo(room, {
+          protocolVersion: PROTOCOL_VERSION,
+          displayName: `Viewer ${index + 1}`,
+        }),
+      );
+    }
+    const serverPlayers = clients.map((client) => {
+      const player = [...room.state.players.values()].find(
+        (candidate) => candidate.sessionId === client.sessionId,
+      );
+      if (player === undefined) throw new Error('Missing test player.');
+      return player;
+    });
+    const positions = [
+      [-10, -10],
+      [-5, -10],
+      [10, 10],
+      [15, 10],
+    ] as const;
+    serverPlayers.forEach((player, index) => {
+      const position = positions[index];
+      if (position === undefined) throw new Error('Missing test position.');
+      player.x = position[0];
+      player.z = position[1];
+    });
+    room.state.phase = 'playing';
+    await new Promise((resolve) => setTimeout(resolve, 120));
+
+    const visibleIds = clients.map((client) =>
+      [...client.state.players.values()]
+        .filter(
+          (player) => Number.isFinite(player.x) && Number.isFinite(player.z),
+        )
+        .map((player) => player.id)
+        .sort(),
+    );
+    expect(visibleIds[0]).toEqual(
+      [serverPlayers[0]?.id, serverPlayers[1]?.id].sort(),
+    );
+    expect(visibleIds[1]).toEqual(
+      [serverPlayers[0]?.id, serverPlayers[1]?.id].sort(),
+    );
+    expect(visibleIds[2]).toEqual(
+      [serverPlayers[2]?.id, serverPlayers[3]?.id].sort(),
+    );
+    expect(visibleIds[3]).toEqual(
+      [serverPlayers[2]?.id, serverPlayers[3]?.id].sort(),
+    );
+
+    serverPlayers[1]!.x = 10;
+    serverPlayers[1]!.z = -10;
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    const firstViewOfSecond = [...clients[0]!.state.players.values()].find(
+      (player) => player.id === serverPlayers[1]!.id,
+    );
+    expect(firstViewOfSecond?.x).toBeUndefined();
+    expect(firstViewOfSecond?.z).toBeUndefined();
+    await Promise.all(clients.map((client) => client.leave()));
+  });
+
   it('creates a short private code and enforces ready host start rules', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const host = await testServer.connectTo(room, {

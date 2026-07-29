@@ -55,6 +55,7 @@ describe('room view adapter', () => {
         displayName: 'Scout',
         ready: true,
         isLocal: true,
+        positionVisible: true,
         x: 12,
         z: -4,
         spawnRegionId: 'northwest',
@@ -97,6 +98,26 @@ describe('room view adapter', () => {
 
     player.displayName = 'Changed on server';
     expect(view.players[0]?.displayName).toBe('Scout');
+  });
+
+  it('keeps hidden schema coordinates out of renderer-facing positions', () => {
+    const state = createGameRoomState();
+    const player = new PlayerState();
+    player.id = 'hidden';
+    player.sessionId = 'remote';
+    player.displayName = 'Hidden dog';
+    Object.defineProperty(player, 'x', { value: undefined });
+    Object.defineProperty(player, 'z', { value: undefined });
+    state.players.set(player.id, player);
+
+    const view = adaptRoomState(state, 'local');
+
+    expect(view.players[0]).toMatchObject({
+      id: 'hidden',
+      positionVisible: false,
+      x: 0,
+      z: 0,
+    });
   });
 
   it('sorts stable player IDs without changing schema insertion order', () => {

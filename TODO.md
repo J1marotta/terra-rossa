@@ -688,7 +688,7 @@ Acceptance:
 
 ## T3.5 — Implement per-client opponent visibility
 
-- [ ] Prevent clients from receiving exact positions for currently hidden opponents.
+- [x] Prevent clients from receiving exact positions for currently hidden opponents.
 
 Prerequisites: T1.3 and T3.3.
 

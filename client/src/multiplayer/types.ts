@@ -6,6 +6,7 @@ export interface PlayerView {
   readonly displayName: string;
   readonly ready: boolean;
   readonly isLocal: boolean;
+  readonly positionVisible: boolean;
   readonly x: number;
   readonly z: number;
   readonly spawnRegionId: string;

@@ -1268,6 +1268,28 @@
             </article>
 
             <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">T3.5 / private sightlines</span>
+              <h3>Hidden means absent, not transparent.</h3>
+              <p>
+                Every connection now has its own position view. An opponent's
+                exact coordinates appear only while that living dog is within 16
+                metres and an authored obstacle does not cross the sightline;
+                stepping behind cover or out of range removes those fields
+                again. The public roster remains available, while spawn
+                assignment stays on a separate owner-only channel.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> Three.js cannot protect information it
+                already received. Separate Colyseus view tags let the server
+                revoke position without accidentally revealing the private spawn
+                field. The range is an input to one shared rule, giving later
+                darkness a clean way to contract vision. Gunfire does not
+                override exact visibility yet; a future sound cue may disclose
+                an approximate direction without leaking a hidden coordinate.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>
               <p>
@@ -1574,8 +1596,8 @@
               mix remains sustainable?
             </div>
             <div>
-              <strong>Visibility:</strong> How should Colyseus filter hidden
-              opponent state?
+              <strong>Visibility:</strong> How much approximate direction should
+              hidden gunfire disclose without leaking a coordinate?
             </div>
             <div>
               <strong>Darkness:</strong> When should it close, and what boundary

@@ -50,6 +50,7 @@ import {
 import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
+import { canViewerSeeTarget } from '../../shared/visibility';
 import {
   createRoomCode,
   removePrivateRoom,
@@ -68,6 +69,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #logger: GameLogger = consoleLogger;
   #playerIdBySession = new Map<string, string>();
   #commandOrderBySession = new Map<string, CommandOrder>();
+  #clientByPlayerId = new Map<string, Client>();
   #fixedStep = new FixedStepAccumulator();
   #simulationTick = 0;
   #lastAimTickByPlayer = new Map<string, number>();
@@ -90,6 +92,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           this.state.countdownTicksRemaining -= 1;
           if (this.state.countdownTicksRemaining === 0) {
             this.state.phase = 'playing';
+            this.#updateVisibilityViews();
           }
           return;
         }
@@ -103,6 +106,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           advanceReload(player);
           this.#advanceMelee(player);
         });
+        this.#updateVisibilityViews();
         this.#resolvePendingDamage();
       });
     }, FIXED_STEP_MILLISECONDS);
@@ -162,10 +166,12 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.eliminationEvent = 0;
     player.eliminatedById = '';
     this.#playerIdBySession.set(client.sessionId, playerId);
+    this.#clientByPlayerId.set(playerId, client);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
     client.view = new StateView();
-    client.view.add(player);
+    client.view.add(player, 1);
+    client.view.add(player, 2);
     if (this.state.hostPlayerId === '') this.state.hostPlayerId = playerId;
     updatePrivateRoom(this.state.roomCode, {
       playerCount: this.state.players.size,
@@ -181,6 +187,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     const playerId = this.#playerIdBySession.get(client.sessionId);
     if (playerId !== undefined) {
       this.#playerIdBySession.delete(client.sessionId);
+      this.#clientByPlayerId.delete(playerId);
       this.#commandOrderBySession.delete(client.sessionId);
       this.#lastAimTickByPlayer.delete(playerId);
       this.state.players.delete(playerId);
@@ -202,6 +209,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
 
   override onDispose() {
     this.#playerIdBySession.clear();
+    this.#clientByPlayerId.clear();
     this.#commandOrderBySession.clear();
     this.#lastAimTickByPlayer.clear();
     this.#pendingDamage.length = 0;
@@ -334,6 +342,24 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       if (spawn === undefined) throw new Error('Missing allocated spawn.');
       initializeMovementState(player, spawn.center.x, spawn.center.z);
       player.spawnRegionId = spawn.id;
+    });
+  }
+
+  #updateVisibilityViews() {
+    this.state.players.forEach((viewer) => {
+      const view = this.#clientByPlayerId.get(viewer.id)?.view;
+      if (view === undefined) return;
+      this.state.players.forEach((target) => {
+        if (target.id === viewer.id) {
+          view.add(target, 1);
+          return;
+        }
+        if (canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, target)) {
+          view.add(target, 1);
+        } else {
+          view.remove(target, 1);
+        }
+      });
     });
   }
 

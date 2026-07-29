@@ -7,15 +7,18 @@ export function adaptRoomState(
 ): RoomView {
   const players: PlayerView[] = [];
   state.players.forEach((player) => {
+    const positionVisible =
+      Number.isFinite(player.x) && Number.isFinite(player.z);
     players.push(
       Object.freeze({
         id: player.id,
         displayName: player.displayName,
         ready: player.ready,
         isLocal: player.sessionId === localSessionId,
-        x: player.x,
-        z: player.z,
-        spawnRegionId: player.spawnRegionId,
+        positionVisible,
+        x: positionVisible ? player.x : 0,
+        z: positionVisible ? player.z : 0,
+        spawnRegionId: player.spawnRegionId ?? '',
         lastProcessedSequence: player.lastProcessedSequence,
         dashTicksRemaining: player.dashTicksRemaining,
         dashCooldownTicksRemaining: player.dashCooldownTicksRemaining,

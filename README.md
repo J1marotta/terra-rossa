@@ -178,3 +178,11 @@ Run the real-network gate with `$env:COLYSEUS_URL='wss://terra-rossa-server.fly.
 The hosted combat gate runs four real WSS clients for ninety seconds through `npm run smoke:combat`. The passing run observed 72 shots, 246 dry fires, 21 reload transitions, 133 melee resolutions, 19 damage changes, and 3 eliminations. It exercises only public commands and synchronized room state.
 
 Chrome verification confirmed the live firing and labelled reload presentation. That check exposed an immediate reload grade disappearing too quickly, so completed grades now remain synchronized for 700 milliseconds of server simulation time. The complete path is: browser intent → validated ordered command → fixed-step server action → ordered damage queue → synchronized schema event/state → capped Three.js feedback.
+
+## Per-client opponent visibility
+
+During play, the server reveals an opponent's exact X/Z position only when the target is alive, within 16 metres, and connected to the viewer by an unobstructed sightline through the authored map. The range is an explicit input so the later darkness phase can contract it without replacing the visibility rule.
+
+Colyseus schema view tag 1 carries revocable position fields; tag 2 carries the owning player's private spawn assignment. Every client always receives the public roster, but the room independently adds or removes tag 1 for each viewer-target pair on simulation ticks. Concealment therefore removes remote coordinates from synchronized schema state instead of asking Three.js to hide data it already knows. The client adapter marks records without finite coordinates as concealed and excludes them from the rendered player list, while retaining names for lobby and result screens.
+
+Gunfire does not grant an additional exact-position reveal in this slice. Existing combat events remain presentation hooks only for opponents already visible; later audio work may add an approved approximate sound cue without publishing a hidden shooter's coordinates.
