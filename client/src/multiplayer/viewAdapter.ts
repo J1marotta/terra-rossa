@@ -11,6 +11,7 @@ export function adaptRoomState(
       Object.freeze({
         id: player.id,
         displayName: player.displayName,
+        ready: player.ready,
         isLocal: player.sessionId === localSessionId,
         x: player.x,
         z: player.z,
@@ -53,6 +54,9 @@ export function adaptRoomState(
   return Object.freeze({
     protocolVersion: state.protocolVersion,
     phase: state.phase,
+    roomCode: state.roomCode,
+    hostPlayerId: state.hostPlayerId,
+    startApprovedEvent: state.startApprovedEvent,
     players: Object.freeze(players),
   });
 }

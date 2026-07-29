@@ -45,6 +45,7 @@ export function createJoinRoom(endpoint: string): JoinRoom {
 export class GameConnection {
   readonly #endpoint: string;
   readonly #joinRoom: JoinRoom;
+  readonly #sdk: ColyseusSDK;
   readonly #listeners = new Set<Listener>();
   #snapshot = IDLE;
   #room: RoomTransport | null = null;
@@ -54,6 +55,7 @@ export class GameConnection {
   constructor(endpoint: string, joinRoom: JoinRoom = createJoinRoom(endpoint)) {
     this.#endpoint = endpoint;
     this.#joinRoom = joinRoom;
+    this.#sdk = new ColyseusSDK(endpoint);
   }
 
   getSnapshot = () => this.#snapshot;
@@ -64,15 +66,68 @@ export class GameConnection {
   };
 
   async connect(displayName = 'Scout') {
+    return this.#connectUsing(() =>
+      this.#joinRoom({
+        protocolVersion: PROTOCOL_VERSION,
+        displayName,
+      }),
+    );
+  }
+
+  async createPrivate(displayName: string) {
+    return this.#connectUsing(() =>
+      this.#sdk.create(
+        GAME_ROOM_NAME,
+        { protocolVersion: PROTOCOL_VERSION, displayName },
+        GameRoomState,
+      ),
+    );
+  }
+
+  async joinPrivate(displayName: string, roomCode: string) {
+    const code = roomCode.trim().toUpperCase();
+    if (!/^[A-Z2-9]{6}$/.test(code)) {
+      this.#publish({
+        status: 'failed',
+        room: null,
+        error: 'Room code must contain six letters or numbers.',
+      });
+      return;
+    }
+    const lookup = new URL(`/rooms/${code}`, this.#httpEndpoint());
+    return this.#connectUsing(async () => {
+      const response = await fetch(lookup);
+      const result = (await response.json()) as {
+        ok?: boolean;
+        roomId?: string;
+        error?: string;
+      };
+      if (!response.ok || result.roomId === undefined) {
+        const messages: Record<string, string> = {
+          invalid_code: 'That room code is invalid.',
+          missing_room: 'No open room uses that code.',
+          closed_room: 'That room has already started.',
+          full_room: 'That room already has four players.',
+        };
+        throw new Error(
+          messages[result.error ?? ''] ?? 'The room is unavailable.',
+        );
+      }
+      return this.#sdk.joinById(
+        result.roomId,
+        { protocolVersion: PROTOCOL_VERSION, displayName },
+        GameRoomState,
+      );
+    });
+  }
+
+  async #connectUsing(joinRoom: () => Promise<RoomTransport>) {
     if (this.#snapshot.status === 'connecting' || this.#room !== null) return;
     const generation = ++this.#generation;
     this.#publish({ status: 'connecting', room: null, error: null });
 
     try {
-      const room = await this.#joinRoom({
-        protocolVersion: PROTOCOL_VERSION,
-        displayName,
-      });
+      const room = await joinRoom();
       if (generation !== this.#generation) {
         room.removeAllListeners();
         await room.leave(true);
@@ -119,6 +174,12 @@ export class GameConnection {
         error: `Could not connect to ${this.#endpoint}. Start the game server, then reload Chrome. ${detail}`,
       });
     }
+  }
+
+  #httpEndpoint() {
+    const endpoint = new URL(this.#endpoint);
+    endpoint.protocol = endpoint.protocol === 'wss:' ? 'https:' : 'http:';
+    return endpoint;
   }
 
   disconnect() {
@@ -194,6 +255,20 @@ export class GameConnection {
 
   sendReloadStart = () => this.#sendEmptyCommand('reload_start');
   sendMelee = () => this.#sendEmptyCommand('melee');
+  sendReady = (ready: boolean) => {
+    const room = this.#room;
+    if (room === null || this.#snapshot.status !== 'connected') return null;
+    const sequence = this.#nextSequence;
+    room.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, sequence, 'ready', {
+        ready,
+      }),
+    );
+    this.#nextSequence += 1;
+    return sequence;
+  };
+  sendStart = () => this.#sendEmptyCommand('start');
 
   sendReloadAttempt = (clientElapsedMilliseconds: number) => {
     const room = this.#room;
@@ -210,7 +285,7 @@ export class GameConnection {
     return sequence;
   };
 
-  #sendEmptyCommand(type: 'reload_start' | 'melee') {
+  #sendEmptyCommand(type: 'reload_start' | 'melee' | 'start') {
     const room = this.#room;
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;

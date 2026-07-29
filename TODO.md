@@ -598,7 +598,7 @@ Goal: complete the player-versus-player match before adding creatures or darknes
 
 ## T3.1 — Build the private lobby
 
-- [ ] Implement create, join, ready, start, leave, and room-code flow for two to four players.
+- [x] Implement create, join, ready, start, leave, and room-code flow for two to four players.
 
 Prerequisites: Phase 2 gate.
 

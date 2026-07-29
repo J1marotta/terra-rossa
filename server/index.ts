@@ -8,6 +8,7 @@ import { GAME_ROOM_NAME, PROTOCOL_VERSION } from '../shared/protocol';
 import { loadServerConfig, type ServerConfig } from './config';
 import { consoleLogger, type GameLogger } from './logger';
 import { GameRoom } from './rooms/GameRoom';
+import { resolvePrivateRoom } from './roomRegistry';
 
 export interface GameServer {
   app: Application;
@@ -48,6 +49,24 @@ export function createGameServer(
       environment: config.environment,
       protocolVersion: PROTOCOL_VERSION,
     });
+  });
+
+  app.get('/rooms/:code', (request, response) => {
+    const code = request.params.code?.toUpperCase() ?? '';
+    if (!/^[A-Z2-9]{6}$/.test(code)) {
+      response.status(400).json({ ok: false, error: 'invalid_code' });
+      return;
+    }
+    const room = resolvePrivateRoom(code);
+    if (room === null) {
+      response.status(404).json({ ok: false, error: 'missing_room' });
+    } else if (room.closed) {
+      response.status(410).json({ ok: false, error: 'closed_room' });
+    } else if (room.playerCount >= 4) {
+      response.status(409).json({ ok: false, error: 'full_room' });
+    } else {
+      response.json({ ok: true, roomId: room.roomId });
+    }
   });
 
   gameServer.define(GAME_ROOM_NAME, GameRoom, { logger });

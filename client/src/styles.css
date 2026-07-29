@@ -104,6 +104,59 @@ body {
   pointer-events: none;
 }
 
+.lobby-panel {
+  position: relative;
+  z-index: 4;
+  width: min(38rem, calc(100% - 2rem));
+  margin: 6vh auto;
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+  border: 1px solid #6b5a58;
+  background: rgba(23, 20, 29, 0.96);
+}
+
+.lobby-panel h1 {
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+}
+.lobby-panel label {
+  display: grid;
+  gap: 0.4rem;
+  margin: 1rem 0;
+}
+.lobby-panel input,
+.lobby-panel button {
+  border: 1px solid #8d756c;
+  padding: 0.75rem 0.9rem;
+  color: #f4ead8;
+  background: #241c25;
+  font:
+    700 1rem system-ui,
+    sans-serif;
+}
+.lobby-panel button {
+  cursor: pointer;
+}
+.lobby-panel button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.lobby-actions {
+  display: grid;
+  gap: 0.65rem;
+}
+.lobby-actions.row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.roster {
+  padding: 0;
+  list-style: none;
+}
+.roster li {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #493d43;
+}
+
 .eyebrow,
 .status {
   color: #d86b4b;

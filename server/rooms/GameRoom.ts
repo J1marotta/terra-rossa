@@ -47,6 +47,11 @@ import {
 } from '../../shared/reload';
 import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
+import {
+  createRoomCode,
+  removePrivateRoom,
+  updatePrivateRoom,
+} from '../roomRegistry';
 
 interface RoomOptions {
   logger?: GameLogger;
@@ -66,6 +71,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
     this.setState(createGameRoomState());
+    this.state.roomCode = createRoomCode(this.roomId);
+    this.setMetadata({ roomCode: this.state.roomCode });
     this.onMessage(COMMAND_MESSAGE, (client, message: unknown) => {
       this.#handleCommand(client, message);
     });
@@ -98,6 +105,9 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         `Protocol mismatch: server requires ${PROTOCOL_VERSION}; received ${String(options?.protocolVersion ?? 'missing')}.`,
       );
     }
+    if (this.state.phase !== 'waiting') {
+      throw new ServerError(4003, 'This private room has already started.');
+    }
     return true;
   }
 
@@ -107,6 +117,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.id = playerId;
     player.sessionId = client.sessionId;
     player.displayName = sanitizeDisplayName(options.displayName);
+    player.ready = false;
     const spawn =
       TERRA_ROSSA_MAP.spawns[
         this.state.players.size % TERRA_ROSSA_MAP.spawns.length
@@ -137,6 +148,10 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
+    if (this.state.hostPlayerId === '') this.state.hostPlayerId = playerId;
+    updatePrivateRoom(this.state.roomCode, {
+      playerCount: this.state.players.size,
+    });
     this.#logger.info('player_joined', {
       roomId: this.roomId,
       playerId,
@@ -151,6 +166,13 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       this.#commandOrderBySession.delete(client.sessionId);
       this.#lastAimTickByPlayer.delete(playerId);
       this.state.players.delete(playerId);
+      if (this.state.hostPlayerId === playerId) {
+        this.state.hostPlayerId = this.state.players.keys().next().value ?? '';
+      }
+      this.#resetLobby();
+      updatePrivateRoom(this.state.roomCode, {
+        playerCount: this.state.players.size,
+      });
     }
     this.#logger.info('player_left', {
       roomId: this.roomId,
@@ -165,6 +187,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#commandOrderBySession.clear();
     this.#lastAimTickByPlayer.clear();
     this.#pendingDamage.length = 0;
+    removePrivateRoom(this.state.roomCode);
     this.#logger.info('room_disposed', { roomId: this.roomId });
   }
 
@@ -185,8 +208,24 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     }
     const command = result.command as GameCommand;
     player.lastProcessedSequence = command.sequence;
-    if (!player.alive) return;
-    if (command.type === 'move') {
+    if (command.type === 'ready' && this.state.phase === 'waiting') {
+      const payload = command.payload as { readonly ready: boolean };
+      player.ready = payload.ready;
+    } else if (command.type === 'start') {
+      if (
+        player.id === this.state.hostPlayerId &&
+        this.state.players.size >= 2 &&
+        [...this.state.players.values()].every((candidate) => candidate.ready)
+      ) {
+        this.state.phase = 'starting';
+        this.state.startApprovedEvent += 1;
+        updatePrivateRoom(this.state.roomCode, { closed: true });
+      }
+    } else if (command.type === 'rematch') {
+      if (player.id === this.state.hostPlayerId) this.#resetLobby();
+    } else if (!player.alive) {
+      return;
+    } else if (command.type === 'move') {
       const payload = command.payload as {
         readonly x: number;
         readonly z: number;
@@ -212,6 +251,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     } else if (command.type === 'melee') {
       this.#attemptMelee(player);
     }
+  }
+
+  #resetLobby() {
+    this.state.phase = 'waiting';
+    this.state.players.forEach((player) => {
+      player.ready = false;
+    });
+    updatePrivateRoom(this.state.roomCode, { closed: false });
   }
 
   #attemptFire(player: InstanceType<typeof PlayerState>) {

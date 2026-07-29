@@ -17,6 +17,7 @@
     "server/config.ts",
     "server/index.ts",
     "server/logger.ts",
+    "server/roomRegistry.ts",
     "server/rooms/**/*.ts",
     "vitest.config.ts"
   ],

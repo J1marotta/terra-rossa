@@ -7,6 +7,7 @@ export const PlayerState = schema(
     id: 'string',
     sessionId: 'string',
     displayName: 'string',
+    ready: 'boolean',
     x: 'float32',
     z: 'float32',
     moveX: 'float32',
@@ -55,6 +56,9 @@ export const GameRoomState = schema(
   {
     protocolVersion: 'string',
     phase: 'string',
+    roomCode: 'string',
+    hostPlayerId: 'string',
+    startApprovedEvent: 'uint32',
     players: { map: PlayerState },
   },
   'GameRoomState',
@@ -66,6 +70,9 @@ export function createGameRoomState(): GameRoomStateInstance {
   const state = new GameRoomState();
   state.protocolVersion = PROTOCOL_VERSION;
   state.phase = 'waiting';
+  state.roomCode = '';
+  state.hostPlayerId = '';
+  state.startApprovedEvent = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   return state;
 }

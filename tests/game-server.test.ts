@@ -10,6 +10,7 @@ import { resolveServerConfig } from '../server/config';
 import { createGameServer } from '../server/index';
 import type { GameLogger, LogFields } from '../server/logger';
 import type { GameRoom } from '../server/rooms/GameRoom';
+import { resolvePrivateRoom } from '../server/roomRegistry';
 
 describe.sequential('minimal game server', () => {
   const events: Array<{ event: string; fields: LogFields | undefined }> = [];
@@ -65,6 +66,133 @@ describe.sequential('minimal game server', () => {
     expect(localPlayer?.displayName).toBe('Scoutscript');
 
     await Promise.all([first.leave(), second.leave()]);
+  });
+
+  it('creates a short private code and enforces ready host start rules', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const host = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Host',
+    });
+    const guest = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Guest',
+    });
+    expect(room.state.roomCode).toMatch(/^[A-Z2-9]{6}$/);
+    const lookup = await testServer.http.get(`/rooms/${room.state.roomCode}`);
+    expect(lookup.statusCode).toBe(200);
+    expect(lookup.data).toMatchObject({ ok: true, roomId: room.roomId });
+    const players = [...room.state.players.values()];
+    const hostPlayer = players.find(
+      (player) => player.sessionId === host.sessionId,
+    );
+    const guestPlayer = players.find(
+      (player) => player.sessionId === guest.sessionId,
+    );
+    expect(hostPlayer?.id).toBe(room.state.hostPlayerId);
+    expect(players.every((player) => !player.ready)).toBe(true);
+
+    guest.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'ready', {
+        ready: true,
+      }),
+    );
+    guest.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'start', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(room.state.phase).toBe('waiting');
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'start', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(room.state.phase).toBe('waiting');
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'ready', {
+        ready: true,
+      }),
+    );
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 3, 'start', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(room.state.phase).toBe('starting');
+    expect(room.state.startApprovedEvent).toBe(1);
+    expect(guestPlayer?.ready).toBe(true);
+    expect(resolvePrivateRoom(room.state.roomCode)?.closed).toBe(true);
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 4, 'rematch', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(room.state.phase).toBe('waiting');
+    expect(
+      [...room.state.players.values()].every((player) => !player.ready),
+    ).toBe(true);
+    await Promise.all([host.leave(), guest.leave()]);
+  });
+
+  it.each([2, 3, 4])(
+    'approves a fully ready %i-player lobby',
+    async (count) => {
+      const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+      const clients = [];
+      for (let index = 0; index < count; index += 1) {
+        clients.push(
+          await testServer.connectTo(room, {
+            protocolVersion: PROTOCOL_VERSION,
+            displayName: `Ready ${index + 1}`,
+          }),
+        );
+      }
+      clients.forEach((client) => {
+        client.send(
+          COMMAND_MESSAGE,
+          createCommand({ roomId: room.roomId, matchId: null }, 1, 'ready', {
+            ready: true,
+          }),
+        );
+      });
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      clients[0]?.send(
+        COMMAND_MESSAGE,
+        createCommand({ roomId: room.roomId, matchId: null }, 2, 'start', {}),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      expect(room.state.phase).toBe('starting');
+      await Promise.all(clients.map((client) => client.leave()));
+    },
+  );
+
+  it('transfers host and clears readiness when a lobby player leaves', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const host = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Host',
+    });
+    const guest = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Guest',
+    });
+    guest.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'ready', {
+        ready: true,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    await host.leave();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    const remaining = [...room.state.players.values()][0];
+    expect(room.state.hostPlayerId).toBe(remaining?.id);
+    expect(remaining?.ready).toBe(false);
+    expect(room.state.phase).toBe('waiting');
+    await guest.leave();
   });
 
   it('rejects a fifth client and incompatible protocols', async () => {

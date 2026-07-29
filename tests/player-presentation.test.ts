@@ -14,6 +14,7 @@ const view = (
 ): PlayerView => ({
   id,
   displayName: id,
+  ready: false,
   isLocal,
   x,
   z,

@@ -16,6 +16,7 @@ function createFakeRoom() {
   player.id = 'server-player-id';
   player.sessionId = 'local-session';
   player.displayName = 'Scout';
+  player.ready = false;
   player.x = 5;
   player.z = -3;
   player.lastProcessedSequence = 2;
@@ -97,6 +98,7 @@ describe('game connection', () => {
     expect(connection.getSnapshot().room?.players[0]).toEqual({
       id: 'server-player-id',
       displayName: 'Scout',
+      ready: false,
       isLocal: true,
       x: 5,
       z: -3,
@@ -155,13 +157,15 @@ describe('game connection', () => {
     expect(connection.sendReloadStart()).toBe(5);
     expect(connection.sendReloadAttempt(1_000)).toBe(6);
     expect(connection.sendMelee()).toBe(7);
-    expect(fake.room.send).toHaveBeenCalledTimes(8);
+    expect(connection.sendReady(true)).toBe(8);
+    expect(connection.sendStart()).toBe(9);
+    expect(fake.room.send).toHaveBeenCalledTimes(10);
     expect(fake.room.send).toHaveBeenLastCalledWith(
       'command',
       expect.objectContaining({
         roomId: 'room-test',
-        sequence: 7,
-        type: 'melee',
+        sequence: 9,
+        type: 'start',
         payload: {},
       }),
     );
@@ -170,6 +174,17 @@ describe('game connection', () => {
       expect.objectContaining({ position: expect.anything() }),
     );
     connection.disconnect();
+  });
+
+  it('rejects malformed private room codes before networking', async () => {
+    const connection = new GameConnection('ws://game.test', async () => {
+      throw new Error('join should not run');
+    });
+    await connection.joinPrivate('Scout', 'bad!');
+    expect(connection.getSnapshot()).toMatchObject({
+      status: 'failed',
+      error: 'Room code must contain six letters or numbers.',
+    });
   });
 
   it('ignores stale joins after disconnect and closes the late room', async () => {

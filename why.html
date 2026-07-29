@@ -1182,6 +1182,30 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T3.1 / private lobby</span>
+              <h3>Six characters gather the friends.</h3>
+              <p>
+                A player creates a private room, shares a six-character code,
+                and becomes host. Two to four sanitized names appear in a ready
+                roster; every connected dog must be ready and only the current
+                host can start. Leaving transfers host and clears stale
+                readiness.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> friend games need a code, not accounts or
+                public matchmaking. A small in-memory registry on the existing
+                single server resolves the friendly code to Colyseus's real room
+                ID and distinguishes invalid, missing, full, and already-started
+                rooms. It adds no database and cleans itself when the room dies;
+                if hosting later scales beyond one process, this deliberately
+                narrow registry is the boundary to replace.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

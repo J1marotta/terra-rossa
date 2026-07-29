@@ -4,6 +4,7 @@ export type ConnectionStatus =
 export interface PlayerView {
   readonly id: string;
   readonly displayName: string;
+  readonly ready: boolean;
   readonly isLocal: boolean;
   readonly x: number;
   readonly z: number;
@@ -43,6 +44,9 @@ export interface PlayerView {
 export interface RoomView {
   readonly protocolVersion: string;
   readonly phase: string;
+  readonly roomCode: string;
+  readonly hostPlayerId: string;
+  readonly startApprovedEvent: number;
   readonly players: readonly PlayerView[];
 }
 

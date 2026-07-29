@@ -10,6 +10,7 @@ describe('room view adapter', () => {
     player.id = 'player-b';
     player.sessionId = 'session-local';
     player.displayName = 'Scout';
+    player.ready = true;
     player.x = 12;
     player.z = -4;
     player.lastProcessedSequence = 7;
@@ -51,6 +52,7 @@ describe('room view adapter', () => {
       {
         id: 'player-b',
         displayName: 'Scout',
+        ready: true,
         isLocal: true,
         x: 12,
         z: -4,
