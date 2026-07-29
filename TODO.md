@@ -756,7 +756,7 @@ Acceptance:
 
 ## Phase 3 gate
 
-- [ ] Complete repeated hosted two-, three-, and four-player free-for-all sessions.
+- [x] Complete repeated hosted two-, three-, and four-player free-for-all sessions.
 
 Pass only when:
 

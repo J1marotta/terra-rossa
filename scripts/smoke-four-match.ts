@@ -19,10 +19,13 @@ if (
   throw new Error('COLYSEUS_URL must be a ws:// or wss:// endpoint.');
 
 const repeats = Number(process.env.MATCH_HARNESS_REPEATS ?? 2);
+const playerCount = Number(process.env.MATCH_HARNESS_PLAYERS ?? 4);
 const latencyMilliseconds = Number(process.env.MATCH_HARNESS_LATENCY_MS ?? 0);
 const jitterMilliseconds = Number(process.env.MATCH_HARNESS_JITTER_MS ?? 0);
 const seed = Number(process.env.MATCH_HARNESS_SEED ?? 7305);
 const random = new SeededRandom(seed);
+if (!Number.isInteger(playerCount) || playerCount < 2 || playerCount > 4)
+  throw new Error('MATCH_HARNESS_PLAYERS must be 2, 3, or 4.');
 
 interface HarnessRoom {
   readonly roomId: string;
@@ -94,7 +97,7 @@ async function runMatch(iteration: number) {
         GameRoomState,
       )) as HarnessRoom,
     );
-    for (let index = 1; index < 4; index += 1) {
+    for (let index = 1; index < playerCount; index += 1) {
       clients.push(
         (await new ColyseusSDK(endpoint).joinById(
           clients[0]!.roomId,
@@ -106,8 +109,8 @@ async function runMatch(iteration: number) {
         )) as HarnessRoom,
       );
     }
-    await waitFor('four public roster entries', () =>
-      clients.every((room) => room.state.players.size === 4),
+    await waitFor(`${playerCount} public roster entries`, () =>
+      clients.every((room) => room.state.players.size === playerCount),
     );
     clients.forEach((room) => {
       const positioned = [...room.state.players.values()].filter(
@@ -253,6 +256,7 @@ console.log(
     ok: true,
     seed,
     repeats,
+    playerCount,
     latencyMilliseconds,
     jitterMilliseconds,
     results,

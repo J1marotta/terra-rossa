@@ -197,6 +197,12 @@ The forfeited record remains through the result screen so survivors can understa
 
 Run `pnpm smoke:match` with `COLYSEUS_URL` set to a local `ws://` or hosted `wss://` endpoint. The harness creates one private room, joins exactly three friends by room ID, verifies that all four public rosters contain only the observing client's exact coordinates, readies every dog, waits through the authoritative countdown, and navigates the authored spawn routes.
 
-One deterministic hunter then uses ordinary movement, aim, fire, and reload commands until last-dog-standing. The harness requires opponent reveal transitions and real combat events, compares the public winner on every client, sends the host rematch command, verifies clean restored lobby state, leaves every connection, and repeats in a fresh room. `MATCH_HARNESS_REPEATS`, `MATCH_HARNESS_SEED`, `MATCH_HARNESS_LATENCY_MS`, and `MATCH_HARNESS_JITTER_MS` make cleanup and adverse-network runs repeatable. It emits one structured JSON result for CI or hosted evidence.
+One deterministic hunter then uses ordinary movement, aim, fire, and reload commands until last-dog-standing. The harness requires opponent reveal transitions and real combat events, compares the public winner on every client, sends the host rematch command, verifies clean restored lobby state, leaves every connection, and repeats in a fresh room. `MATCH_HARNESS_PLAYERS` selects two, three, or four players; `MATCH_HARNESS_REPEATS`, `MATCH_HARNESS_SEED`, `MATCH_HARNESS_LATENCY_MS`, and `MATCH_HARNESS_JITTER_MS` make cleanup and adverse-network runs repeatable. It emits one structured JSON result for CI or hosted evidence.
 
 While building this gate, completed bodies were found to remain in firearm and melee target candidate lists. The server now excludes eliminated dogs before tracing either attack, preventing an invisible corpse from shielding a living opponent.
+
+## Phase 3 verification
+
+Release `acb8459` passed repeated hosted two-, three-, and four-player matches over the Sydney WSS endpoint with 15 ms injected command latency plus up to 10 ms jitter. Every room began with exact opponent coordinates absent from each client's schema, traversed the real countdown and authored routes, observed reveal transitions, resolved ordinary firearm combat to one winner agreed by every client, returned to a clean lobby through host rematch, and disposed before the next fresh room.
+
+The two-player runs produced five combat events each, the three-player runs produced 10 and 12, and the primary four-player runs produced 15 and 16. All six matches completed with a valid winner. The supporting harness accepts every supported room size through `MATCH_HARNESS_PLAYERS`; four remains the default and primary acceptance case.

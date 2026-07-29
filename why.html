@@ -947,6 +947,30 @@
               class="decision reveal"
               data-category="technical gameplay interface"
             >
+              <span class="tag">Phase 3 gate / passed</span>
+              <h3>Six hosted matches closed the room loop.</h3>
+              <p>
+                Two consecutive matches at each supported size—two, three, and
+                four dogs—ran over Sydney WSS with injected latency and jitter.
+                Every client began with private coordinates, observed legal
+                reveals, agreed on one combat winner, returned through host
+                rematch, disconnected, and created a fresh room without stale
+                state.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> four-player remains the primary case, but
+                auto-sized friend rooms must not depend on a full lobby. Using
+                the identical public-command harness across all sizes proves
+                that countdown, visibility, last-dog-standing, host ownership,
+                rematch, and cleanup are properties of the room model—not happy
+                accidents of one population.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
               <span class="tag">T1.6 / prediction</span>
               <h3>Immediate to you, authoritative to everyone.</h3>
               <p>
