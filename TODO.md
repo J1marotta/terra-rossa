@@ -561,7 +561,7 @@ Acceptance:
 
 ## T2.6 — Add punch feedback within strict budgets
 
-- [ ] Make the combat toy readable and forceful without changing authority.
+- [x] Make the combat toy readable and forceful without changing authority.
 
 Prerequisites: T2.2 through T2.5.
 

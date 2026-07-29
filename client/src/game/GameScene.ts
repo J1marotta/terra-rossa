@@ -1,14 +1,19 @@
 import {
   AmbientLight,
+  BufferGeometry,
   BoxGeometry,
   Color,
   DirectionalLight,
   Group,
+  Line,
+  LineBasicMaterial,
   Mesh,
   MeshStandardMaterial,
+  MeshBasicMaterial,
   OrthographicCamera,
   PlaneGeometry,
   Raycaster,
+  SphereGeometry,
   Vector2,
   Vector3,
   Scene,
@@ -22,6 +27,12 @@ import { LocalPrediction } from './LocalPrediction';
 import { PlayerPresentationRegistry } from './PlayerPresentation';
 
 const CAMERA_HEIGHT = 18;
+export const MAX_TRANSIENT_EFFECTS = 32;
+
+interface TransientEffect {
+  readonly object: Line | Mesh;
+  readonly expiresAt: number;
+}
 
 export class GameScene {
   readonly #container: HTMLElement;
@@ -34,15 +45,26 @@ export class GameScene {
   readonly #dashPulseUntil = new Map<string, number>();
   readonly #lastMeleeEvent = new Map<string, number>();
   readonly #meleePulseUntil = new Map<string, number>();
+  readonly #lastShotEvent = new Map<string, number>();
+  readonly #lastDryFireEvent = new Map<string, number>();
+  readonly #lastReloadEvent = new Map<string, number>();
+  readonly #lastHealth = new Map<string, number>();
+  readonly #hitPulseUntil = new Map<string, number>();
+  readonly #effects: TransientEffect[] = [];
   readonly #reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   );
+  readonly #reducedEffects =
+    this.#reducedMotion.matches ||
+    new URLSearchParams(window.location.search).get('effects') === 'low';
   readonly #resizeObserver: ResizeObserver;
   #animationFrame: number | undefined;
   #startTime = performance.now();
   #disposed = false;
   #localPlayerId: string | null = null;
   #previousRenderTime = performance.now();
+  #cameraShakeUntil = 0;
+  #hitStopUntil = 0;
   readonly #pointerRay = new Raycaster();
 
   constructor(container: HTMLElement) {
@@ -119,6 +141,11 @@ export class GameScene {
         this.#dashPulseUntil.delete(id);
         this.#lastMeleeEvent.delete(id);
         this.#meleePulseUntil.delete(id);
+        this.#lastShotEvent.delete(id);
+        this.#lastDryFireEvent.delete(id);
+        this.#lastReloadEvent.delete(id);
+        this.#lastHealth.delete(id);
+        this.#hitPulseUntil.delete(id);
       }
     });
     players.forEach((player) => {
@@ -130,8 +157,45 @@ export class GameScene {
       const previousMelee = this.#lastMeleeEvent.get(player.id);
       if (previousMelee !== undefined && player.meleeEvent > previousMelee) {
         this.#meleePulseUntil.set(player.id, receivedAt + 180);
+        this.#cue(
+          player.meleeTargetId === '' ? 'melee-miss' : 'melee-hit',
+          player.id,
+        );
       }
       this.#lastMeleeEvent.set(player.id, player.meleeEvent);
+      const previousShot = this.#lastShotEvent.get(player.id);
+      if (previousShot !== undefined && player.shotEvent > previousShot) {
+        this.#showShot(player, receivedAt);
+        this.#cue(
+          player.isLocal
+            ? player.shotTargetId === ''
+              ? 'shooter-miss'
+              : 'shooter-hit'
+            : 'remote-shot',
+          player.id,
+        );
+      }
+      this.#lastShotEvent.set(player.id, player.shotEvent);
+      const previousDry = this.#lastDryFireEvent.get(player.id);
+      if (previousDry !== undefined && player.dryFireEvent > previousDry) {
+        this.#cue(player.isLocal ? 'dry-fire' : 'remote-dry-fire', player.id);
+      }
+      this.#lastDryFireEvent.set(player.id, player.dryFireEvent);
+      const previousReload = this.#lastReloadEvent.get(player.id);
+      if (previousReload !== undefined && player.reloadEvent > previousReload) {
+        this.#cue(`reload-${player.reloadOutcome}`, player.id);
+      }
+      this.#lastReloadEvent.set(player.id, player.reloadEvent);
+      const previousHealth = this.#lastHealth.get(player.id);
+      if (previousHealth !== undefined && player.health < previousHealth) {
+        this.#hitPulseUntil.set(player.id, receivedAt + 160);
+        this.#cue(player.alive ? 'victim-hit' : 'victim-death', player.id);
+        if (player.isLocal) {
+          this.#cameraShakeUntil = receivedAt + 140;
+          this.#hitStopUntil = receivedAt + 28;
+        }
+      }
+      this.#lastHealth.set(player.id, player.health);
     });
     const localPlayer = players.find((player) => player.isLocal);
     if (localPlayer === undefined) {
@@ -194,6 +258,63 @@ export class GameScene {
     );
   }
 
+  #showShot(player: PlayerView, now: number) {
+    const start = new Vector3(player.x, 1.25, player.z);
+    const end = new Vector3(player.shotEndX, 1.05, player.shotEndZ);
+    const tracer = new Line(
+      new BufferGeometry().setFromPoints([start, end]),
+      new LineBasicMaterial({
+        color: player.shotTargetId === '' ? '#f3c77b' : '#fff0b5',
+        transparent: true,
+        opacity: this.#reducedEffects ? 0.7 : 1,
+      }),
+    );
+    this.#addEffect(tracer, now + (this.#reducedEffects ? 90 : 130));
+    if (this.#reducedEffects) return;
+    const flash = new Mesh(
+      new SphereGeometry(0.24, 5, 4),
+      new MeshBasicMaterial({ color: '#fff0a8' }),
+    );
+    flash.position.copy(start);
+    this.#addEffect(flash, now + 70);
+    const impact = new Mesh(
+      new SphereGeometry(player.shotTargetId === '' ? 0.12 : 0.2, 5, 4),
+      new MeshBasicMaterial({
+        color: player.shotTargetId === '' ? '#d9a65b' : '#fff5d1',
+      }),
+    );
+    impact.position.copy(end);
+    this.#addEffect(impact, now + 100);
+    if (player.isLocal)
+      this.#cameraShakeUntil = Math.max(this.#cameraShakeUntil, now + 65);
+  }
+
+  #addEffect(object: Line | Mesh, expiresAt: number) {
+    while (this.#effects.length >= MAX_TRANSIENT_EFFECTS) {
+      const oldest = this.#effects.shift();
+      if (oldest !== undefined) this.#disposeEffect(oldest);
+    }
+    this.#scene.add(object);
+    this.#effects.push({ object, expiresAt });
+  }
+
+  #disposeEffect(effect: TransientEffect) {
+    this.#scene.remove(effect.object);
+    effect.object.geometry.dispose();
+    const materials = Array.isArray(effect.object.material)
+      ? effect.object.material
+      : [effect.object.material];
+    materials.forEach((material) => material.dispose());
+  }
+
+  #cue(kind: string, playerId: string) {
+    this.#renderer.domElement.dispatchEvent(
+      new CustomEvent('terra-rossa-feedback', {
+        detail: Object.freeze({ kind, playerId }),
+      }),
+    );
+  }
+
   #createDog(player: PlayerView) {
     const group = new Group();
     group.name = player.id;
@@ -242,9 +363,18 @@ export class GameScene {
         entry.object.position.y = 0;
       });
     }
+    for (let index = this.#effects.length - 1; index >= 0; index -= 1) {
+      const effect = this.#effects[index];
+      if (effect !== undefined && effect.expiresAt <= time) {
+        this.#effects.splice(index, 1);
+        this.#disposeEffect(effect);
+      }
+    }
+    const presentationPaused =
+      time < this.#hitStopUntil && !this.#reducedEffects;
     this.#players.forEach((entry) => {
       const position = entry.player.isLocal
-        ? this.#localPrediction.sample(elapsedSeconds)
+        ? this.#localPrediction.sample(presentationPaused ? 0 : elapsedSeconds)
         : entry.buffer.sample(time);
       if (position !== null) {
         entry.object.position.x = position.x;
@@ -256,8 +386,9 @@ export class GameScene {
       }
       const dashing = (this.#dashPulseUntil.get(entry.player.id) ?? 0) > time;
       const melee = (this.#meleePulseUntil.get(entry.player.id) ?? 0) > time;
+      const hit = (this.#hitPulseUntil.get(entry.player.id) ?? 0) > time;
       entry.object.scale.set(
-        dashing ? 1.15 : melee ? 1.25 : 1,
+        dashing ? 1.15 : melee ? 1.25 : hit ? 1.18 : 1,
         entry.player.alive ? (dashing ? 0.82 : melee ? 0.9 : 1) : 0.28,
         1,
       );
@@ -265,6 +396,11 @@ export class GameScene {
         entry.player.alive && melee ? -entry.player.meleeAngleRadians : 0;
       entry.object.rotation.z = entry.player.alive ? 0 : Math.PI / 2;
     });
+    if (time < this.#cameraShakeUntil && !this.#reducedEffects) {
+      const remaining = (this.#cameraShakeUntil - time) / 140;
+      this.#camera.position.x += Math.sin(time * 0.18) * 0.16 * remaining;
+      this.#camera.position.z += Math.cos(time * 0.21) * 0.16 * remaining;
+    }
     this.#renderer.render(this.#scene, this.#camera);
     this.#animationFrame = requestAnimationFrame(this.#render);
   };
@@ -280,6 +416,15 @@ export class GameScene {
     this.#dashPulseUntil.clear();
     this.#lastMeleeEvent.clear();
     this.#meleePulseUntil.clear();
+    this.#lastShotEvent.clear();
+    this.#lastDryFireEvent.clear();
+    this.#lastReloadEvent.clear();
+    this.#lastHealth.clear();
+    this.#hitPulseUntil.clear();
+    while (this.#effects.length > 0) {
+      const effect = this.#effects.pop();
+      if (effect !== undefined) this.#disposeEffect(effect);
+    }
     this.#scene.traverse((object) => {
       if (!(object instanceof Mesh)) return;
       object.geometry.dispose();

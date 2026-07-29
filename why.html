@@ -1130,6 +1130,31 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T2.6 / combat feedback</span>
+              <h3>Punch is loud, brief, and disposable.</h3>
+              <p>
+                Server shot counters produce short tracers, muzzle and impact
+                flashes, recoil shake, hit pulses, restrained local hit-stop,
+                death posture, and named audio-hook events. Shooter hit, miss,
+                dry fire, victim hit, death, melee, reload grades, and fumble
+                all have distinct presentation cues.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> authority can be strict without combat
+                feeling delayed. Feedback celebrates an observed server result
+                but never creates one. Transient GPU objects expire in the
+                render loop, are capped at 32, and dispose their geometry and
+                materials; no effect owns a timer. Reduced-motion or
+                <code>?effects=low</code>
+                removes shake, flashes, and hit-stop while retaining the tracer
+                and labelled reload telegraph needed to understand play.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>
