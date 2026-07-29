@@ -774,7 +774,7 @@ Goal: add only the systems required to turn direct free-for-all combat into cont
 
 ## T4.1 — Create the creature simulation foundation
 
-- [ ] Add server-owned creature identity, lifecycle, targeting, movement, health, and damage pathways.
+- [x] Add server-owned creature identity, lifecycle, targeting, movement, health, and damage pathways.
 
 Prerequisites: Phase 3 gate.
 

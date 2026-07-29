@@ -51,6 +51,7 @@ import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
 import { canViewerSeeTarget } from '../../shared/visibility';
+import { CreatureRegistry } from '../creatures/CreatureRegistry';
 import {
   createRoomCode,
   removePrivateRoom,
@@ -75,10 +76,12 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #lastAimTickByPlayer = new Map<string, number>();
   #pendingDamage: DamageEvent[] = [];
   #nextDamageOrder = 0;
+  #creatures!: CreatureRegistry;
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
     this.setState(createGameRoomState());
+    this.#creatures = new CreatureRegistry(this.state.creatures);
     this.state.roomCode = createRoomCode(this.roomId);
     this.state.matchSeed = options.seed ?? randomInt(0, 0x1_0000_0000);
     this.setMetadata({ roomCode: this.state.roomCode });
@@ -106,6 +109,17 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           advanceReload(player);
           this.#advanceMelee(player);
         });
+        this.#creatures.step(
+          [...this.state.players.values()],
+          (creature, candidates) =>
+            candidates
+              .filter((candidate) => candidate.alive)
+              .sort(
+                (left, right) =>
+                  Math.hypot(left.x - creature.x, left.z - creature.z) -
+                  Math.hypot(right.x - creature.x, right.z - creature.z),
+              )[0] ?? null,
+        );
         this.#updateVisibilityViews();
         this.#resolvePendingDamage();
       });
@@ -239,6 +253,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#commandOrderBySession.clear();
     this.#lastAimTickByPlayer.clear();
     this.#pendingDamage.length = 0;
+    this.#creatures.clear();
     removePrivateRoom(this.state.roomCode);
     this.#logger.info('room_disposed', { roomId: this.roomId });
   }
@@ -390,6 +405,13 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           view.add(target, 1);
         } else {
           view.remove(target, 1);
+        }
+      });
+      this.state.creatures.forEach((creature) => {
+        if (canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, creature)) {
+          view.add(creature, 1);
+        } else {
+          view.remove(creature, 1);
         }
       });
     });

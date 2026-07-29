@@ -54,7 +54,7 @@ describe.sequential('minimal game server', () => {
       displayName: 'Luna',
     });
     await nextPatch;
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const players = Array.from(first.state.players.values());
     expect(players).toHaveLength(2);

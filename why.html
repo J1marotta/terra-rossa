@@ -943,6 +943,27 @@
               </p>
             </article>
 
+            <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">T4.1 / creature foundation</span>
+              <h3>Creatures begin as lifecycle, not personality.</h3>
+              <p>
+                A room-owned registry now creates, queries, advances, damages,
+                kills, despawns, and clears synchronized creatures alongside
+                their runtime records. It owns a hard cap of 48 and accepts a
+                target-selection policy while the existing 30 Hz simulation owns
+                time. Creature coordinates use the same revocable view channel
+                as hidden opponents.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> building “swarmer” directly into the room
+                would mix storage, pacing, AI, combat, and presentation before
+                any boundary was testable. The neutral registry makes leaked
+                entities and unbounded populations structurally difficult, gives
+                later creature types one authority path, and keeps Three.js
+                entirely downstream of server truth.
+              </p>
+            </article>
+
             <article
               class="decision reveal"
               data-category="technical gameplay interface"

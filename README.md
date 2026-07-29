@@ -206,3 +206,9 @@ While building this gate, completed bodies were found to remain in firearm and m
 Release `acb8459` passed repeated hosted two-, three-, and four-player matches over the Sydney WSS endpoint with 15 ms injected command latency plus up to 10 ms jitter. Every room began with exact opponent coordinates absent from each client's schema, traversed the real countdown and authored routes, observed reveal transitions, resolved ordinary firearm combat to one winner agreed by every client, returned to a clean lobby through host rematch, and disposed before the next fresh room.
 
 The two-player runs produced five combat events each, the three-player runs produced 10 and 12, and the primary four-player runs produced 15 and 16. All six matches completed with a valid winner. The supporting harness accepts every supported room size through `MATCH_HARNESS_PLAYERS`; four remains the default and primary acceptance case.
+
+## Creature simulation foundation
+
+Creatures now have server-owned schema identity, kind, revocable position, collision radius, movement speed, health, target, hit event, death event, and alive state. A room-owned runtime registry is the only lifecycle API: it creates synchronized and runtime entries together, rejects duplicate IDs, enforces a hard population cap of 48, performs radius queries, applies damage and death, and removes or clears both stores together.
+
+The registry advances on the existing 30 Hz room step and receives target choice as an injected server policy. This keeps generic lifecycle and movement independent from the swarmer and spitter behaviours that follow. Creature X/Z uses the same revocable view tag as opponent position, so a room may reveal it only under the viewer's range and map-occlusion rule. No client command can create, move, damage, kill, or retarget a creature, and Three.js is not involved in simulation.
