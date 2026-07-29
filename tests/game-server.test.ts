@@ -103,13 +103,13 @@ describe.sequential('minimal game server', () => {
       createCommand({ roomId: room.roomId, matchId: null }, 2, 'start', {}),
     );
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(room.state.phase).toBe('waiting');
+    expect(room.state.phase).toBe('lobby');
     host.send(
       COMMAND_MESSAGE,
       createCommand({ roomId: room.roomId, matchId: null }, 1, 'start', {}),
     );
     await new Promise((resolve) => setTimeout(resolve, 30));
-    expect(room.state.phase).toBe('waiting');
+    expect(room.state.phase).toBe('lobby');
     host.send(
       COMMAND_MESSAGE,
       createCommand({ roomId: room.roomId, matchId: null }, 2, 'ready', {
@@ -121,7 +121,7 @@ describe.sequential('minimal game server', () => {
       createCommand({ roomId: room.roomId, matchId: null }, 3, 'start', {}),
     );
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(room.state.phase).toBe('starting');
+    expect(room.state.phase).toBe('countdown');
     expect(room.state.startApprovedEvent).toBe(1);
     expect(guestPlayer?.ready).toBe(true);
     expect(
@@ -150,10 +150,15 @@ describe.sequential('minimal game server', () => {
     expect(resolvePrivateRoom(room.state.roomCode)?.closed).toBe(true);
     host.send(
       COMMAND_MESSAGE,
-      createCommand({ roomId: room.roomId, matchId: null }, 4, 'rematch', {}),
+      createCommand(
+        { roomId: room.roomId, matchId: room.state.matchId },
+        4,
+        'rematch',
+        {},
+      ),
     );
     await new Promise((resolve) => setTimeout(resolve, 30));
-    expect(room.state.phase).toBe('waiting');
+    expect(room.state.phase).toBe('lobby');
     expect(
       [...room.state.players.values()].every((player) => !player.ready),
     ).toBe(true);
@@ -187,7 +192,7 @@ describe.sequential('minimal game server', () => {
         createCommand({ roomId: room.roomId, matchId: null }, 2, 'start', {}),
       );
       await new Promise((resolve) => setTimeout(resolve, 40));
-      expect(room.state.phase).toBe('starting');
+      expect(room.state.phase).toBe('countdown');
       await Promise.all(clients.map((client) => client.leave()));
     },
   );
@@ -214,8 +219,96 @@ describe.sequential('minimal game server', () => {
     const remaining = [...room.state.players.values()][0];
     expect(room.state.hostPlayerId).toBe(remaining?.id);
     expect(remaining?.ready).toBe(false);
-    expect(room.state.phase).toBe('waiting');
+    expect(room.state.phase).toBe('lobby');
     await guest.leave();
+  });
+
+  it('owns countdown, locks late joins, and rejects old-round commands', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME, {
+      seed: 42,
+    });
+    const host = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Host',
+    });
+    const guest = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Guest',
+    });
+    for (const client of [host, guest]) {
+      client.send(
+        COMMAND_MESSAGE,
+        createCommand({ roomId: room.roomId, matchId: null }, 1, 'ready', {
+          ready: true,
+        }),
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'start', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const firstMatchId = room.state.matchId;
+    expect(room.state.phase).toBe('countdown');
+    expect(firstMatchId).toMatch(/^round-1-/);
+    const hostPlayer = [...room.state.players.values()].find(
+      (player) => player.sessionId === host.sessionId,
+    );
+    expect(hostPlayer).toBeDefined();
+    if (hostPlayer === undefined) return;
+    const spawnX = hostPlayer.x;
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: firstMatchId }, 3, 'move', {
+        x: 1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(hostPlayer.x).toBe(spawnX);
+    await expect(
+      testServer.connectTo(room, {
+        protocolVersion: PROTOCOL_VERSION,
+        displayName: 'Late',
+      }),
+    ).rejects.toThrow();
+
+    await new Promise((resolve) => setTimeout(resolve, 3_050));
+    expect(room.state.phase).toBe('playing');
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 4, 'move', {
+        x: 1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(hostPlayer.lastProcessedSequence).toBe(3);
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: firstMatchId }, 4, 'move', {
+        x: 1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    expect(hostPlayer.x).toBeGreaterThan(spawnX);
+
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand(
+        { roomId: room.roomId, matchId: firstMatchId },
+        5,
+        'rematch',
+        {},
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(room.state.phase).toBe('lobby');
+    expect(room.state.matchId).toBe('');
+    expect(room.locked).toBe(false);
+    await Promise.all([host.leave(), guest.leave()]);
   });
 
   it('rejects a fifth client and incompatible protocols', async () => {
@@ -250,6 +343,7 @@ describe.sequential('minimal game server', () => {
       protocolVersion: PROTOCOL_VERSION,
       displayName: 'Mover',
     });
+    room.state.phase = 'playing';
     await initialPatch;
     const local = () =>
       Array.from(client.state.players.values()).find(
@@ -305,6 +399,7 @@ describe.sequential('minimal game server', () => {
         }),
       );
     }
+    room.state.phase = 'playing';
     await new Promise((resolve) => setTimeout(resolve, 75));
     clients[0]?.send(
       COMMAND_MESSAGE,
@@ -340,6 +435,7 @@ describe.sequential('minimal game server', () => {
       protocolVersion: PROTOCOL_VERSION,
       displayName: 'Target',
     });
+    room.state.phase = 'playing';
     const shooter = [...room.state.players.values()].find(
       (player) => player.sessionId === shooterClient.sessionId,
     );
@@ -407,6 +503,7 @@ describe.sequential('minimal game server', () => {
       protocolVersion: PROTOCOL_VERSION,
       displayName: 'Reloader',
     });
+    room.state.phase = 'playing';
     const player = [...room.state.players.values()].find(
       (candidate) => candidate.sessionId === client.sessionId,
     );
@@ -462,6 +559,7 @@ describe.sequential('minimal game server', () => {
       protocolVersion: PROTOCOL_VERSION,
       displayName: 'Target',
     });
+    room.state.phase = 'playing';
     const attacker = [...room.state.players.values()].find(
       (player) => player.sessionId === attackerClient.sessionId,
     );
@@ -524,6 +622,7 @@ describe.sequential('minimal game server', () => {
       protocolVersion: PROTOCOL_VERSION,
       displayName: 'Target',
     });
+    room.state.phase = 'playing';
     const attacker = [...room.state.players.values()].find(
       (player) => player.sessionId === attackerClient.sessionId,
     );
@@ -579,6 +678,7 @@ describe.sequential('minimal game server', () => {
       protocolVersion: PROTOCOL_VERSION,
       displayName: 'Second',
     });
+    room.state.phase = 'playing';
     const first = [...room.state.players.values()].find(
       (player) => player.sessionId === firstClient.sessionId,
     );

@@ -26,7 +26,7 @@ export function App() {
 
   const localPlayer = snapshot.room?.players.find((player) => player.isLocal);
   const room = snapshot.room;
-  const inLobby = snapshot.status === 'connected' && room?.phase === 'waiting';
+  const inLobby = snapshot.status === 'connected' && room?.phase === 'lobby';
   const canStart =
     room !== null &&
     room !== undefined &&
@@ -135,7 +135,11 @@ export function App() {
       {snapshot.status === 'connected' && !inLobby && (
         <section className="title-panel">
           <p className="eyebrow">Terra Rossa</p>
-          <h1>The night is gathering.</h1>
+          <h1>
+            {room?.phase === 'countdown'
+              ? `Go in ${Math.max(1, Math.ceil(room.countdownTicksRemaining / 30))}`
+              : 'The night is gathering.'}
+          </h1>
           <p>Four dogs will enter. Only one leaves the dark.</p>
           <p className="connection-status" data-status={snapshot.status}>
             {snapshot.status === 'connected' && localPlayer !== undefined

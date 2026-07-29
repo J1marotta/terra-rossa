@@ -59,6 +59,9 @@ export function adaptRoomState(
     hostPlayerId: state.hostPlayerId,
     startApprovedEvent: state.startApprovedEvent,
     matchSeed: state.matchSeed,
+    matchId: state.matchId,
+    roundNumber: state.roundNumber,
+    countdownTicksRemaining: state.countdownTicksRemaining,
     players: Object.freeze(players),
   });
 }

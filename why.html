@@ -1227,6 +1227,26 @@
             </article>
 
             <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">T3.3 / match lifecycle</span>
+              <h3>“Go” is a server boundary.</h3>
+              <p>
+                The room owns lobby, three-second countdown, playing,
+                round-over, and closed phases. Starting locks new seats,
+                increments the round, generates a fresh match ID, assigns
+                spawns, and ignores movement or combat until countdown reaches
+                zero.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a client-side countdown is decoration, not
+                a rule. Binding every post-start command to the server-generated
+                match ID makes delayed packets from the lobby or an older round
+                fail before ordering or simulation. Unlocking only during a
+                deliberate lobby reset keeps late joins from reserving a seat
+                midway through the fight.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>
               <p>

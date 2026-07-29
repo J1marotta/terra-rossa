@@ -644,7 +644,7 @@ Acceptance:
 
 ## T3.3 — Implement match phases and countdown
 
-- [ ] Add server-owned lobby, countdown, playing, round-over, and closed phases.
+- [x] Add server-owned lobby, countdown, playing, round-over, and closed phases.
 
 Prerequisites: T3.1 and T3.2.
 

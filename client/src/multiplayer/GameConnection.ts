@@ -198,7 +198,7 @@ export class GameConnection {
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
     const command = createCommand(
-      { roomId: room.roomId, matchId: null },
+      this.#commandContext(room),
       sequence,
       'move',
       { x, z },
@@ -213,7 +213,7 @@ export class GameConnection {
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
     const command = createCommand(
-      { roomId: room.roomId, matchId: null },
+      this.#commandContext(room),
       sequence,
       'dash',
       {},
@@ -227,12 +227,9 @@ export class GameConnection {
     const room = this.#room;
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
-    const command = createCommand(
-      { roomId: room.roomId, matchId: null },
-      sequence,
-      'aim',
-      { angleRadians },
-    );
+    const command = createCommand(this.#commandContext(room), sequence, 'aim', {
+      angleRadians,
+    });
     room.send(COMMAND_MESSAGE, command);
     this.#nextSequence += 1;
     return sequence;
@@ -243,7 +240,7 @@ export class GameConnection {
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
     const command = createCommand(
-      { roomId: room.roomId, matchId: null },
+      this.#commandContext(room),
       sequence,
       'fire',
       {},
@@ -261,7 +258,7 @@ export class GameConnection {
     const sequence = this.#nextSequence;
     room.send(
       COMMAND_MESSAGE,
-      createCommand({ roomId: room.roomId, matchId: null }, sequence, 'ready', {
+      createCommand(this.#commandContext(room), sequence, 'ready', {
         ready,
       }),
     );
@@ -275,7 +272,7 @@ export class GameConnection {
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
     const command = createCommand(
-      { roomId: room.roomId, matchId: null },
+      this.#commandContext(room),
       sequence,
       'reload_attempt',
       { clientElapsedMilliseconds },
@@ -291,7 +288,7 @@ export class GameConnection {
     const sequence = this.#nextSequence;
     room.send(
       COMMAND_MESSAGE,
-      createCommand({ roomId: room.roomId, matchId: null }, sequence, type, {}),
+      createCommand(this.#commandContext(room), sequence, type, {}),
     );
     this.#nextSequence += 1;
     return sequence;
@@ -300,5 +297,13 @@ export class GameConnection {
   #publish(snapshot: ConnectionSnapshot) {
     this.#snapshot = Object.freeze(snapshot);
     this.#listeners.forEach((listener) => listener(this.#snapshot));
+  }
+
+  #commandContext(room: RoomTransport) {
+    const matchId = this.#snapshot.room?.matchId;
+    return {
+      roomId: room.roomId,
+      matchId: matchId === undefined || matchId === '' ? null : matchId,
+    };
   }
 }

@@ -49,6 +49,9 @@ export interface RoomView {
   readonly hostPlayerId: string;
   readonly startApprovedEvent: number;
   readonly matchSeed: number;
+  readonly matchId: string;
+  readonly roundNumber: number;
+  readonly countdownTicksRemaining: number;
   readonly players: readonly PlayerView[];
 }
 

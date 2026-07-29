@@ -60,6 +60,8 @@ interface RoomOptions {
   seed?: number;
 }
 
+const COUNTDOWN_TICKS = millisecondsToTicks(3_000);
+
 export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   override maxClients = MAX_PLAYERS;
   #logger: GameLogger = consoleLogger;
@@ -83,6 +85,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.setSimulationInterval((elapsedMilliseconds) => {
       this.#fixedStep.advance(elapsedMilliseconds, () => {
         this.#simulationTick += 1;
+        if (this.state.phase === 'countdown') {
+          this.state.countdownTicksRemaining -= 1;
+          if (this.state.countdownTicksRemaining === 0) {
+            this.state.phase = 'playing';
+          }
+          return;
+        }
+        if (this.state.phase !== 'playing') return;
         this.state.players.forEach((player) => {
           if (!player.alive) return;
           integratePlayerMovement(player);
@@ -109,7 +119,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         `Protocol mismatch: server requires ${PROTOCOL_VERSION}; received ${String(options?.protocolVersion ?? 'missing')}.`,
       );
     }
-    if (this.state.phase !== 'waiting') {
+    if (this.state.phase !== 'lobby') {
       throw new ServerError(4003, 'This private room has already started.');
     }
     return true;
@@ -206,7 +216,10 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     if (order === undefined || player === undefined) return;
     const result = validateCommand(
       message,
-      { roomId: this.roomId, matchId: null },
+      {
+        roomId: this.roomId,
+        matchId: this.state.matchId === '' ? null : this.state.matchId,
+      },
       order,
     );
     if (!result.ok) {
@@ -215,7 +228,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     }
     const command = result.command as GameCommand;
     player.lastProcessedSequence = command.sequence;
-    if (command.type === 'ready' && this.state.phase === 'waiting') {
+    if (command.type === 'ready' && this.state.phase === 'lobby') {
       const payload = command.payload as { readonly ready: boolean };
       player.ready = payload.ready;
     } else if (command.type === 'start') {
@@ -224,13 +237,19 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         this.state.players.size >= 2 &&
         [...this.state.players.values()].every((candidate) => candidate.ready)
       ) {
-        this.state.phase = 'starting';
+        this.state.phase = 'countdown';
         this.state.startApprovedEvent += 1;
         this.#assignConcealedSpawns();
+        this.state.roundNumber += 1;
+        this.state.matchId = `round-${this.state.roundNumber}-${randomUUID().slice(0, 8)}`;
+        this.state.countdownTicksRemaining = COUNTDOWN_TICKS;
+        void this.lock();
         updatePrivateRoom(this.state.roomCode, { closed: true });
       }
     } else if (command.type === 'rematch') {
       if (player.id === this.state.hostPlayerId) this.#resetLobby();
+    } else if (this.state.phase !== 'playing') {
+      return;
     } else if (!player.alive) {
       return;
     } else if (command.type === 'move') {
@@ -262,11 +281,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   }
 
   #resetLobby() {
-    this.state.phase = 'waiting';
+    this.state.phase = 'lobby';
+    this.state.matchId = '';
+    this.state.countdownTicksRemaining = 0;
     this.state.players.forEach((player) => {
       player.ready = false;
     });
     updatePrivateRoom(this.state.roomCode, { closed: false });
+    void this.unlock();
   }
 
   #assignConcealedSpawns() {
