@@ -128,3 +128,9 @@ Gameplay is simulated on a flat world plane measured in metres. World `x` maps d
 The server will advance integer ticks at a fixed 30 Hz (`1/30` second per tick), independent of browser render frames. Durations are expressed in milliseconds at configuration and protocol boundaries, then rounded up to whole ticks for simulation. Positions are limited to ±2,048 metres per axis, render elevation to ±256, and tick counters to unsigned 32-bit range. Shared validators reject non-numbers, `NaN`, infinities, fractions where integers are required, and values outside those bounds.
 
 `SeededRandom` supplies repeatable pseudo-random choices for authored spawn allocation and tests. It is deterministic simulation tooling, not security or gambling randomness.
+
+## Command protocol
+
+Every client intent uses one exact envelope: protocol version, Colyseus room ID, nullable match ID, unsigned sequence number, command type, and a command-specific payload. The allowed vocabulary is ready, start, move, aim, dash, fire, reload start, reload attempt, melee, interact, rematch, and leave. Movement carries only a normalized X/Z input vector, aim carries one canonical radian angle, and ready carries one boolean; every action command has an empty payload.
+
+The parser rejects unknown or extra fields, unsafe IDs, invalid numbers, diagonal movement above unit length, incompatible protocol versions, and any attempt to attach outcomes such as damage or a claimed hit. A room checks its own room/match context before consuming sequence order, then accepts only a strictly increasing sequence for that client. Replays, duplicates, and late commands return structured errors instead of affecting simulation twice.

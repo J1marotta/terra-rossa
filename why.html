@@ -530,6 +530,13 @@
             <p class="why"><strong>Why:</strong> render frames speed up, slow down, and disappear in background tabs; they cannot be the game clock. One fixed step makes movement and combat reproducible on server, client, and test runner. Explicit coordinate conversion also prevents the common mistake where simulation Y means “forward” but Three.js Y means “up,” and rejecting NaN early prevents one malformed command from poisoning an entire room.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical gameplay">
+            <span class="tag">T1.2 / command contract</span>
+            <h3>Players send verbs, never results.</h3>
+            <p>A strict, versioned envelope now carries twelve permitted intentions with room, match, and sequence identity. Payloads contain only what the player did—movement axes, aim angle, or readiness—while exact-key validation rejects hidden extras, claimed damage, duplicate order, stale matches, and malformed numbers.</p>
+            <p class="why"><strong>Why:</strong> “I fired” is a legitimate request; “I dealt 50 damage to that player” is not. Keeping outcomes impossible to express makes server authority a property of the protocol instead of a convention developers must remember. Strictly increasing sequence numbers also turn retries and reordered packets into harmless, explainable errors before simulation begins.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

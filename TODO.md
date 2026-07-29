@@ -299,7 +299,7 @@ Acceptance:
 
 ## T1.2 — Define the command protocol
 
-- [ ] Create versioned, validated command envelopes and input ordering rules.
+- [x] Create versioned, validated command envelopes and input ordering rules.
 
 Prerequisites: T1.1.
 
