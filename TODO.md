@@ -538,7 +538,7 @@ Acceptance:
 
 ## T2.5 — Implement health, damage, death, and simultaneous resolution
 
-- [ ] Resolve player damage and elimination authoritatively.
+- [x] Resolve player damage and elimination authoritatively.
 
 Prerequisites: T2.2 and T2.4.
 

@@ -258,10 +258,12 @@ export class GameScene {
       const melee = (this.#meleePulseUntil.get(entry.player.id) ?? 0) > time;
       entry.object.scale.set(
         dashing ? 1.15 : melee ? 1.25 : 1,
-        dashing ? 0.82 : melee ? 0.9 : 1,
+        entry.player.alive ? (dashing ? 0.82 : melee ? 0.9 : 1) : 0.28,
         1,
       );
-      entry.object.rotation.y = melee ? -entry.player.meleeAngleRadians : 0;
+      entry.object.rotation.y =
+        entry.player.alive && melee ? -entry.player.meleeAngleRadians : 0;
+      entry.object.rotation.z = entry.player.alive ? 0 : Math.PI / 2;
     });
     this.#renderer.render(this.#scene, this.#camera);
     this.#animationFrame = requestAnimationFrame(this.#render);

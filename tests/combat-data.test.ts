@@ -90,4 +90,25 @@ describe('authoritative damage flow', () => {
       resolveDamageEvents(targets, [event({ targetId: 'missing' })]),
     ).toThrow('unknown damage target');
   });
+
+  it('allows deterministic mutual lethal damage in one ordered batch', () => {
+    const first: Damageable = { id: 'first', health: 20, maximumHealth: 100 };
+    const second: Damageable = { id: 'second', health: 20, maximumHealth: 100 };
+    const targets = new Map([
+      [first.id, first],
+      [second.id, second],
+    ]);
+    const applied = resolveDamageEvents(targets, [
+      event({ id: 'second-hits', sourceId: 'second', targetId: 'first' }),
+      event({
+        id: 'first-hits',
+        sourceId: 'first',
+        targetId: 'second',
+        order: 1,
+      }),
+    ]);
+    expect(applied).toHaveLength(2);
+    expect(first.health).toBe(0);
+    expect(second.health).toBe(0);
+  });
 });

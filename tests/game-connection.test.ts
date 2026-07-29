@@ -43,6 +43,11 @@ function createFakeRoom() {
   player.meleeAngleRadians = 0;
   player.meleeEvent = 0;
   player.meleeTargetId = '';
+  player.health = 100;
+  player.maximumHealth = 100;
+  player.alive = true;
+  player.eliminationEvent = 0;
+  player.eliminatedById = '';
   state.players.set(player.id, player);
 
   let stateListener: ((state: GameRoomStateInstance) => void) | undefined;
@@ -119,6 +124,11 @@ describe('game connection', () => {
       meleeAngleRadians: 0,
       meleeEvent: 0,
       meleeTargetId: '',
+      health: 100,
+      maximumHealth: 100,
+      alive: true,
+      eliminationEvent: 0,
+      eliminatedById: '',
     });
 
     connection.disconnect();

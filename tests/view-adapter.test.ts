@@ -37,6 +37,11 @@ describe('room view adapter', () => {
     player.meleeAngleRadians = 1;
     player.meleeEvent = 3;
     player.meleeTargetId = 'player-a';
+    player.health = 76;
+    player.maximumHealth = 100;
+    player.alive = true;
+    player.eliminationEvent = 0;
+    player.eliminatedById = '';
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
@@ -73,6 +78,11 @@ describe('room view adapter', () => {
         meleeAngleRadians: 1,
         meleeEvent: 3,
         meleeTargetId: 'player-a',
+        health: 76,
+        maximumHealth: 100,
+        alive: true,
+        eliminationEvent: 0,
+        eliminatedById: '',
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

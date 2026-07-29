@@ -32,6 +32,11 @@ export interface PlayerView {
   readonly meleeAngleRadians: number;
   readonly meleeEvent: number;
   readonly meleeTargetId: string;
+  readonly health: number;
+  readonly maximumHealth: number;
+  readonly alive: boolean;
+  readonly eliminationEvent: number;
+  readonly eliminatedById: string;
 }
 
 export interface RoomView {

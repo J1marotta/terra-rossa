@@ -8,7 +8,13 @@ import {
   type GameCommand,
 } from '../../shared/commands';
 import { TERRA_ROSSA_MAP } from '../../shared/map';
-import { SHARED_MELEE, STARTING_PISTOL } from '../../shared/combat';
+import {
+  PLAYER_MAXIMUM_HEALTH,
+  SHARED_MELEE,
+  STARTING_PISTOL,
+  resolveDamageEvents,
+  type DamageEvent,
+} from '../../shared/combat';
 import { traceHitscan } from '../../shared/hitscan';
 import { selectMeleeTarget } from '../../shared/melee';
 import {
@@ -54,6 +60,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #fixedStep = new FixedStepAccumulator();
   #simulationTick = 0;
   #lastAimTickByPlayer = new Map<string, number>();
+  #pendingDamage: DamageEvent[] = [];
+  #nextDamageOrder = 0;
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
@@ -65,6 +73,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       this.#fixedStep.advance(elapsedMilliseconds, () => {
         this.#simulationTick += 1;
         this.state.players.forEach((player) => {
+          if (!player.alive) return;
           integratePlayerMovement(player);
           if (player.fireCooldownTicksRemaining > 0) {
             player.fireCooldownTicksRemaining -= 1;
@@ -72,6 +81,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           advanceReload(player);
           this.#advanceMelee(player);
         });
+        this.#resolvePendingDamage();
       });
     }, FIXED_STEP_MILLISECONDS);
     this.#logger.info('room_created', {
@@ -119,6 +129,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.meleeAngleRadians = 0;
     player.meleeEvent = 0;
     player.meleeTargetId = '';
+    player.health = PLAYER_MAXIMUM_HEALTH;
+    player.maximumHealth = PLAYER_MAXIMUM_HEALTH;
+    player.alive = true;
+    player.eliminationEvent = 0;
+    player.eliminatedById = '';
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
@@ -149,6 +164,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#playerIdBySession.clear();
     this.#commandOrderBySession.clear();
     this.#lastAimTickByPlayer.clear();
+    this.#pendingDamage.length = 0;
     this.#logger.info('room_disposed', { roomId: this.roomId });
   }
 
@@ -169,6 +185,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     }
     const command = result.command as GameCommand;
     player.lastProcessedSequence = command.sequence;
+    if (!player.alive) return;
     if (command.type === 'move') {
       const payload = command.payload as {
         readonly x: number;
@@ -231,6 +248,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.shotEndZ = hit.endZ;
     player.shotTargetId = hit.targetId ?? '';
     player.shotEvent += 1;
+    if (hit.targetId !== null) {
+      this.#queueDamage(
+        player.id,
+        hit.targetId,
+        'firearm',
+        STARTING_PISTOL.damage,
+      );
+    }
   }
 
   #attemptMelee(player: InstanceType<typeof PlayerState>) {
@@ -280,5 +305,49 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       Math.cos(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
       Math.sin(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
     );
+    this.#queueDamage(player.id, target.id, 'melee', SHARED_MELEE.damage);
+  }
+
+  #queueDamage(
+    sourceId: string,
+    targetId: string,
+    cause: DamageEvent['cause'],
+    amount: number,
+  ) {
+    const order = this.#nextDamageOrder++;
+    this.#pendingDamage.push({
+      id: `${this.#simulationTick}-${order}`,
+      sourceId,
+      targetId,
+      cause,
+      amount,
+      occurredAtTick: this.#simulationTick,
+      order,
+    });
+  }
+
+  #resolvePendingDamage() {
+    if (this.#pendingDamage.length === 0) return;
+    const livingTargets = new Map(
+      [...this.state.players.entries()].filter(([, player]) => player.alive),
+    );
+    const applicable = this.#pendingDamage.filter((event) =>
+      livingTargets.has(event.targetId),
+    );
+    this.#pendingDamage.length = 0;
+    const applied = resolveDamageEvents(livingTargets, applicable);
+    for (const result of applied) {
+      if (result.healthAfter > 0) continue;
+      const target = this.state.players.get(result.event.targetId);
+      if (target === undefined || !target.alive) continue;
+      target.alive = false;
+      target.eliminatedById = result.event.sourceId;
+      target.eliminationEvent += 1;
+      target.moveX = 0;
+      target.moveZ = 0;
+      target.dashTicksRemaining = 0;
+      target.reloadCompletionTick = 0;
+      target.meleeWindupTicksRemaining = 0;
+    }
   }
 }

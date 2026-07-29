@@ -39,6 +39,11 @@ export const PlayerState = schema(
     meleeAngleRadians: 'float32',
     meleeEvent: 'uint32',
     meleeTargetId: 'string',
+    health: 'float32',
+    maximumHealth: 'float32',
+    alive: 'boolean',
+    eliminationEvent: 'uint32',
+    eliminatedById: 'string',
   },
   'PlayerState',
 );

@@ -42,6 +42,11 @@ const view = (
   meleeAngleRadians: 0,
   meleeEvent: 0,
   meleeTargetId: '',
+  health: 100,
+  maximumHealth: 100,
+  alive: true,
+  eliminationEvent: 0,
+  eliminatedById: '',
 });
 
 describe('remote position presentation', () => {

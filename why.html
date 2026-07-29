@@ -1106,6 +1106,30 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T2.5 / health and elimination</span>
+              <h3>The whole tick gets its say.</h3>
+              <p>
+                Every dog starts with 100 server-owned health. Firearm and melee
+                hits enter one ordered damage queue, then the room resolves the
+                complete simulation step before eliminating anyone. Zero health
+                immediately stops movement and combat input, flattens the dog in
+                the renderer, and records one killer and one elimination event.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> resolving one network message all the way
+                to death before considering the next would make equal attacks
+                depend on callback order. Batching a fixed step permits fair,
+                deterministic mutual kills while preserving exactly-once death.
+                Health still changes through the shared resolver, so later
+                creatures and darkness cannot quietly invent different damage
+                rules.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

@@ -39,6 +39,11 @@ export function adaptRoomState(
         meleeAngleRadians: player.meleeAngleRadians,
         meleeEvent: player.meleeEvent,
         meleeTargetId: player.meleeTargetId,
+        health: player.health,
+        maximumHealth: player.maximumHealth,
+        alive: player.alive,
+        eliminationEvent: player.eliminationEvent,
+        eliminatedById: player.eliminatedById,
       }),
     );
   });

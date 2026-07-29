@@ -365,6 +365,103 @@ describe.sequential('minimal game server', () => {
     await Promise.all([attackerClient.leave(), targetClient.leave()]);
   });
 
+  it('eliminates exactly once at zero health and ignores dead input', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const attackerClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Attacker',
+    });
+    const targetClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Target',
+    });
+    const attacker = [...room.state.players.values()].find(
+      (player) => player.sessionId === attackerClient.sessionId,
+    );
+    const target = [...room.state.players.values()].find(
+      (player) => player.sessionId === targetClient.sessionId,
+    );
+    expect(attacker).toBeDefined();
+    expect(target).toBeDefined();
+    if (attacker === undefined || target === undefined) return;
+    attacker.x = -20;
+    attacker.z = -10;
+    attacker.aimAngleRadians = 0;
+    target.x = -15;
+    target.z = -10;
+    target.health = 20;
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    expect(target.health).toBe(0);
+    expect(target.alive).toBe(false);
+    expect(target.eliminatedById).toBe(attacker.id);
+    expect(target.eliminationEvent).toBe(1);
+
+    const deadX = target.x;
+    targetClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'move', {
+        x: 1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    expect(target.x).toBe(deadX);
+    attacker.fireCooldownTicksRemaining = 0;
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    expect(target.eliminationEvent).toBe(1);
+    await Promise.all([attackerClient.leave(), targetClient.leave()]);
+  });
+
+  it('resolves mutual lethal shots from the same simulation step', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const firstClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'First',
+    });
+    const secondClient = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Second',
+    });
+    const first = [...room.state.players.values()].find(
+      (player) => player.sessionId === firstClient.sessionId,
+    );
+    const second = [...room.state.players.values()].find(
+      (player) => player.sessionId === secondClient.sessionId,
+    );
+    expect(first).toBeDefined();
+    expect(second).toBeDefined();
+    if (first === undefined || second === undefined) return;
+    Object.assign(first, { x: -20, z: -10, aimAngleRadians: 0, health: 20 });
+    Object.assign(second, {
+      x: -15,
+      z: -10,
+      aimAngleRadians: Math.PI,
+      health: 20,
+    });
+    firstClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'fire', {}),
+    );
+    secondClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    expect(first.alive).toBe(false);
+    expect(second.alive).toBe(false);
+    expect(first.eliminatedById).toBe(second.id);
+    expect(second.eliminatedById).toBe(first.id);
+    await Promise.all([firstClient.leave(), secondClient.leave()]);
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;

@@ -1,4 +1,5 @@
 export type DamageCause = 'firearm' | 'melee' | 'creature' | 'darkness';
+export const PLAYER_MAXIMUM_HEALTH = 100;
 
 export interface ReloadTimingDefinition {
   durationMilliseconds: number;
