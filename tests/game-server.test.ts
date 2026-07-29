@@ -252,6 +252,57 @@ describe.sequential('minimal game server', () => {
     await Promise.all([shooterClient.leave(), targetClient.leave()]);
   });
 
+  it('owns reload timing, blocks firing during commitment, and transfers rounds', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const client = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Reloader',
+    });
+    const player = [...room.state.players.values()].find(
+      (candidate) => candidate.sessionId === client.sessionId,
+    );
+    expect(player).toBeDefined();
+    if (player === undefined) return;
+    player.magazineAmmo = 3;
+    player.reserveAmmo = 10;
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand(
+        { roomId: room.roomId, matchId: null },
+        1,
+        'reload_start',
+        {},
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(player.reloadOutcome).toBe('normal');
+    expect(player.reloadCompletionTick).toBeGreaterThan(0);
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(player.magazineAmmo).toBe(3);
+    expect(player.shotEvent).toBe(0);
+
+    player.reloadTicksElapsed = 30;
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand(
+        { roomId: room.roomId, matchId: null },
+        3,
+        'reload_attempt',
+        { clientElapsedMilliseconds: 1_000 },
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(player.reloadOutcome).toBe('perfect');
+    expect(player.magazineAmmo).toBe(8);
+    expect(player.reserveAmmo).toBe(5);
+    expect(player.reloadCompletionTick).toBe(0);
+    await client.leave();
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;

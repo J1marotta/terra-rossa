@@ -27,6 +27,11 @@ describe('room view adapter', () => {
     player.shotEndX = 15;
     player.shotEndZ = -4;
     player.shotTargetId = 'player-a';
+    player.reloadTicksElapsed = 4;
+    player.reloadCompletionTick = 45;
+    player.reloadAttempted = false;
+    player.reloadOutcome = 'normal';
+    player.reloadEvent = 1;
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
@@ -53,6 +58,11 @@ describe('room view adapter', () => {
         shotEndX: 15,
         shotEndZ: -4,
         shotTargetId: 'player-a',
+        reloadTicksElapsed: 4,
+        reloadCompletionTick: 45,
+        reloadAttempted: false,
+        reloadOutcome: 'normal',
+        reloadEvent: 1,
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

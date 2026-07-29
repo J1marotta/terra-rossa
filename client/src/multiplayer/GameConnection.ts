@@ -192,6 +192,35 @@ export class GameConnection {
     return sequence;
   };
 
+  sendReloadStart = () => this.#sendEmptyCommand('reload_start');
+
+  sendReloadAttempt = (clientElapsedMilliseconds: number) => {
+    const room = this.#room;
+    if (room === null || this.#snapshot.status !== 'connected') return null;
+    const sequence = this.#nextSequence;
+    const command = createCommand(
+      { roomId: room.roomId, matchId: null },
+      sequence,
+      'reload_attempt',
+      { clientElapsedMilliseconds },
+    );
+    room.send(COMMAND_MESSAGE, command);
+    this.#nextSequence += 1;
+    return sequence;
+  };
+
+  #sendEmptyCommand(type: 'reload_start') {
+    const room = this.#room;
+    if (room === null || this.#snapshot.status !== 'connected') return null;
+    const sequence = this.#nextSequence;
+    room.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, sequence, type, {}),
+    );
+    this.#nextSequence += 1;
+    return sequence;
+  }
+
   #publish(snapshot: ConnectionSnapshot) {
     this.#snapshot = Object.freeze(snapshot);
     this.#listeners.forEach((listener) => listener(this.#snapshot));

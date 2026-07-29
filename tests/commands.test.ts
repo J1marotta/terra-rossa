@@ -21,7 +21,7 @@ const examples: ReadonlyArray<readonly [CommandType, Record<string, unknown>]> =
     ['dash', {}],
     ['fire', {}],
     ['reload_start', {}],
-    ['reload_attempt', {}],
+    ['reload_attempt', { clientElapsedMilliseconds: 1_000 }],
     ['melee', {}],
     ['interact', {}],
     ['rematch', {}],

@@ -29,6 +29,11 @@ export const PlayerState = schema(
     shotEndX: 'float32',
     shotEndZ: 'float32',
     shotTargetId: 'string',
+    reloadTicksElapsed: 'uint16',
+    reloadCompletionTick: 'uint16',
+    reloadAttempted: 'boolean',
+    reloadOutcome: 'string',
+    reloadEvent: 'uint32',
   },
   'PlayerState',
 );

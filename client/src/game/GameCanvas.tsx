@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 
 import type { PlayerView } from '../multiplayer/types';
 import { MovementInput } from '../input/MovementInput';
+import { ReloadInput } from '../input/ReloadInput';
 import { GameScene } from './GameScene';
 
 interface GameCanvasProps {
@@ -10,6 +11,8 @@ interface GameCanvasProps {
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
   sendFire: () => number | null;
+  sendReloadStart: () => number | null;
+  sendReloadAttempt: (clientElapsedMilliseconds: number) => number | null;
 }
 
 export function GameCanvas({
@@ -18,6 +21,8 @@ export function GameCanvas({
   sendDash,
   sendAim,
   sendFire,
+  sendReloadStart,
+  sendReloadAttempt,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
@@ -71,6 +76,11 @@ export function GameCanvas({
   }, [sendAim, sendFire]);
 
   useEffect(() => {
+    const input = new ReloadInput(sendReloadStart, sendReloadAttempt);
+    return () => input.dispose();
+  }, [sendReloadAttempt, sendReloadStart]);
+
+  useEffect(() => {
     sceneRef.current?.setPlayers(players, performance.now());
   }, [players]);
 
@@ -81,7 +91,35 @@ export function GameCanvas({
       : `. Local dog authoritative position ${localPlayer.x.toFixed(2)}, ${localPlayer.z.toFixed(2)}`
   }`;
 
+  const reloading =
+    localPlayer !== undefined && localPlayer.reloadCompletionTick > 0;
+  const reloadProgress = reloading
+    ? Math.min(
+        1,
+        localPlayer.reloadTicksElapsed / localPlayer.reloadCompletionTick,
+      )
+    : 0;
+
   return (
-    <div aria-label={worldLabel} className="game-viewport" ref={containerRef} />
+    <div aria-label={worldLabel} className="game-viewport" ref={containerRef}>
+      {reloading && (
+        <div
+          aria-live="polite"
+          className={`reload-cue reload-${localPlayer.reloadOutcome}`}
+          role="status"
+        >
+          <span className="reload-track" aria-hidden="true">
+            <span style={{ width: `${reloadProgress * 100}%` }} />
+          </span>
+          <strong>
+            {localPlayer.reloadOutcome === 'failed'
+              ? 'FUMBLE — HOLD ON'
+              : localPlayer.reloadAttempted
+                ? localPlayer.reloadOutcome.toUpperCase()
+                : 'RELOADING — X TO RISK IT'}
+          </strong>
+        </div>
+      )}
+    </div>
   );
 }

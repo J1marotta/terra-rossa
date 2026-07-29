@@ -1058,6 +1058,31 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="technical gameplay interface"
+            >
+              <span class="tag">T2.3 / active reload</span>
+              <h3>Reload safely, or gamble on X.</h3>
+              <p>
+                R begins a committed 1.5-second reload. Doing nothing always
+                completes it normally; pressing X once can produce a faster good
+                reload, an immediate perfect reload, or a two-second fumble. The
+                client submits elapsed input time—not an outcome—and the server
+                reconciles it against its own clock with at most 150
+                milliseconds of compensation.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> the safest option must remain dependable
+                while the timing input creates a meaningful combat risk. Bounded
+                compensation keeps the mechanic playable over real latency
+                without letting a browser claim “perfect.” A labelled bar near
+                the action uses shape, motion, and words as well as colour, and
+                committed reloads block firing so failure cannot be cancelled
+                for free.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

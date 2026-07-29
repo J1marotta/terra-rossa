@@ -32,6 +32,11 @@ const view = (
   shotEndX: 0,
   shotEndZ: 0,
   shotTargetId: '',
+  reloadTicksElapsed: 0,
+  reloadCompletionTick: 0,
+  reloadAttempted: false,
+  reloadOutcome: 'none',
+  reloadEvent: 0,
 });
 
 describe('remote position presentation', () => {

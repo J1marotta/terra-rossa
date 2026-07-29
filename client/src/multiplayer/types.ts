@@ -22,6 +22,11 @@ export interface PlayerView {
   readonly shotEndX: number;
   readonly shotEndZ: number;
   readonly shotTargetId: string;
+  readonly reloadTicksElapsed: number;
+  readonly reloadCompletionTick: number;
+  readonly reloadAttempted: boolean;
+  readonly reloadOutcome: string;
+  readonly reloadEvent: number;
 }
 
 export interface RoomView {

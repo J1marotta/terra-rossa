@@ -33,6 +33,8 @@ export function App() {
         sendDash={connection.sendDash}
         sendAim={connection.sendAim}
         sendFire={connection.sendFire}
+        sendReloadStart={connection.sendReloadStart}
+        sendReloadAttempt={connection.sendReloadAttempt}
       />
       <section className="title-panel">
         <p className="eyebrow">Terra Rossa</p>

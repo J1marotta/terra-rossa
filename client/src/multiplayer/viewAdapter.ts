@@ -29,6 +29,11 @@ export function adaptRoomState(
         shotEndX: player.shotEndX,
         shotEndZ: player.shotEndZ,
         shotTargetId: player.shotTargetId,
+        reloadTicksElapsed: player.reloadTicksElapsed,
+        reloadCompletionTick: player.reloadCompletionTick,
+        reloadAttempted: player.reloadAttempted,
+        reloadOutcome: player.reloadOutcome,
+        reloadEvent: player.reloadEvent,
       }),
     );
   });

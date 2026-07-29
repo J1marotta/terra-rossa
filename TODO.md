@@ -493,7 +493,7 @@ Acceptance:
 
 ## T2.3 — Implement active reload
 
-- [ ] Add normal, good, perfect, and failed reload outcomes with latency-aware server validation.
+- [x] Add normal, good, perfect, and failed reload outcomes with latency-aware server validation.
 
 Prerequisites: T2.2.
 

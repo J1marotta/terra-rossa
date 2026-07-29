@@ -7,6 +7,8 @@ export interface ReloadTimingDefinition {
   perfectWindowStartMilliseconds: number;
   perfectWindowEndMilliseconds: number;
   fumblePenaltyMilliseconds: number;
+  goodCompletionDelayMilliseconds: number;
+  perfectCompletionDelayMilliseconds: number;
 }
 
 export interface HitscanWeaponDefinition {
@@ -39,6 +41,8 @@ export const STARTING_PISTOL = validateWeaponDefinition({
     perfectWindowStartMilliseconds: 960,
     perfectWindowEndMilliseconds: 1_080,
     fumblePenaltyMilliseconds: 500,
+    goodCompletionDelayMilliseconds: 300,
+    perfectCompletionDelayMilliseconds: 0,
   },
 });
 
@@ -102,6 +106,18 @@ export function validateWeaponDefinition(
     reload.fumblePenaltyMilliseconds,
     'reload.fumblePenaltyMilliseconds',
   );
+  requireFinitePositive(
+    reload.goodCompletionDelayMilliseconds,
+    'reload.goodCompletionDelayMilliseconds',
+  );
+  if (
+    !Number.isFinite(reload.perfectCompletionDelayMilliseconds) ||
+    reload.perfectCompletionDelayMilliseconds < 0
+  ) {
+    throw new Error(
+      'reload.perfectCompletionDelayMilliseconds must be finite and non-negative',
+    );
+  }
   if (
     reload.attemptWindowStartMilliseconds >=
       reload.attemptWindowEndMilliseconds ||

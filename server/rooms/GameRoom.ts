@@ -31,6 +31,12 @@ import {
 } from '../../shared/state';
 import { FIXED_STEP_MILLISECONDS } from '../../shared/time';
 import { millisecondsToTicks } from '../../shared/time';
+import {
+  advanceReload,
+  attemptActiveReload,
+  initializeReloadState,
+  startReload,
+} from '../../shared/reload';
 import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
 
@@ -61,6 +67,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           if (player.fireCooldownTicksRemaining > 0) {
             player.fireCooldownTicksRemaining -= 1;
           }
+          advanceReload(player);
         });
       });
     }, FIXED_STEP_MILLISECONDS);
@@ -103,6 +110,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.shotEndX = player.x;
     player.shotEndZ = player.z;
     player.shotTargetId = '';
+    initializeReloadState(player);
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
@@ -169,11 +177,22 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       this.#lastAimTickByPlayer.set(player.id, this.#simulationTick);
     } else if (command.type === 'fire') {
       this.#attemptFire(player);
+    } else if (command.type === 'reload_start') {
+      startReload(player);
+    } else if (command.type === 'reload_attempt') {
+      const payload = command.payload as {
+        readonly clientElapsedMilliseconds: number;
+      };
+      attemptActiveReload(player, payload.clientElapsedMilliseconds);
     }
   }
 
   #attemptFire(player: InstanceType<typeof PlayerState>) {
-    if (player.fireCooldownTicksRemaining > 0) return;
+    if (
+      player.fireCooldownTicksRemaining > 0 ||
+      player.reloadCompletionTick > 0
+    )
+      return;
     player.fireCooldownTicksRemaining = millisecondsToTicks(
       STARTING_PISTOL.fireIntervalMilliseconds,
     );

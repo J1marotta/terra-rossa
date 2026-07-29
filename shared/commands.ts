@@ -27,7 +27,7 @@ interface CommandPayloads {
   dash: Record<string, never>;
   fire: Record<string, never>;
   reload_start: Record<string, never>;
-  reload_attempt: Record<string, never>;
+  reload_attempt: { readonly clientElapsedMilliseconds: number };
   melee: Record<string, never>;
   interact: Record<string, never>;
   rematch: Record<string, never>;
@@ -151,6 +151,22 @@ function parsePayload(
       Math.PI,
     );
     return Object.freeze({ angleRadians: normalizeAngleRadians(angleRadians) });
+  }
+
+  if (type === 'reload_attempt') {
+    if (!hasExactKeys(value, ['clientElapsedMilliseconds'])) {
+      throw new TypeError(
+        'reload_attempt payload must contain only clientElapsedMilliseconds.',
+      );
+    }
+    return Object.freeze({
+      clientElapsedMilliseconds: requireNumberInRange(
+        'reload_attempt.clientElapsedMilliseconds',
+        value.clientElapsedMilliseconds,
+        0,
+        5_000,
+      ),
+    });
   }
 
   if (!hasExactKeys(value, [])) {
