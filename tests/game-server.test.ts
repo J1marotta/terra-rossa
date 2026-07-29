@@ -798,6 +798,73 @@ describe.sequential('minimal game server', () => {
     await Promise.all([firstClient.leave(), secondClient.leave()]);
   });
 
+  it.each([2, 3, 4])(
+    'immediately forfeits active disconnects in a %i-player room',
+    async (count) => {
+      const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+      const clients = await Promise.all(
+        Array.from({ length: count }, (_, index) =>
+          testServer.connectTo(room, {
+            protocolVersion: PROTOCOL_VERSION,
+            displayName: `Disconnect ${index + 1}`,
+          }),
+        ),
+      );
+      room.state.phase = 'playing';
+      const departing = [...room.state.players.values()].find(
+        (player) => player.sessionId === clients[0]?.sessionId,
+      );
+      expect(departing).toBeDefined();
+      await clients[0]!.leave();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(departing).toMatchObject({
+        connected: false,
+        alive: false,
+        eliminatedById: 'disconnect',
+        disconnectEvent: 1,
+      });
+      if (count === 2) {
+        expect(room.state.phase).toBe('round_over');
+        expect(room.state.resultKind).toBe('winner');
+        expect(room.state.hostPlayerId).not.toBe(departing?.id);
+      } else {
+        expect(room.state.phase).toBe('playing');
+      }
+      await Promise.all(clients.slice(1).map((client) => client.leave()));
+    },
+  );
+
+  it('reevaluates multiple disconnects and removes forfeited dogs on rematch', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const clients = await Promise.all(
+      Array.from({ length: 3 }, (_, index) =>
+        testServer.connectTo(room, {
+          protocolVersion: PROTOCOL_VERSION,
+          displayName: `Rematch ${index + 1}`,
+        }),
+      ),
+    );
+    room.state.phase = 'playing';
+    await clients[0]!.leave();
+    await clients[1]!.leave();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(room.state.phase).toBe('round_over');
+    expect(room.state.players.size).toBe(3);
+    const survivor = [...room.state.players.values()].find(
+      (player) => player.connected,
+    );
+    expect(room.state.winnerPlayerId).toBe(survivor?.id);
+    clients[2]!.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'rematch', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(room.state.phase).toBe('lobby');
+    expect([...room.state.players.values()]).toEqual([survivor]);
+    expect(survivor).toMatchObject({ connected: true, alive: true });
+    await clients[2]!.leave();
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;

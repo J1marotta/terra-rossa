@@ -186,3 +186,9 @@ During play, the server reveals an opponent's exact X/Z position only when the t
 Colyseus schema view tag 1 carries revocable position fields; tag 2 carries the owning player's private spawn assignment. Every client always receives the public roster, but the room independently adds or removes tag 1 for each viewer-target pair on simulation ticks. Concealment therefore removes remote coordinates from synchronized schema state instead of asking Three.js to hide data it already knows. The client adapter marks records without finite coordinates as concealed and excludes them from the rendered player list, while retaining names for lobby and result screens.
 
 Gunfire does not grant an additional exact-position reveal in this slice. Existing combat events remain presentation hooks only for opponents already visible; later audio work may add an approved approximate sound cue without publishing a hidden shooter's coordinates.
+
+## Active-match disconnects
+
+Disconnecting during countdown or play is an immediate forfeit. The server removes that session's input authority, stops every active movement and combat timer, marks the dog disconnected and eliminated, increments public disconnect and elimination events, and reevaluates last-dog-standing immediately. There is deliberately no reconnect grace period in the short friend-game MVP.
+
+The forfeited record remains through the result screen so survivors can understand what happened. Host ownership transfers to a connected player. When that host requests a rematch, disconnected records are removed before the remaining dogs return to a clean lobby; a lobby departure continues to remove the player immediately and clear readiness. Empty rooms still follow normal Colyseus disposal.

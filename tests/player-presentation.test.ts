@@ -15,6 +15,8 @@ const view = (
   id,
   displayName: id,
   ready: false,
+  connected: true,
+  disconnectEvent: 0,
   isLocal,
   positionVisible: true,
   x,

@@ -137,6 +137,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.sessionId = client.sessionId;
     player.displayName = sanitizeDisplayName(options.displayName);
     player.ready = false;
+    player.connected = true;
+    player.disconnectEvent = 0;
     const spawn =
       TERRA_ROSSA_MAP.spawns[
         this.state.players.size % TERRA_ROSSA_MAP.spawns.length
@@ -186,17 +188,41 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   override onLeave(client: Client, code?: number) {
     const playerId = this.#playerIdBySession.get(client.sessionId);
     if (playerId !== undefined) {
+      const player = this.state.players.get(playerId);
       this.#playerIdBySession.delete(client.sessionId);
       this.#clientByPlayerId.delete(playerId);
       this.#commandOrderBySession.delete(client.sessionId);
       this.#lastAimTickByPlayer.delete(playerId);
-      this.state.players.delete(playerId);
       if (this.state.hostPlayerId === playerId) {
-        this.state.hostPlayerId = this.state.players.keys().next().value ?? '';
+        this.state.hostPlayerId =
+          [...this.state.players.values()].find(
+            (candidate) => candidate.id !== playerId && candidate.connected,
+          )?.id ?? '';
       }
-      this.#resetLobby();
+      if (this.state.phase === 'lobby') {
+        this.state.players.delete(playerId);
+        this.#resetLobby();
+      } else if (player !== undefined) {
+        player.connected = false;
+        player.ready = false;
+        player.moveX = 0;
+        player.moveZ = 0;
+        player.dashTicksRemaining = 0;
+        player.reloadCompletionTick = 0;
+        player.meleeWindupTicksRemaining = 0;
+        player.disconnectEvent += 1;
+        if (player.alive) {
+          player.alive = false;
+          player.eliminatedById = 'disconnect';
+          player.eliminationEvent += 1;
+        }
+        if (this.state.phase === 'countdown' || this.state.phase === 'playing')
+          this.#evaluateVictory();
+      }
       updatePrivateRoom(this.state.roomCode, {
-        playerCount: this.state.players.size,
+        playerCount: [...this.state.players.values()].filter(
+          (candidate) => candidate.connected,
+        ).length,
       });
     }
     this.#logger.info('player_left', {
@@ -294,6 +320,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   }
 
   #resetLobby(resetPlayers = false) {
+    if (resetPlayers) {
+      [...this.state.players.entries()].forEach(([id, player]) => {
+        if (!player.connected) this.state.players.delete(id);
+      });
+    }
     this.state.phase = 'lobby';
     this.state.matchId = '';
     this.state.countdownTicksRemaining = 0;
@@ -331,6 +362,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       player.alive = true;
       player.eliminationEvent = 0;
       player.eliminatedById = '';
+      player.connected = true;
     });
   }
 
@@ -502,7 +534,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   }
 
   #evaluateVictory() {
-    if (this.state.phase !== 'playing') return;
+    if (this.state.phase !== 'playing' && this.state.phase !== 'countdown')
+      return;
     const result = resolveLastStanding([...this.state.players.values()]);
     if (result.kind === 'ongoing') return;
     this.state.phase = 'round_over';

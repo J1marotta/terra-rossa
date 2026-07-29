@@ -714,7 +714,7 @@ Do not:
 
 ## T3.6 — Add disconnect outcome
 
-- [ ] Define and implement the minimal fair disconnect rule for an active short match.
+- [x] Define and implement the minimal fair disconnect rule for an active short match.
 
 Prerequisites: T3.4.
 

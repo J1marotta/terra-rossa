@@ -14,6 +14,8 @@ export function adaptRoomState(
         id: player.id,
         displayName: player.displayName,
         ready: player.ready,
+        connected: player.connected,
+        disconnectEvent: player.disconnectEvent,
         isLocal: player.sessionId === localSessionId,
         positionVisible,
         x: positionVisible ? player.x : 0,

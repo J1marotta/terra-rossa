@@ -5,6 +5,8 @@ export interface PlayerView {
   readonly id: string;
   readonly displayName: string;
   readonly ready: boolean;
+  readonly connected: boolean;
+  readonly disconnectEvent: number;
   readonly isLocal: boolean;
   readonly positionVisible: boolean;
   readonly x: number;

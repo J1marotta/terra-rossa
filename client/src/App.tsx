@@ -106,6 +106,7 @@ export function App() {
                 <span>
                   {player.displayName}
                   {player.id === room.hostPlayerId ? ' · host' : ''}
+                  {!player.connected ? ' · disconnected' : ''}
                 </span>
                 <strong>{player.ready ? 'Ready' : 'Waiting'}</strong>
               </li>

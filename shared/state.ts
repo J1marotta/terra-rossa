@@ -8,6 +8,8 @@ export const PlayerState = schema(
     sessionId: 'string',
     displayName: 'string',
     ready: 'boolean',
+    connected: 'boolean',
+    disconnectEvent: 'uint32',
     x: { type: 'float32', view: 1 },
     z: { type: 'float32', view: 1 },
     spawnRegionId: { type: 'string', view: 2 },

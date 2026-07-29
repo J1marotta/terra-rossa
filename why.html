@@ -1290,6 +1290,27 @@
             </article>
 
             <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">T3.6 / disconnect forfeit</span>
+              <h3>Leaving the hunt means leaving the round.</h3>
+              <p>
+                A disconnect during countdown or combat now forfeits
+                immediately. The server revokes input authority, stops active
+                actions, marks the dog eliminated with a visible disconnect
+                event, transfers host when needed, and reevaluates the winner.
+                The record remains for the result, then disappears when the
+                connected host returns the survivors to the lobby.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a reconnect grace timer adds paused or
+                immortal bodies, delayed victory, session restoration, and
+                another class of timers before we know the five-minute game is
+                fun. Immediate forfeit is severe but predictable for a
+                friends-first browser MVP. It behaves identically with two,
+                three, or four dogs and cannot stall last-dog-standing.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>
               <p>
@@ -1602,10 +1623,6 @@
             <div>
               <strong>Darkness:</strong> When should it close, and what boundary
               shape fits the map?
-            </div>
-            <div>
-              <strong>Disconnects:</strong> How much grace belongs in a
-              five-minute duel?
             </div>
             <div>
               <strong>Performance:</strong> What creature and patch rates

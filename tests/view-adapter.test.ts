@@ -11,6 +11,8 @@ describe('room view adapter', () => {
     player.sessionId = 'session-local';
     player.displayName = 'Scout';
     player.ready = true;
+    player.connected = true;
+    player.disconnectEvent = 0;
     player.x = 12;
     player.z = -4;
     player.spawnRegionId = 'northwest';
@@ -54,6 +56,8 @@ describe('room view adapter', () => {
         id: 'player-b',
         displayName: 'Scout',
         ready: true,
+        connected: true,
+        disconnectEvent: 0,
         isLocal: true,
         positionVisible: true,
         x: 12,

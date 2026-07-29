@@ -17,6 +17,8 @@ function createFakeRoom() {
   player.sessionId = 'local-session';
   player.displayName = 'Scout';
   player.ready = false;
+  player.connected = true;
+  player.disconnectEvent = 0;
   player.x = 5;
   player.z = -3;
   player.spawnRegionId = 'northwest';
@@ -100,6 +102,8 @@ describe('game connection', () => {
       id: 'server-player-id',
       displayName: 'Scout',
       ready: false,
+      connected: true,
+      disconnectEvent: 0,
       isLocal: true,
       positionVisible: true,
       x: 5,
