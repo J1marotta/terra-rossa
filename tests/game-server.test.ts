@@ -124,6 +124,29 @@ describe.sequential('minimal game server', () => {
     expect(room.state.phase).toBe('starting');
     expect(room.state.startApprovedEvent).toBe(1);
     expect(guestPlayer?.ready).toBe(true);
+    expect(
+      new Set(
+        [...room.state.players.values()].map((player) => player.spawnRegionId),
+      ).size,
+    ).toBe(2);
+    const hostView = [...host.state.players.values()];
+    const guestView = [...guest.state.players.values()];
+    expect(
+      hostView.find((player) => player.sessionId === host.sessionId)
+        ?.spawnRegionId,
+    ).toBeTruthy();
+    expect(
+      hostView.find((player) => player.sessionId === guest.sessionId)
+        ?.spawnRegionId,
+    ).toBeUndefined();
+    expect(
+      guestView.find((player) => player.sessionId === host.sessionId)
+        ?.spawnRegionId,
+    ).toBeUndefined();
+    expect(
+      guestView.find((player) => player.sessionId === guest.sessionId)
+        ?.spawnRegionId,
+    ).toBeTruthy();
     expect(resolvePrivateRoom(room.state.roomCode)?.closed).toBe(true);
     host.send(
       COMMAND_MESSAGE,
@@ -271,7 +294,7 @@ describe.sequential('minimal game server', () => {
     await client.leave();
   });
 
-  it('synchronizes one legal position to four connected clients', async () => {
+  it('synchronizes a legal position only to its authorized owner view', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const clients = [];
     for (let index = 0; index < 4; index += 1) {
@@ -299,13 +322,11 @@ describe.sequential('minimal game server', () => {
           (player) => player.sessionId === movingSession,
         )?.x,
     );
-    expect(positions.every((position) => typeof position === 'number')).toBe(
+    expect(positions[0]).toBeTypeOf('number');
+    expect(positions.slice(1)).toEqual([undefined, undefined, undefined]);
+    expect(clients.every((client) => client.state.players.size === 4)).toBe(
       true,
     );
-    const numbers = positions.filter(
-      (position): position is number => position !== undefined,
-    );
-    expect(Math.max(...numbers) - Math.min(...numbers)).toBeLessThan(0.001);
     await Promise.all(clients.map((client) => client.leave()));
   });
 

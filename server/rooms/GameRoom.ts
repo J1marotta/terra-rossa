@@ -1,6 +1,7 @@
-import { randomUUID } from 'node:crypto';
+import { randomInt, randomUUID } from 'node:crypto';
 
 import { Room, ServerError, type Client } from '@colyseus/core';
+import { StateView } from '@colyseus/schema';
 
 import {
   CommandOrder,
@@ -47,6 +48,7 @@ import {
 } from '../../shared/reload';
 import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
+import { allocateSpawnRegions } from '../../shared/spawns';
 import {
   createRoomCode,
   removePrivateRoom,
@@ -55,6 +57,7 @@ import {
 
 interface RoomOptions {
   logger?: GameLogger;
+  seed?: number;
 }
 
 export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
@@ -72,6 +75,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#logger = options.logger ?? consoleLogger;
     this.setState(createGameRoomState());
     this.state.roomCode = createRoomCode(this.roomId);
+    this.state.matchSeed = options.seed ?? randomInt(0, 0x1_0000_0000);
     this.setMetadata({ roomCode: this.state.roomCode });
     this.onMessage(COMMAND_MESSAGE, (client, message: unknown) => {
       this.#handleCommand(client, message);
@@ -125,6 +129,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     if (spawn === undefined)
       throw new Error('Authored map has no spawn regions.');
     initializeMovementState(player, spawn.center.x, spawn.center.z);
+    player.spawnRegionId = spawn.id;
     player.aimAngleRadians = 0;
     player.magazineAmmo = STARTING_PISTOL.magazineSize;
     player.reserveAmmo = STARTING_PISTOL.reserveSize;
@@ -148,6 +153,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
     this.state.players.set(playerId, player);
+    client.view = new StateView();
+    client.view.add(player);
     if (this.state.hostPlayerId === '') this.state.hostPlayerId = playerId;
     updatePrivateRoom(this.state.roomCode, {
       playerCount: this.state.players.size,
@@ -219,6 +226,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       ) {
         this.state.phase = 'starting';
         this.state.startApprovedEvent += 1;
+        this.#assignConcealedSpawns();
         updatePrivateRoom(this.state.roomCode, { closed: true });
       }
     } else if (command.type === 'rematch') {
@@ -259,6 +267,17 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       player.ready = false;
     });
     updatePrivateRoom(this.state.roomCode, { closed: false });
+  }
+
+  #assignConcealedSpawns() {
+    const players = [...this.state.players.values()];
+    const spawns = allocateSpawnRegions(players.length, this.state.matchSeed);
+    players.forEach((player, index) => {
+      const spawn = spawns[index];
+      if (spawn === undefined) throw new Error('Missing allocated spawn.');
+      initializeMovementState(player, spawn.center.x, spawn.center.z);
+      player.spawnRegionId = spawn.id;
+    });
   }
 
   #attemptFire(player: InstanceType<typeof PlayerState>) {

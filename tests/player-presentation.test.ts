@@ -18,6 +18,7 @@ const view = (
   isLocal,
   x,
   z,
+  spawnRegionId: 'northwest',
   lastProcessedSequence: 0,
   dashX: 0,
   dashZ: 0,

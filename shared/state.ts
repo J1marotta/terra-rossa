@@ -8,8 +8,9 @@ export const PlayerState = schema(
     sessionId: 'string',
     displayName: 'string',
     ready: 'boolean',
-    x: 'float32',
-    z: 'float32',
+    x: { type: 'float32', view: true },
+    z: { type: 'float32', view: true },
+    spawnRegionId: { type: 'string', view: true },
     moveX: 'float32',
     moveZ: 'float32',
     speed: 'float32',
@@ -59,6 +60,7 @@ export const GameRoomState = schema(
     roomCode: 'string',
     hostPlayerId: 'string',
     startApprovedEvent: 'uint32',
+    matchSeed: 'uint32',
     players: { map: PlayerState },
   },
   'GameRoomState',
@@ -73,6 +75,7 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.roomCode = '';
   state.hostPlayerId = '';
   state.startApprovedEvent = 0;
+  state.matchSeed = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   return state;
 }

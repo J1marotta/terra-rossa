@@ -13,6 +13,7 @@ describe('room view adapter', () => {
     player.ready = true;
     player.x = 12;
     player.z = -4;
+    player.spawnRegionId = 'northwest';
     player.lastProcessedSequence = 7;
     player.dashX = 1;
     player.dashZ = 0;
@@ -56,6 +57,7 @@ describe('room view adapter', () => {
         isLocal: true,
         x: 12,
         z: -4,
+        spawnRegionId: 'northwest',
         lastProcessedSequence: 7,
         dashX: 1,
         dashZ: 0,

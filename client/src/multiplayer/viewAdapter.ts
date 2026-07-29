@@ -15,6 +15,7 @@ export function adaptRoomState(
         isLocal: player.sessionId === localSessionId,
         x: player.x,
         z: player.z,
+        spawnRegionId: player.spawnRegionId,
         lastProcessedSequence: player.lastProcessedSequence,
         dashTicksRemaining: player.dashTicksRemaining,
         dashCooldownTicksRemaining: player.dashCooldownTicksRemaining,
@@ -57,6 +58,7 @@ export function adaptRoomState(
     roomCode: state.roomCode,
     hostPlayerId: state.hostPlayerId,
     startApprovedEvent: state.startApprovedEvent,
+    matchSeed: state.matchSeed,
     players: Object.freeze(players),
   });
 }

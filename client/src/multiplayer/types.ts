@@ -8,6 +8,7 @@ export interface PlayerView {
   readonly isLocal: boolean;
   readonly x: number;
   readonly z: number;
+  readonly spawnRegionId: string;
   readonly lastProcessedSequence: number;
   readonly dashTicksRemaining: number;
   readonly dashCooldownTicksRemaining: number;
@@ -47,6 +48,7 @@ export interface RoomView {
   readonly roomCode: string;
   readonly hostPlayerId: string;
   readonly startApprovedEvent: number;
+  readonly matchSeed: number;
   readonly players: readonly PlayerView[];
 }
 

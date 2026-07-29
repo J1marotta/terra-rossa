@@ -1207,6 +1207,26 @@
             </article>
 
             <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">T3.2 / concealed spawns</span>
+              <h3>The roster is public; the corners are not.</h3>
+              <p>
+                At start, a seeded allocator scores every valid subset and gives
+                two to four players unique, maximally separated authored spawn
+                regions. Four players use every corner; two use opposite
+                corners; ties and player assignment are deterministic for the
+                match seed.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> fairness needs authored distance, while
+                replayable tests need a seed. Colyseus schema views keep names
+                and readiness public but grant spawn ID and exact coordinates
+                only to the owning client. The server still holds the full map;
+                later visibility work can deliberately add an opponent to a
+                viewer rather than trying to retract coordinates already leaked.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>
               <p>

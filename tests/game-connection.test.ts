@@ -19,6 +19,7 @@ function createFakeRoom() {
   player.ready = false;
   player.x = 5;
   player.z = -3;
+  player.spawnRegionId = 'northwest';
   player.lastProcessedSequence = 2;
   player.dashX = 0;
   player.dashZ = 0;
@@ -102,6 +103,7 @@ describe('game connection', () => {
       isLocal: true,
       x: 5,
       z: -3,
+      spawnRegionId: 'northwest',
       lastProcessedSequence: 2,
       dashX: 0,
       dashZ: 0,

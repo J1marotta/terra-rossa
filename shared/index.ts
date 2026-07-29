@@ -9,5 +9,6 @@ export * from './movement';
 export * from './numeric';
 export * from './protocol';
 export * from './random';
+export * from './spawns';
 export * from './reload';
 export * from './time';

@@ -623,7 +623,7 @@ Acceptance:
 
 ## T3.2 — Allocate concealed spawns
 
-- [ ] Assign unique, maximally separated spawn regions for the current room size.
+- [x] Assign unique, maximally separated spawn regions for the current room size.
 
 Prerequisites: T3.1 and T1.3.
 
