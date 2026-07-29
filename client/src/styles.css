@@ -75,6 +75,27 @@ body {
   color: #ff8a72;
 }
 
+.reload-result {
+  animation: reload-result 700ms ease-out both;
+}
+
+@keyframes reload-result {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.08);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-0.8rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reload-result {
+    animation: none;
+  }
+}
+
 .title-panel {
   position: relative;
   z-index: 1;

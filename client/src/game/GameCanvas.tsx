@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type { PlayerView } from '../multiplayer/types';
 import { MovementInput } from '../input/MovementInput';
@@ -28,6 +28,7 @@ export function GameCanvas({
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
+  const [reloadResult, setReloadResult] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -91,6 +92,21 @@ export function GameCanvas({
   }, [players]);
 
   const localPlayer = players.find((player) => player.isLocal);
+  const reloadEvent = localPlayer?.reloadEvent;
+  const reloadCompletionTick = localPlayer?.reloadCompletionTick;
+  const reloadOutcome = localPlayer?.reloadOutcome;
+
+  useEffect(() => {
+    if (
+      reloadCompletionTick !== 0 ||
+      reloadOutcome === undefined ||
+      reloadOutcome === 'none'
+    )
+      return;
+    setReloadResult(reloadOutcome);
+    const timeout = window.setTimeout(() => setReloadResult(null), 700);
+    return () => window.clearTimeout(timeout);
+  }, [reloadCompletionTick, reloadEvent, reloadOutcome]);
   const worldLabel = `Game world with ${players.length} connected ${players.length === 1 ? 'dog' : 'dogs'}${
     localPlayer === undefined
       ? ''
@@ -123,6 +139,19 @@ export function GameCanvas({
               : localPlayer.reloadAttempted
                 ? localPlayer.reloadOutcome.toUpperCase()
                 : 'RELOADING — X TO RISK IT'}
+          </strong>
+        </div>
+      )}
+      {!reloading && reloadResult !== null && (
+        <div
+          aria-live="polite"
+          className={`reload-cue reload-result reload-${reloadResult}`}
+          role="status"
+        >
+          <strong>
+            {reloadResult === 'failed'
+              ? 'FUMBLE RECOVERED'
+              : `${reloadResult.toUpperCase()} RELOAD`}
           </strong>
         </div>
       )}
