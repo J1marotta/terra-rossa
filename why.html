@@ -509,6 +509,13 @@
             <p class="why"><strong>Why:</strong> synchronized objects are live server state, not convenient UI models. Copying at the boundary prevents a renderer from accidentally changing network truth, makes state updates testable without a canvas, and lets the scene reconcile objects by identity instead of rebuilding everything. Generation checks also close connections that finish after a page teardown, avoiding the classic refresh leak.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">T0.7 / hosted baseline</span>
+            <h3>Static pixels and live authority deploy separately.</h3>
+            <p>The browser ships to Cloudflare Pages while a small Node container runs Colyseus on Fly.io in Sydney. Releases pin the WSS endpoint at build time, expose a versioned health check, run a real hosted join smoke, and document rollback for each artifact.</p>
+            <p class="why"><strong>Why:</strong> static files and long-lived WebSockets have different hosting needs and failure modes. The first smoke test also exposed why the server must remain one machine today: in-memory matchmaking placed an HTTP reservation on one machine and the socket on another. Explicitly disabling high availability is safer than pretending the current room server can scale; shared presence can be added only when real load earns that complexity.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

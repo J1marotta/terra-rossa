@@ -232,7 +232,7 @@ Acceptance:
 
 ## T0.7 — Establish deployable client and server baselines
 
-- [ ] Create the first repeatable hosted client and Colyseus server deployments.
+- [x] Create the first repeatable hosted client and Colyseus server deployments.
 
 Prerequisites: T0.6.
 

@@ -5,6 +5,6 @@
     "lib": ["ES2023"],
     "types": ["node"]
   },
-  "include": ["server/**/*.ts"],
+  "include": ["server/**/*.ts", "scripts/**/*.ts"],
   "references": [{ "path": "./tsconfig.shared.json" }]
 }

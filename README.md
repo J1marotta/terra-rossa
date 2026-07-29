@@ -103,3 +103,12 @@ The Chrome client now joins `terra_rossa_v1` automatically and presents the disp
 Network schema objects stop at a dedicated view adapter. That adapter copies each update into sorted, immutable plain data before React or Three.js sees it. The scene reconciles upright dog placeholders by stable player ID, so a state update reuses an existing object while a departure removes and disposes it. Unmounting removes Colyseus listeners, leaves the room, and invalidates late connection promises to prevent stale subscriptions after refresh.
 
 Run `pnpm dev:all`, then open `http://localhost:5173` in current desktop Chrome to exercise the local handshake. The on-screen connection line should change to `Connected as Scout` followed by the server-owned ID; refreshing should yield exactly one connected dog and a new identity.
+
+## Hosted baseline
+
+- Client: `https://terra-rossa.pages.dev` on Cloudflare Pages.
+- Server: `https://terra-rossa-server.fly.dev` on one auto-stopping Fly.io machine in Sydney.
+- WebSocket endpoint: `wss://terra-rossa-server.fly.dev`.
+- Health endpoint: `https://terra-rossa-server.fly.dev/health`.
+
+The server intentionally runs as one machine because room discovery and seat reservations are still held in process memory. Fly deployment uses `--ha=false`; adding machines before shared Colyseus presence exists can send matchmaking and WebSocket traffic to different processes. See [`DEPLOYMENT.md`](DEPLOYMENT.md) for release, smoke, and rollback commands.
