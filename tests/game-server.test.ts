@@ -127,6 +127,44 @@ describe.sequential('minimal game server', () => {
     await client.leave();
   });
 
+  it('synchronizes one legal position to four connected clients', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const clients = [];
+    for (let index = 0; index < 4; index += 1) {
+      clients.push(
+        await testServer.connectTo(room, {
+          protocolVersion: PROTOCOL_VERSION,
+          displayName: `Viewer ${index + 1}`,
+        }),
+      );
+    }
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    clients[0]?.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'move', {
+        x: 1,
+        z: 0,
+      }),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    const movingSession = clients[0]?.sessionId;
+    const positions = clients.map(
+      (client) =>
+        Array.from(client.state.players.values()).find(
+          (player) => player.sessionId === movingSession,
+        )?.x,
+    );
+    expect(positions.every((position) => typeof position === 'number')).toBe(
+      true,
+    );
+    const numbers = positions.filter(
+      (position): position is number => position !== undefined,
+    );
+    expect(Math.max(...numbers) - Math.min(...numbers)).toBeLessThan(0.001);
+    await Promise.all(clients.map((client) => client.leave()));
+  });
+
   it('disposes an empty room and records lifecycle events', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const roomId = room.roomId;

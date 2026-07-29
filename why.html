@@ -551,6 +551,13 @@
             <p class="why"><strong>Why:</strong> accepting a client position would make speed limits and walls suggestions. Keeping only input on the wire lets one deterministic simulation decide where every dog can be. Axis-separated circle collision is intentionally modest: it supports sliding and the authored boxes without introducing a physics engine before combat proves one is needed.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical gameplay interface">
+            <span class="tag">T1.5 / synchronized presentation</span>
+            <h3>Snapshots move remote dogs, not React.</h3>
+            <p>A renderer-owned registry creates one object per server UUID, buffers authoritative positions, interpolates remote dogs 100 milliseconds behind real time, follows the local dog with the camera, and disposes departures exactly once. React hands over snapshots but never touches per-frame transforms.</p>
+            <p class="why"><strong>Why:</strong> network patches arrive in steps while displays redraw much faster. Interpolating between timestamped truth makes remote motion smooth without guessing where an opponent will go. Keeping that work inside Three.js avoids rerendering the component tree sixty times a second and gives every GPU object one obvious lifecycle owner.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

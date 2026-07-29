@@ -16,6 +16,9 @@ function createFakeRoom() {
   player.id = 'server-player-id';
   player.sessionId = 'local-session';
   player.displayName = 'Scout';
+  player.x = 5;
+  player.z = -3;
+  player.lastProcessedSequence = 2;
   state.players.set(player.id, player);
 
   let stateListener: ((state: GameRoomStateInstance) => void) | undefined;
@@ -63,6 +66,9 @@ describe('game connection', () => {
       id: 'server-player-id',
       displayName: 'Scout',
       isLocal: true,
+      x: 5,
+      z: -3,
+      lastProcessedSequence: 2,
     });
 
     connection.disconnect();

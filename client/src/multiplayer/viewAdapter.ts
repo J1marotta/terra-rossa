@@ -12,6 +12,9 @@ export function adaptRoomState(
         id: player.id,
         displayName: player.displayName,
         isLocal: player.sessionId === localSessionId,
+        x: player.x,
+        z: player.z,
+        lastProcessedSequence: player.lastProcessedSequence,
       }),
     );
   });

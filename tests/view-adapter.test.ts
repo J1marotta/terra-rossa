@@ -10,12 +10,22 @@ describe('room view adapter', () => {
     player.id = 'player-b';
     player.sessionId = 'session-local';
     player.displayName = 'Scout';
+    player.x = 12;
+    player.z = -4;
+    player.lastProcessedSequence = 7;
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
 
     expect(view.players).toEqual([
-      { id: 'player-b', displayName: 'Scout', isLocal: true },
+      {
+        id: 'player-b',
+        displayName: 'Scout',
+        isLocal: true,
+        x: 12,
+        z: -4,
+        lastProcessedSequence: 7,
+      },
     ]);
     expect(Object.isFrozen(view)).toBe(true);
     expect(Object.isFrozen(view.players)).toBe(true);

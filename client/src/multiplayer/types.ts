@@ -5,6 +5,9 @@ export interface PlayerView {
   readonly id: string;
   readonly displayName: string;
   readonly isLocal: boolean;
+  readonly x: number;
+  readonly z: number;
+  readonly lastProcessedSequence: number;
 }
 
 export interface RoomView {

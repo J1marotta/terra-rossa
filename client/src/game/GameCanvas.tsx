@@ -23,7 +23,7 @@ export function GameCanvas({ players }: GameCanvasProps) {
   }, []);
 
   useEffect(() => {
-    sceneRef.current?.setPlayers(players);
+    sceneRef.current?.setPlayers(players, performance.now());
   }, [players]);
 
   return (

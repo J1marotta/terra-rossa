@@ -148,3 +148,9 @@ Each synchronized player now owns position, movement input, speed, collision rad
 Movement is capped at six metres per second with a 0.55-metre collision circle. Axis-separated circle-versus-box resolution blocks Red Hollow’s simple collision obstacles while allowing wall sliding, and map bounds include the full player radius. The integrator normalizes input defensively even after protocol validation. A millisecond accumulator produces the same number of fixed steps regardless of callback partitioning, separating simulation results from Node timer or browser frame cadence.
 
 Until the dedicated spawn-allocation task, join order assigns the four authored regions cyclically. This is only a visible movement-testing baseline; it does not claim the later maximally separated allocation rule.
+
+## Synchronized movement presentation
+
+The schema adapter now copies authoritative X/Z position and processed sequence into immutable player views. Three.js owns a presentation registry keyed by the server UUID: new IDs create one dog, updates append position snapshots, departures dispose one dog exactly once, and scene teardown disposes everything still registered. React only passes a new room snapshot into the scene; it never updates transforms in the animation frame.
+
+Remote dogs render 100 milliseconds behind receipt time and interpolate between the surrounding snapshots using elapsed timestamps, not frame counts. This small buffer trades a little visual latency for smooth 20 Hz schema patches. The local dog currently displays the newest authoritative sample without prediction, and the camera follows it from the same isometric offset. Local prediction and reconciliation are deliberately reserved for T1.6.

@@ -369,7 +369,7 @@ Acceptance:
 
 ## T1.5 — Render remote synchronized movement
 
-- [ ] Present all synchronized player entities in Three.js without prediction.
+- [x] Present all synchronized player entities in Three.js without prediction.
 
 Prerequisites: T1.4.
 
