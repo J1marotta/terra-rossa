@@ -153,4 +153,10 @@ Until the dedicated spawn-allocation task, join order assigns the four authored 
 
 The schema adapter now copies authoritative X/Z position and processed sequence into immutable player views. Three.js owns a presentation registry keyed by the server UUID: new IDs create one dog, updates append position snapshots, departures dispose one dog exactly once, and scene teardown disposes everything still registered. React only passes a new room snapshot into the scene; it never updates transforms in the animation frame.
 
-Remote dogs render 100 milliseconds behind receipt time and interpolate between the surrounding snapshots using elapsed timestamps, not frame counts. This small buffer trades a little visual latency for smooth 20 Hz schema patches. The local dog currently displays the newest authoritative sample without prediction, and the camera follows it from the same isometric offset. Local prediction and reconciliation are deliberately reserved for T1.6.
+Remote dogs render 100 milliseconds behind receipt time and interpolate between the surrounding snapshots using elapsed timestamps, not frame counts. This small buffer trades a little visual latency for smooth 20 Hz schema patches. The local dog uses the newest authoritative sample as its reconciliation base, and the camera follows its predicted presentation from the same isometric offset.
+
+## Local movement prediction
+
+WASD is sampled at the shared 30 Hz step. Each normalized input receives the next sequence number, travels as a movement command with no claimed position, and is applied immediately to a client-side copy of the same map collision integrator. Pending inputs remain keyed by sequence until schema state acknowledges them.
+
+On an authoritative update, the client drops acknowledged inputs, resets its simulation to server X/Z, and replays the remainder. Errors up to 0.15 metres settle immediately; ordinary larger drift blends toward the corrected target at a frame-rate-independent rate; divergence above two metres hard-snaps as a safety boundary. A deterministic delay harness verifies immediate response and reconciliation at 150 ms round-trip latency with jitter, while an intentionally illegal multi-metre prediction is always corrected. Remote clients still receive only the server position.

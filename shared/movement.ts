@@ -1,10 +1,10 @@
-import type { PlayerStateInstance } from '../../shared/state';
-import { FIXED_STEP_MILLISECONDS, FIXED_STEP_SECONDS } from '../../shared/time';
+import type { PlayerStateInstance } from './state';
+import { FIXED_STEP_MILLISECONDS, FIXED_STEP_SECONDS } from './time';
 import {
   TERRA_ROSSA_MAP,
   type AuthoredMap,
   type CollisionObstacle,
-} from '../../shared/map';
+} from './map';
 
 export const PLAYER_SPEED_METRES_PER_SECOND = 6;
 export const PLAYER_COLLISION_RADIUS = 0.55;

@@ -558,6 +558,13 @@
             <p class="why"><strong>Why:</strong> network patches arrive in steps while displays redraw much faster. Interpolating between timestamped truth makes remote motion smooth without guessing where an opponent will go. Keeping that work inside Three.js avoids rerendering the component tree sixty times a second and gives every GPU object one obvious lifecycle owner.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical gameplay interface">
+            <span class="tag">T1.6 / prediction</span>
+            <h3>Immediate to you, authoritative to everyone.</h3>
+            <p>WASD predicts one fixed movement step immediately and records it by sequence. Each server snapshot discards acknowledged inputs, resets to authoritative position, and replays the remainder. Small drift settles quietly, ordinary drift blends, and errors above two metres snap safely to truth.</p>
+            <p class="why"><strong>Why:</strong> waiting a full network round trip makes correct movement feel broken. Prediction removes that wait without granting authority because no predicted position is sent or shown to opponents. Reusing the same collision integrator reduces ordinary disagreement, while explicit soft and hard thresholds make correction behaviour testable under 150 milliseconds of latency and jitter instead of tuning it by hope.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

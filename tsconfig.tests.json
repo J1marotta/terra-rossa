@@ -10,13 +10,14 @@
     "client/src/config.ts",
     "client/src/game/projection.ts",
     "client/src/game/PlayerPresentation.ts",
+    "client/src/game/LocalPrediction.ts",
+    "client/src/input/MovementInput.ts",
     "client/src/multiplayer/**/*.ts",
     "client/src/vite-env.d.ts",
     "server/config.ts",
     "server/index.ts",
     "server/logger.ts",
     "server/rooms/**/*.ts",
-    "server/simulation/**/*.ts",
     "vitest.config.ts"
   ],
   "references": [{ "path": "./tsconfig.shared.json" }]

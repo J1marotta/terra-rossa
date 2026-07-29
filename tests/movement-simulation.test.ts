@@ -7,7 +7,7 @@ import {
   applyMovementInput,
   integratePlayerMovement,
   type MovingPlayer,
-} from '../server/simulation/movement';
+} from '../shared/movement';
 import { FIXED_STEP_SECONDS } from '../shared/time';
 
 function player(overrides: Partial<MovingPlayer> = {}): MovingPlayer {

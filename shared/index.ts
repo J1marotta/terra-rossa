@@ -2,6 +2,7 @@ export const GAME_NAME = 'Terra Rossa';
 export * from './commands';
 export * from './coordinates';
 export * from './map';
+export * from './movement';
 export * from './numeric';
 export * from './protocol';
 export * from './random';

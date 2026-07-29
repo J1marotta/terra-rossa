@@ -15,6 +15,7 @@ import {
 import type { PlayerView } from '../multiplayer/types';
 import { createMapVisuals, TERRA_ROSSA_MAP } from '../../../shared/map';
 import { calculateOrthographicBounds } from './projection';
+import { LocalPrediction } from './LocalPrediction';
 import { PlayerPresentationRegistry } from './PlayerPresentation';
 
 const CAMERA_HEIGHT = 18;
@@ -25,6 +26,7 @@ export class GameScene {
   readonly #camera = new OrthographicCamera();
   readonly #renderer: WebGLRenderer;
   readonly #players = new PlayerPresentationRegistry<Group>();
+  readonly #localPrediction = new LocalPrediction();
   readonly #reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   );
@@ -32,6 +34,8 @@ export class GameScene {
   #animationFrame: number | undefined;
   #startTime = performance.now();
   #disposed = false;
+  #localPlayerId: string | null = null;
+  #previousRenderTime = performance.now();
 
   constructor(container: HTMLElement) {
     this.#container = container;
@@ -100,6 +104,25 @@ export class GameScene {
       },
       (group) => this.#removeDog(group),
     );
+    const localPlayer = players.find((player) => player.isLocal);
+    if (localPlayer === undefined) {
+      this.#localPlayerId = null;
+      this.#localPrediction.reset();
+    } else {
+      if (this.#localPlayerId !== localPlayer.id) {
+        this.#localPrediction.reset();
+        this.#localPlayerId = localPlayer.id;
+      }
+      this.#localPrediction.reconcile(
+        localPlayer.x,
+        localPlayer.z,
+        localPlayer.lastProcessedSequence,
+      );
+    }
+  }
+
+  applyPredictedMovement(x: number, z: number, sequence: number) {
+    this.#localPrediction.predict(sequence, x, z);
   }
 
   #createDog(player: PlayerView) {
@@ -137,6 +160,9 @@ export class GameScene {
 
   #render = (time: number) => {
     if (this.#disposed) return;
+    const elapsedSeconds =
+      Math.min(0.25, Math.max(0, time - this.#previousRenderTime)) / 1_000;
+    this.#previousRenderTime = time;
     if (!this.#reducedMotion.matches) {
       const offset = Math.sin((time - this.#startTime) / 450) * 0.08;
       this.#players.forEach((entry) => {
@@ -149,7 +175,7 @@ export class GameScene {
     }
     this.#players.forEach((entry) => {
       const position = entry.player.isLocal
-        ? entry.buffer.latest()
+        ? this.#localPrediction.sample(elapsedSeconds)
         : entry.buffer.sample(time);
       if (position !== null) {
         entry.object.position.x = position.x;

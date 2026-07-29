@@ -1,10 +1,12 @@
 import { ColyseusSDK } from '@colyseus/sdk';
 
 import {
+  COMMAND_MESSAGE,
   GAME_ROOM_NAME,
   PROTOCOL_VERSION,
   type JoinOptions,
 } from '../../../shared/protocol';
+import { createCommand } from '../../../shared/commands';
 import {
   GameRoomState,
   type GameRoomStateInstance,
@@ -15,6 +17,7 @@ import { adaptRoomState } from './viewAdapter';
 type Listener = (snapshot: ConnectionSnapshot) => void;
 
 export interface RoomTransport {
+  readonly roomId: string;
   readonly sessionId: string;
   readonly state: GameRoomStateInstance;
   onStateChange(callback: (state: GameRoomStateInstance) => void): unknown;
@@ -22,6 +25,7 @@ export interface RoomTransport {
   onLeave(callback: (code: number, reason?: string) => void): unknown;
   removeAllListeners(): void;
   leave(consented?: boolean): Promise<number>;
+  send(type: string, message: unknown): void;
 }
 
 export type JoinRoom = (options: JoinOptions) => Promise<RoomTransport>;
@@ -45,6 +49,7 @@ export class GameConnection {
   #snapshot = IDLE;
   #room: RoomTransport | null = null;
   #generation = 0;
+  #nextSequence = 0;
 
   constructor(endpoint: string, joinRoom: JoinRoom = createJoinRoom(endpoint)) {
     this.#endpoint = endpoint;
@@ -74,6 +79,7 @@ export class GameConnection {
         return;
       }
       this.#room = room;
+      this.#nextSequence = 0;
       const publishState = (state: GameRoomStateInstance) => {
         if (generation !== this.#generation) return;
         this.#publish({
@@ -125,6 +131,21 @@ export class GameConnection {
     }
     this.#publish({ status: 'closed', room: null, error: null });
   }
+
+  sendMovement = (x: number, z: number) => {
+    const room = this.#room;
+    if (room === null || this.#snapshot.status !== 'connected') return null;
+    const sequence = this.#nextSequence;
+    const command = createCommand(
+      { roomId: room.roomId, matchId: null },
+      sequence,
+      'move',
+      { x, z },
+    );
+    room.send(COMMAND_MESSAGE, command);
+    this.#nextSequence += 1;
+    return sequence;
+  };
 
   #publish(snapshot: ConnectionSnapshot) {
     this.#snapshot = Object.freeze(snapshot);

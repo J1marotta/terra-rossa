@@ -390,7 +390,7 @@ Acceptance:
 
 ## T1.6 — Add local prediction and reconciliation
 
-- [ ] Make local movement responsive while preserving server authority.
+- [x] Make local movement responsive while preserving server authority.
 
 Prerequisites: T1.4 and T1.5.
 

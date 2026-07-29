@@ -27,7 +27,10 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <GameCanvas players={snapshot.room?.players ?? []} />
+      <GameCanvas
+        players={snapshot.room?.players ?? []}
+        sendMovement={connection.sendMovement}
+      />
       <section className="title-panel">
         <p className="eyebrow">Terra Rossa</p>
         <h1>The night is gathering.</h1>

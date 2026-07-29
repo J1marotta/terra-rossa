@@ -1,12 +1,15 @@
 import { boot, type ColyseusTestServer } from '@colyseus/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { GAME_ROOM_NAME, PROTOCOL_VERSION } from '../shared/protocol';
+import {
+  COMMAND_MESSAGE,
+  GAME_ROOM_NAME,
+  PROTOCOL_VERSION,
+} from '../shared/protocol';
 import { resolveServerConfig } from '../server/config';
 import { createGameServer } from '../server/index';
 import type { GameLogger, LogFields } from '../server/logger';
 import type { GameRoom } from '../server/rooms/GameRoom';
-import { COMMAND_MESSAGE } from '../server/rooms/GameRoom';
 
 describe.sequential('minimal game server', () => {
   const events: Array<{ event: string; fields: LogFields | undefined }> = [];

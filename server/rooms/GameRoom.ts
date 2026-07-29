@@ -9,8 +9,16 @@ import {
 } from '../../shared/commands';
 import { TERRA_ROSSA_MAP } from '../../shared/map';
 import {
+  FixedStepAccumulator,
+  applyMovementInput,
+  initializeMovementState,
+  integratePlayerMovement,
+} from '../../shared/movement';
+import {
   MAX_PLAYERS,
   PROTOCOL_VERSION,
+  COMMAND_MESSAGE,
+  PROTOCOL_ERROR_MESSAGE,
   type JoinOptions,
 } from '../../shared/protocol';
 import {
@@ -20,20 +28,11 @@ import {
 } from '../../shared/state';
 import { FIXED_STEP_MILLISECONDS } from '../../shared/time';
 import { consoleLogger, type GameLogger } from '../logger';
-import {
-  FixedStepAccumulator,
-  applyMovementInput,
-  initializeMovementState,
-  integratePlayerMovement,
-} from '../simulation/movement';
 import { sanitizeDisplayName } from './displayName';
 
 interface RoomOptions {
   logger?: GameLogger;
 }
-
-export const COMMAND_MESSAGE = 'command';
-export const PROTOCOL_ERROR_MESSAGE = 'protocol_error';
 
 export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   override maxClients = MAX_PLAYERS;

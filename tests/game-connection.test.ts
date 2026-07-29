@@ -25,6 +25,7 @@ function createFakeRoom() {
   let errorListener: ((code: number, message?: string) => void) | undefined;
   let leaveListener: ((code: number, reason?: string) => void) | undefined;
   const room: RoomTransport = {
+    roomId: 'room-test',
     sessionId: 'local-session',
     state,
     onStateChange: vi.fn((listener) => {
@@ -38,6 +39,7 @@ function createFakeRoom() {
     }),
     removeAllListeners: vi.fn(),
     leave: vi.fn(async () => 1000),
+    send: vi.fn(),
   };
   return {
     room,
@@ -75,6 +77,33 @@ describe('game connection', () => {
     expect(fake.room.removeAllListeners).toHaveBeenCalledOnce();
     expect(fake.room.leave).toHaveBeenCalledWith(true);
     expect(connection.getSnapshot().status).toBe('closed');
+  });
+
+  it('sends ordered movement intent without client-authored position', async () => {
+    const fake = createFakeRoom();
+    const connection = new GameConnection(
+      'ws://game.test',
+      async () => fake.room,
+    );
+    await connection.connect();
+
+    expect(connection.sendMovement(1, 0)).toBe(0);
+    expect(connection.sendMovement(0, -1)).toBe(1);
+    expect(fake.room.send).toHaveBeenCalledTimes(2);
+    expect(fake.room.send).toHaveBeenLastCalledWith(
+      'command',
+      expect.objectContaining({
+        roomId: 'room-test',
+        sequence: 1,
+        type: 'move',
+        payload: { x: 0, z: -1 },
+      }),
+    );
+    expect(fake.room.send).not.toHaveBeenCalledWith(
+      'command',
+      expect.objectContaining({ position: expect.anything() }),
+    );
+    connection.disconnect();
   });
 
   it('ignores stale joins after disconnect and closes the late room', async () => {
