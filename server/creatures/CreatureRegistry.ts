@@ -45,6 +45,10 @@ export class CreatureRegistry {
     creature.alive = true;
     creature.hitEvent = 0;
     creature.deathEvent = 0;
+    creature.attackWindupTicksRemaining = 0;
+    creature.attackCooldownTicksRemaining = 0;
+    creature.attackWarningEvent = 0;
+    creature.attackEvent = 0;
     this.#schema.set(creature.id, creature);
     this.#runtime.set(creature.id, { ageTicks: 0 });
     return creature;
@@ -59,6 +63,10 @@ export class CreatureRegistry {
   clear() {
     this.#runtime.clear();
     this.#schema.clear();
+  }
+
+  values() {
+    return [...this.#schema.values()];
   }
 
   damage(id: string, amount: number): CreatureDamageResult {

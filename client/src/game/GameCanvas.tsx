@@ -1,12 +1,13 @@
 import { useEffect, useRef } from 'react';
 
-import type { PlayerView } from '../multiplayer/types';
+import type { CreatureView, PlayerView } from '../multiplayer/types';
 import { MovementInput } from '../input/MovementInput';
 import { ReloadInput } from '../input/ReloadInput';
 import { GameScene } from './GameScene';
 
 interface GameCanvasProps {
   players: readonly PlayerView[];
+  creatures: readonly CreatureView[];
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
@@ -18,6 +19,7 @@ interface GameCanvasProps {
 
 export function GameCanvas({
   players,
+  creatures,
   sendMovement,
   sendDash,
   sendAim,
@@ -89,6 +91,10 @@ export function GameCanvas({
   useEffect(() => {
     sceneRef.current?.setPlayers(players, performance.now());
   }, [players]);
+
+  useEffect(() => {
+    sceneRef.current?.setCreatures(creatures, performance.now());
+  }, [creatures]);
 
   const localPlayer = players.find((player) => player.isLocal);
   const worldLabel = `Game world with ${players.length} connected ${players.length === 1 ? 'dog' : 'dogs'}${

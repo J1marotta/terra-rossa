@@ -796,7 +796,7 @@ Acceptance:
 
 ## T4.2 — Implement the swarmer
 
-- [ ] Add the weak direct-pressure creature.
+- [x] Add the weak direct-pressure creature.
 
 Prerequisites: T4.1.
 

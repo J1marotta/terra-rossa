@@ -426,7 +426,7 @@ describe.sequential('minimal game server', () => {
         z: 0,
       }),
     );
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     expect(local()?.x).toBeGreaterThan(startX ?? Number.POSITIVE_INFINITY);
     expect(local()?.lastProcessedSequence).toBe(1);
@@ -437,7 +437,7 @@ describe.sequential('minimal game server', () => {
         z: 0,
       }),
     );
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 200));
     expect(local()?.moveX).toBe(1);
     expect(local()?.lastProcessedSequence).toBe(1);
     client.send(

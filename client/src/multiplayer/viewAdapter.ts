@@ -1,5 +1,5 @@
 import type { GameRoomStateInstance } from '../../../shared/state';
-import type { PlayerView, RoomView } from './types';
+import type { CreatureView, PlayerView, RoomView } from './types';
 
 export function adaptRoomState(
   state: GameRoomStateInstance,
@@ -56,6 +56,29 @@ export function adaptRoomState(
     );
   });
   players.sort((left, right) => left.id.localeCompare(right.id));
+  const creatures: CreatureView[] = [];
+  state.creatures.forEach((creature) => {
+    const positionVisible =
+      Number.isFinite(creature.x) && Number.isFinite(creature.z);
+    creatures.push(
+      Object.freeze({
+        id: creature.id,
+        kind: creature.kind,
+        positionVisible,
+        x: positionVisible ? creature.x : 0,
+        z: positionVisible ? creature.z : 0,
+        health: creature.health,
+        maximumHealth: creature.maximumHealth,
+        alive: creature.alive,
+        hitEvent: creature.hitEvent,
+        deathEvent: creature.deathEvent,
+        attackWindupTicksRemaining: creature.attackWindupTicksRemaining,
+        attackWarningEvent: creature.attackWarningEvent,
+        attackEvent: creature.attackEvent,
+      }),
+    );
+  });
+  creatures.sort((left, right) => left.id.localeCompare(right.id));
 
   return Object.freeze({
     protocolVersion: state.protocolVersion,
@@ -71,5 +94,6 @@ export function adaptRoomState(
     winnerPlayerId: state.winnerPlayerId,
     resultEvent: state.resultEvent,
     players: Object.freeze(players),
+    creatures: Object.freeze(creatures),
   });
 }

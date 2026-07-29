@@ -20,7 +20,7 @@ import {
   WebGLRenderer,
 } from 'three';
 
-import type { PlayerView } from '../multiplayer/types';
+import type { CreatureView, PlayerView } from '../multiplayer/types';
 import { createMapVisuals, TERRA_ROSSA_MAP } from '../../../shared/map';
 import { calculateOrthographicBounds } from './projection';
 import { LocalPrediction } from './LocalPrediction';
@@ -40,6 +40,7 @@ export class GameScene {
   readonly #camera = new OrthographicCamera();
   readonly #renderer: WebGLRenderer;
   readonly #players = new PlayerPresentationRegistry<Group>();
+  readonly #creatures = new PlayerPresentationRegistry<Group, CreatureView>();
   readonly #localPrediction = new LocalPrediction();
   readonly #lastDashEvent = new Map<string, number>();
   readonly #dashPulseUntil = new Map<string, number>();
@@ -222,6 +223,20 @@ export class GameScene {
     }
   }
 
+  setCreatures(creatures: readonly CreatureView[], receivedAt: number) {
+    if (this.#disposed) return;
+    this.#creatures.reconcile(
+      creatures,
+      receivedAt,
+      (creature) => {
+        const group = this.#createCreature(creature);
+        this.#scene.add(group);
+        return group;
+      },
+      (group) => this.#removeDog(group),
+    );
+  }
+
   applyPredictedMovement(x: number, z: number, sequence: number) {
     this.#localPrediction.predict(sequence, x, z);
   }
@@ -338,6 +353,23 @@ export class GameScene {
     return group;
   }
 
+  #createCreature(creature: CreatureView) {
+    const group = new Group();
+    group.name = creature.id;
+    const body = new Mesh(
+      new BoxGeometry(0.9, 0.65, 1.1),
+      new MeshStandardMaterial({ color: '#34213f', roughness: 1 }),
+    );
+    body.position.y = 0.45;
+    const eyes = new Mesh(
+      new BoxGeometry(0.5, 0.12, 0.08),
+      new MeshBasicMaterial({ color: '#e96875' }),
+    );
+    eyes.position.set(0, 0.58, -0.57);
+    group.add(body, eyes);
+    return group;
+  }
+
   resize() {
     if (this.#disposed) return;
     const width = Math.max(1, this.#container.clientWidth);
@@ -396,6 +428,17 @@ export class GameScene {
         entry.player.alive && melee ? -entry.player.meleeAngleRadians : 0;
       entry.object.rotation.z = entry.player.alive ? 0 : Math.PI / 2;
     });
+    this.#creatures.forEach((entry) => {
+      const position = entry.buffer.sample(time);
+      if (position !== null) {
+        entry.object.position.x = position.x;
+        entry.object.position.z = position.z;
+      }
+      const warning = entry.player.attackWindupTicksRemaining > 0;
+      const pulse = warning ? 1 + Math.sin(time * 0.035) * 0.18 : 1;
+      entry.object.scale.set(pulse, entry.player.alive ? pulse : 0.2, pulse);
+      entry.object.rotation.z = entry.player.alive ? 0 : Math.PI / 2;
+    });
     if (time < this.#cameraShakeUntil && !this.#reducedEffects) {
       const remaining = (this.#cameraShakeUntil - time) / 140;
       this.#camera.position.x += Math.sin(time * 0.18) * 0.16 * remaining;
@@ -412,6 +455,7 @@ export class GameScene {
       cancelAnimationFrame(this.#animationFrame);
     this.#resizeObserver.disconnect();
     this.#players.disposeAll((group) => this.#removeDog(group));
+    this.#creatures.disposeAll((group) => this.#removeDog(group));
     this.#lastDashEvent.clear();
     this.#dashPulseUntil.clear();
     this.#lastMeleeEvent.clear();

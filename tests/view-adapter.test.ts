@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { adaptRoomState } from '../client/src/multiplayer/viewAdapter';
-import { PlayerState, createGameRoomState } from '../shared/state';
+import {
+  CreatureState,
+  PlayerState,
+  createGameRoomState,
+} from '../shared/state';
 
 describe('room view adapter', () => {
   it('copies schema state into immutable renderer data', () => {
@@ -122,6 +126,48 @@ describe('room view adapter', () => {
       x: 0,
       z: 0,
     });
+  });
+
+  it('adapts visible swarmers into immutable presentation data', () => {
+    const state = createGameRoomState();
+    const creature = new CreatureState();
+    Object.assign(creature, {
+      id: 'swarmer-1',
+      kind: 'swarmer',
+      x: 3,
+      z: 4,
+      health: 12,
+      maximumHealth: 36,
+      alive: true,
+      hitEvent: 2,
+      deathEvent: 0,
+      attackWindupTicksRemaining: 8,
+      attackWarningEvent: 1,
+      attackEvent: 0,
+    });
+    state.creatures.set(creature.id, creature);
+
+    const view = adaptRoomState(state, 'none');
+
+    expect(view.creatures).toEqual([
+      {
+        id: 'swarmer-1',
+        kind: 'swarmer',
+        positionVisible: true,
+        x: 3,
+        z: 4,
+        health: 12,
+        maximumHealth: 36,
+        alive: true,
+        hitEvent: 2,
+        deathEvent: 0,
+        attackWindupTicksRemaining: 8,
+        attackWarningEvent: 1,
+        attackEvent: 0,
+      },
+    ]);
+    expect(Object.isFrozen(view.creatures)).toBe(true);
+    expect(Object.isFrozen(view.creatures[0])).toBe(true);
   });
 
   it('sorts stable player IDs without changing schema insertion order', () => {

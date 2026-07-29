@@ -45,6 +45,22 @@ export interface PlayerView {
   readonly eliminatedById: string;
 }
 
+export interface CreatureView {
+  readonly id: string;
+  readonly kind: string;
+  readonly positionVisible: boolean;
+  readonly x: number;
+  readonly z: number;
+  readonly health: number;
+  readonly maximumHealth: number;
+  readonly alive: boolean;
+  readonly hitEvent: number;
+  readonly deathEvent: number;
+  readonly attackWindupTicksRemaining: number;
+  readonly attackWarningEvent: number;
+  readonly attackEvent: number;
+}
+
 export interface RoomView {
   readonly protocolVersion: string;
   readonly phase: string;
@@ -59,6 +75,7 @@ export interface RoomView {
   readonly winnerPlayerId: string;
   readonly resultEvent: number;
   readonly players: readonly PlayerView[];
+  readonly creatures: readonly CreatureView[];
 }
 
 export interface ConnectionSnapshot {

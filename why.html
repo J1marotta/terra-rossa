@@ -966,6 +966,31 @@
 
             <article
               class="decision reveal"
+              data-category="gameplay technical interface"
+            >
+              <span class="tag">T4.2 / swarmer</span>
+              <h3>Pressure announces itself before it bites.</h3>
+              <p>
+                The swarmer pursues the nearest living dog, separates from its
+                group, follows walls around authored cover, and stops to pulse
+                through a 400-millisecond contact warning. Damage occurs only if
+                range and sightline are still valid when that warning ends;
+                pistol and melee can interrupt it through the shared creature
+                health and death path.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> a fast enemy is only fair when its danger
+                is readable. Rechecking at impact makes the warning a real dodge
+                window rather than decoration. Deterministic wall-follow state
+                avoids an expensive navigation mesh for seven authored boxes,
+                while separation prevents a visually merged stack from pinning a
+                dog. Actual spawn zones stay out of this task so behaviour can
+                be proved before pacing multiplies it.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
               data-category="technical gameplay interface"
             >
               <span class="tag">Phase 3 gate / passed</span>

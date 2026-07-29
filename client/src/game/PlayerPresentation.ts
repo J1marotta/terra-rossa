@@ -69,14 +69,23 @@ export class PositionSnapshotBuffer {
   }
 }
 
-interface PresentationEntry<T> {
-  readonly object: T;
-  readonly buffer: PositionSnapshotBuffer;
-  player: PlayerView;
+interface PositionView {
+  readonly id: string;
+  readonly x: number;
+  readonly z: number;
 }
 
-export class PlayerPresentationRegistry<T> {
-  readonly #entries = new Map<string, PresentationEntry<T>>();
+interface PresentationEntry<T, V extends PositionView> {
+  readonly object: T;
+  readonly buffer: PositionSnapshotBuffer;
+  player: V;
+}
+
+export class PlayerPresentationRegistry<
+  T,
+  V extends PositionView = PlayerView,
+> {
+  readonly #entries = new Map<string, PresentationEntry<T, V>>();
 
   get size() {
     return this.#entries.size;
@@ -87,9 +96,9 @@ export class PlayerPresentationRegistry<T> {
   }
 
   reconcile(
-    players: readonly PlayerView[],
+    players: readonly V[],
     receivedAt: number,
-    create: (player: PlayerView) => T,
+    create: (player: V) => T,
     dispose: (object: T) => void,
   ) {
     const active = new Set(players.map((player) => player.id));
@@ -114,7 +123,7 @@ export class PlayerPresentationRegistry<T> {
   }
 
   forEach(
-    callback: (entry: Readonly<PresentationEntry<T>>, id: string) => void,
+    callback: (entry: Readonly<PresentationEntry<T, V>>, id: string) => void,
   ) {
     this.#entries.forEach(callback);
   }

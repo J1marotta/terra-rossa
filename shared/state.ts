@@ -69,6 +69,10 @@ export const CreatureState = schema(
     alive: 'boolean',
     hitEvent: 'uint32',
     deathEvent: 'uint32',
+    attackWindupTicksRemaining: 'uint16',
+    attackCooldownTicksRemaining: 'uint16',
+    attackWarningEvent: 'uint32',
+    attackEvent: 'uint32',
   },
   'CreatureState',
 );

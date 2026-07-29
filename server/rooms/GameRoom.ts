@@ -52,6 +52,7 @@ import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
 import { canViewerSeeTarget } from '../../shared/visibility';
 import { CreatureRegistry } from '../creatures/CreatureRegistry';
+import { SwarmerSystem } from '../creatures/SwarmerSystem';
 import {
   createRoomCode,
   removePrivateRoom,
@@ -77,11 +78,13 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #pendingDamage: DamageEvent[] = [];
   #nextDamageOrder = 0;
   #creatures!: CreatureRegistry;
+  #swarmers!: SwarmerSystem;
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
     this.setState(createGameRoomState());
     this.#creatures = new CreatureRegistry(this.state.creatures);
+    this.#swarmers = new SwarmerSystem(this.#creatures);
     this.state.roomCode = createRoomCode(this.roomId);
     this.state.matchSeed = options.seed ?? randomInt(0, 0x1_0000_0000);
     this.setMetadata({ roomCode: this.state.roomCode });
@@ -109,16 +112,10 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           advanceReload(player);
           this.#advanceMelee(player);
         });
-        this.#creatures.step(
+        this.#swarmers.step(
           [...this.state.players.values()],
-          (creature, candidates) =>
-            candidates
-              .filter((candidate) => candidate.alive)
-              .sort(
-                (left, right) =>
-                  Math.hypot(left.x - creature.x, left.z - creature.z) -
-                  Math.hypot(right.x - creature.x, right.z - creature.z),
-              )[0] ?? null,
+          (creatureId, targetId, damage) =>
+            this.#queueDamage(creatureId, targetId, 'creature', damage),
         );
         this.#updateVisibilityViews();
         this.#resolvePendingDamage();
@@ -348,7 +345,10 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.state.players.forEach((player) => {
       player.ready = false;
     });
-    if (resetPlayers) this.#resetPlayersForRematch();
+    if (resetPlayers) {
+      this.#creatures.clear();
+      this.#resetPlayersForRematch();
+    }
     updatePrivateRoom(this.state.roomCode, { closed: false });
     void this.unlock();
   }
@@ -431,7 +431,10 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       return;
     }
     player.magazineAmmo -= 1;
-    const targets = [...this.state.players.values()]
+    const targets = [
+      ...this.state.players.values(),
+      ...this.state.creatures.values(),
+    ]
       .filter((candidate) => candidate.id !== player.id && candidate.alive)
       .map((candidate) => ({
         id: candidate.id,
@@ -452,12 +455,16 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.shotTargetId = hit.targetId ?? '';
     player.shotEvent += 1;
     if (hit.targetId !== null) {
-      this.#queueDamage(
-        player.id,
-        hit.targetId,
-        'firearm',
-        STARTING_PISTOL.damage,
-      );
+      if (this.state.creatures.has(hit.targetId)) {
+        this.#creatures.damage(hit.targetId, STARTING_PISTOL.damage);
+      } else {
+        this.#queueDamage(
+          player.id,
+          hit.targetId,
+          'firearm',
+          STARTING_PISTOL.damage,
+        );
+      }
     }
   }
 
@@ -486,7 +493,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #resolveMelee(player: InstanceType<typeof PlayerState>) {
     const target = selectMeleeTarget(
       player,
-      [...this.state.players.values()]
+      [...this.state.players.values(), ...this.state.creatures.values()]
         .filter((candidate) => candidate.id !== player.id && candidate.alive)
         .map((candidate) => ({
           id: candidate.id,
@@ -501,14 +508,19 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       SHARED_MELEE.recoveryMilliseconds,
     );
     if (target === null) return;
-    const targetPlayer = this.state.players.get(target.id);
-    if (targetPlayer === undefined) return;
+    const targetEntity =
+      this.state.players.get(target.id) ?? this.state.creatures.get(target.id);
+    if (targetEntity === undefined) return;
     applyPlayerDisplacement(
-      targetPlayer,
+      targetEntity,
       Math.cos(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
       Math.sin(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
     );
-    this.#queueDamage(player.id, target.id, 'melee', SHARED_MELEE.damage);
+    if (this.state.creatures.has(target.id)) {
+      this.#creatures.damage(target.id, SHARED_MELEE.damage);
+    } else {
+      this.#queueDamage(player.id, target.id, 'melee', SHARED_MELEE.damage);
+    }
   }
 
   #queueDamage(

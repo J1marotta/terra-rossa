@@ -41,6 +41,9 @@ export function App() {
       {room !== null && room !== undefined && !inLobby && (
         <GameCanvas
           players={room.players.filter((player) => player.positionVisible)}
+          creatures={room.creatures.filter(
+            (creature) => creature.positionVisible,
+          )}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}

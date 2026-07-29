@@ -212,3 +212,11 @@ The two-player runs produced five combat events each, the three-player runs prod
 Creatures now have server-owned schema identity, kind, revocable position, collision radius, movement speed, health, target, hit event, death event, and alive state. A room-owned runtime registry is the only lifecycle API: it creates synchronized and runtime entries together, rejects duplicate IDs, enforces a hard population cap of 48, performs radius queries, applies damage and death, and removes or clears both stores together.
 
 The registry advances on the existing 30 Hz room step and receives target choice as an injected server policy. This keeps generic lifecycle and movement independent from the swarmer and spitter behaviours that follow. Creature X/Z uses the same revocable view tag as opponent position, so a room may reveal it only under the viewer's range and map-occlusion rule. No client command can create, move, damage, kill, or retarget a creature, and Three.js is not involved in simulation.
+
+## Swarmer
+
+The first creature is a weak, direct-pressure swarmer: 36 health, a 0.42-metre body, 3.4 metres-per-second pursuit, and a 12-damage contact attack. It chooses the nearest living dog, maintains separation from other swarmers, uses deterministic wall-follow steering when authored collision blocks its direct route, and never enters obstacle geometry.
+
+Entering 1.15 metres with a clear map sightline starts a synchronized 400 ms warning. The swarmer cannot move or deal damage during that wind-up; at completion the server checks range, life, and line-of-sight again before applying damage, then enforces a 900 ms cooldown. Breaking the readable attack condition cancels damage. Player pistol and melee traces now include living creatures, invoke the registry's hit/death pathway, and exclude dead bodies from later targeting.
+
+The client adapts only creatures whose schema view contains finite coordinates. Three.js renders each revealed swarmer as a small dark low-cost block silhouette with red eyes, interpolates its server position, pulses the whole silhouette during attack wind-up, and lays it down on death. The system and presentation exist without production spawns; authored zones and population pacing remain T4.4's responsibility.

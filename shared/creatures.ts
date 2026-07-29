@@ -1,4 +1,15 @@
 export const CREATURE_POPULATION_CAP = 48;
+export const SWARMER = Object.freeze({
+  kind: 'swarmer',
+  collisionRadius: 0.42,
+  speedMetresPerSecond: 3.4,
+  maximumHealth: 36,
+  attackRangeMetres: 1.15,
+  attackDamage: 12,
+  attackWindupMilliseconds: 400,
+  attackCooldownMilliseconds: 900,
+  separationPaddingMetres: 0.18,
+});
 
 export interface CreatureTarget {
   readonly id: string;
