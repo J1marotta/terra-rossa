@@ -166,3 +166,9 @@ On an authoritative update, the client drops acknowledged inputs, resets its sim
 Space requests a 4.5-metre dash along the current movement direction. The dash lasts six fixed ticks (200 ms), then applies five ticks of movement recovery; its 1.2-second cooldown begins on acceptance. The room rejects zero-direction, active, recovering, and cooling-down requests, while still acknowledging their ordered command. Dash movement uses the same circle, obstacle, and map-bound resolver as walking, so it stops at walls and edges rather than tunnelling through them. It grants no invulnerability.
 
 The client predicts only after it has movement intent and replays dash commands alongside movement history during reconciliation. A successful server dash increments a synchronized event counter; the scene uses predicted input for an immediate squash and the server event for remote confirmation. Presentation can react quickly but cannot decide cooldown or legality.
+
+## Phase 1 verification
+
+Phase 1 passed against release `9f79483`. Four current Chrome tabs joined `https://terra-rossa.pages.dev`, each rendered four dogs, received a different server UUID, and occupied one of the four authored coordinates. The hosted WSS harness then connected four independent SDK clients, moved and dashed all of them, observed four server dash events, and confirmed every client agreed on every final position within one centimetre.
+
+Run the real-network gate with `$env:COLYSEUS_URL='wss://terra-rossa-server.fly.dev'; pnpm smoke:four` in PowerShell. The deterministic unit harness separately covers 150 ms simulated round-trip latency plus jitter, so the gate exercises both repeatable adverse timing and actual Sydney hosting. Prediction affects only the local presentation; interpolation deliberately delays remote presentation between server snapshots. They solve different problems and never replace authoritative state.

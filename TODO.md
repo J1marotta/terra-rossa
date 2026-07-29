@@ -433,7 +433,7 @@ Acceptance:
 
 ## Phase 1 gate
 
-- [ ] Complete a hosted four-browser movement test under simulated and real latency.
+- [x] Complete a hosted four-browser movement test under simulated and real latency.
 
 Pass only when:
 

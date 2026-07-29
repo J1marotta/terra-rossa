@@ -16,6 +16,7 @@
     "deploy:client": "wrangler pages deploy dist/client --project-name terra-rossa",
     "deploy:server": "fly deploy --remote-only --ha=false",
     "smoke:hosted": "tsx scripts/smoke-hosted.ts",
+    "smoke:four": "tsx scripts/smoke-four-player.ts",
     "start:server": "tsx server/index.ts",
     "test": "vitest run",
     "typecheck": "tsc -b",
