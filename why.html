@@ -516,6 +516,13 @@
             <p class="why"><strong>Why:</strong> static files and long-lived WebSockets have different hosting needs and failure modes. The first smoke test also exposed why the server must remain one machine today: in-memory matchmaking placed an HTTP reservation on one machine and the socket on another. Explicitly disabling high availability is safer than pretending the current room server can scale; shared presence can be added only when real load earns that complexity.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical">
+            <span class="tag">Phase 0 gate / passed</span>
+            <h3>Intent goes in; truth comes back.</h3>
+            <p>The foundation now has one explainable authority path: browser controls become versioned commands sent to a room; the room validates and changes schema state; Colyseus synchronizes it; an immutable adapter feeds React and Three.js. Client and server then release and roll back independently.</p>
+            <p class="why"><strong>Why:</strong> multiplayer bugs become much easier to reason about when every fact has one owner and every boundary has one direction. Proving that path locally and over hosted WSS before adding movement means later gameplay failures can be isolated to commands, simulation, synchronization, or presentation instead of an unknown deployment foundation.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

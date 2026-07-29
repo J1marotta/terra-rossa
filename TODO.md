@@ -263,7 +263,7 @@ Do not:
 
 ## Phase 0 gate
 
-- [ ] Verify clean install, type check, lint, tests, production client build, local client/server play, hosted client, hosted WSS connection, and server health.
+- [x] Verify clean install, type check, lint, tests, production client build, local client/server play, hosted client, hosted WSS connection, and server health.
 
 Pass only when:
 

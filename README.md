@@ -112,3 +112,11 @@ Run `pnpm dev:all`, then open `http://localhost:5173` in current desktop Chrome 
 - Health endpoint: `https://terra-rossa-server.fly.dev/health`.
 
 The server intentionally runs as one machine because room discovery and seat reservations are still held in process memory. Fly deployment uses `--ha=false`; adding machines before shared Colyseus presence exists can send matchmaking and WebSocket traffic to different processes. See [`DEPLOYMENT.md`](DEPLOYMENT.md) for release, smoke, and rollback commands.
+
+## Authority path
+
+Phase 0 proves the complete path before adding controls. A future browser input handler will convert keyboard or pointer state into a versioned command and send it through `GameConnection` to the Colyseus room. The room—not React or Three.js—will validate the command and update authoritative schema state. Colyseus synchronizes that state back to each browser, where `viewAdapter.ts` copies it into immutable presentation data. React reports connection and menu state; `GameScene` reconciles frame-rendered objects by stable server ID.
+
+In short: browser intent travels inward as commands, while server truth travels outward as schema. The client may predict presentation later, but it never gets to author the consequential result.
+
+Phase 0 passed with a pnpm 10.15.1 frozen install, strict type checking, lint and formatting, 24 automated tests, a production client build, local Chrome play, hosted HTTPS and WSS play, a synchronized server UUID, and a versioned Fly health check. Client and server release independently through the procedures in `DEPLOYMENT.md`.
