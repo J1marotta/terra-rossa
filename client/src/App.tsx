@@ -1,19 +1,17 @@
-import type { WebGLRenderer } from 'three';
-
-type RendererStatus = 'waiting';
-
-const rendererStatus: RendererStatus = 'waiting';
+import { GameCanvas } from './game/GameCanvas';
 
 export function App() {
-  const rendererTypeCheck: WebGLRenderer | undefined = undefined;
-  void rendererTypeCheck;
-
   return (
-    <main className="shell">
-      <p className="eyebrow">Terra Rossa</p>
-      <h1>The night is gathering.</h1>
-      <p>Four-player web prototype workspace is ready.</p>
-      <p className="status">Renderer: {rendererStatus}</p>
+    <main className="app-shell">
+      <GameCanvas />
+      <section className="title-panel">
+        <p className="eyebrow">Terra Rossa</p>
+        <h1>The night is gathering.</h1>
+        <p>Four dogs will enter. Only one leaves the dark.</p>
+        <button type="button" disabled>
+          The hunt begins soon
+        </button>
+      </section>
     </main>
   );
 }

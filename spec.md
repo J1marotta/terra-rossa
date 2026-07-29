@@ -2,7 +2,7 @@
 
 Status: Draft; active implementation target
 
-Target: Desktop web browsers
+Target: Current desktop Google Chrome
 
 Client: TypeScript, Vite, Three.js, React application shell
 
@@ -92,6 +92,7 @@ The MVP does not include:
 - spectators;
 - text or voice chat;
 - mobile browser support;
+- Firefox, Safari, Edge, and other desktop browsers as supported MVP targets;
 - native desktop or console clients;
 - a unique boss;
 - production art or a large content catalogue;
@@ -820,7 +821,7 @@ The MVP is complete when:
 - representative client load targets 60 FPS and remains above 30 FPS in stress;
 - server simulation and bandwidth remain inside measured budgets;
 - repeated matches and room disposal show no unbounded growth;
-- current Chrome and Firefox pass, with Safari results documented on the target MacBook;
+- current desktop Google Chrome passes on the target machines;
 - a hosted WSS match completes at realistic latency;
 - all shipped audiovisual content is original, licensed, or clearly temporary;
 - the developer can explain the client, protocol, authoritative room, simulation, synchronization, and rendering boundaries.

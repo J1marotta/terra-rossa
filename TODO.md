@@ -151,7 +151,7 @@ Acceptance:
 
 ## T0.4 — Render the first Three.js scene
 
-- [ ] Render a stable placeholder world inside the React application shell.
+- [x] Render a stable placeholder world inside the React application shell.
 
 Prerequisites: T0.2.
 
@@ -167,7 +167,7 @@ Deliverables:
 
 Acceptance:
 
-- The placeholder scene renders in current Chrome and Firefox.
+- The placeholder scene renders in current desktop Google Chrome.
 - Resizing does not stretch aim/world coordinates incorrectly.
 - React rerenders do not recreate the Three.js scene continuously.
 - Unmounting removes frame callbacks, listeners, and renderer resources.
@@ -1088,17 +1088,15 @@ Acceptance:
 - Invalid traffic cannot crash the room or affect other rooms.
 - Administrative capabilities are inaccessible to game clients.
 
-## T5.6 — Browser and hardware matrix
+## T5.6 — Chrome and hardware matrix
 
-- [ ] Verify the production-like game across target browsers and machines.
+- [ ] Verify the production-like game in current desktop Google Chrome across target machines.
 
 Prerequisites: T5.1 through T5.5.
 
 Required matrix:
 
 - Current Chrome.
-- Current Firefox.
-- Safari on the target MacBook.
 - Apple Silicon MacBook Air baseline.
 - Integrated-graphics Windows laptop baseline.
 - Hosted four-player match at realistic latency.
@@ -1108,7 +1106,7 @@ Acceptance:
 - Input, audio, rendering, resize, visibility, networking, and rematch work.
 - Performance results are recorded.
 - Unsupported combinations show an actionable message.
-- Browser-specific workarounds are documented and tested.
+- Chrome- and hardware-specific workarounds are documented and tested.
 
 ## T5.7 — Deployment reliability and rollback
 

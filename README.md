@@ -87,3 +87,11 @@ The versioned room name is `terra_rossa_v1`, and its protocol version is `0.1.0`
 The server exposes `GET /health` with service, release, environment, and protocol metadata. Requests carrying a browser origin are accepted only when that exact origin appears in `ALLOWED_ORIGINS`. Startup, room creation, joins, leaves, room disposal, and shutdown use one-line JSON logs so local and hosted events can be searched and correlated.
 
 There is no movement or gameplay in this room yet. The server owns identity and lifecycle only, creating the smallest trustworthy network boundary for the next slice.
+
+### First rendered scene
+
+The client owns one orthographic Three.js scene beneath a separate React title layer. Its geometric placeholder world contains a ground plane, obstacle, and upright dog marker. A `ResizeObserver` updates an aspect-correct camera while preserving vertical world scale, and the renderer caps its pixel ratio at one so a high-density laptop screen does not silently multiply the fragment workload. CSS scales the canvas with pixel-consistent sampling.
+
+React creates the scene once and calls its explicit disposal method on unmount. Disposal cancels the animation frame, disconnects resize observation, releases geometry, materials, and renderer resources, and removes the canvas. Reduced-motion preference disables the placeholder dog’s idle bob.
+
+The supported MVP browser is current desktop Google Chrome. Firefox, Safari, Edge, mobile browsers, and native clients are outside the acceptance matrix unless the scope is changed explicitly.
