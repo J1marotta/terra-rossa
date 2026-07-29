@@ -52,6 +52,9 @@ export interface RoomView {
   readonly matchId: string;
   readonly roundNumber: number;
   readonly countdownTicksRemaining: number;
+  readonly resultKind: string;
+  readonly winnerPlayerId: string;
+  readonly resultEvent: number;
   readonly players: readonly PlayerView[];
 }
 

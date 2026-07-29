@@ -62,6 +62,9 @@ export function adaptRoomState(
     matchId: state.matchId,
     roundNumber: state.roundNumber,
     countdownTicksRemaining: state.countdownTicksRemaining,
+    resultKind: state.resultKind,
+    winnerPlayerId: state.winnerPlayerId,
+    resultEvent: state.resultEvent,
     players: Object.freeze(players),
   });
 }

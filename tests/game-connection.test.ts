@@ -161,13 +161,14 @@ describe('game connection', () => {
     expect(connection.sendMelee()).toBe(7);
     expect(connection.sendReady(true)).toBe(8);
     expect(connection.sendStart()).toBe(9);
-    expect(fake.room.send).toHaveBeenCalledTimes(10);
+    expect(connection.sendRematch()).toBe(10);
+    expect(fake.room.send).toHaveBeenCalledTimes(11);
     expect(fake.room.send).toHaveBeenLastCalledWith(
       'command',
       expect.objectContaining({
         roomId: 'room-test',
-        sequence: 9,
-        type: 'start',
+        sequence: 10,
+        type: 'rematch',
         payload: {},
       }),
     );

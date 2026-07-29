@@ -18,6 +18,7 @@ import {
 } from '../../shared/combat';
 import { traceHitscan } from '../../shared/hitscan';
 import { selectMeleeTarget } from '../../shared/melee';
+import { resolveLastStanding } from '../../shared/match';
 import {
   FixedStepAccumulator,
   applyMovementInput,
@@ -247,7 +248,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         updatePrivateRoom(this.state.roomCode, { closed: true });
       }
     } else if (command.type === 'rematch') {
-      if (player.id === this.state.hostPlayerId) this.#resetLobby();
+      if (
+        player.id === this.state.hostPlayerId &&
+        this.state.phase === 'round_over'
+      )
+        this.#resetLobby(true);
     } else if (this.state.phase !== 'playing') {
       return;
     } else if (!player.alive) {
@@ -280,15 +285,45 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     }
   }
 
-  #resetLobby() {
+  #resetLobby(resetPlayers = false) {
     this.state.phase = 'lobby';
     this.state.matchId = '';
     this.state.countdownTicksRemaining = 0;
+    this.state.resultKind = '';
+    this.state.winnerPlayerId = '';
     this.state.players.forEach((player) => {
       player.ready = false;
     });
+    if (resetPlayers) this.#resetPlayersForRematch();
     updatePrivateRoom(this.state.roomCode, { closed: false });
     void this.unlock();
+  }
+
+  #resetPlayersForRematch() {
+    [...this.state.players.values()].forEach((player, index) => {
+      const spawn =
+        TERRA_ROSSA_MAP.spawns[index % TERRA_ROSSA_MAP.spawns.length];
+      if (spawn === undefined) throw new Error('Missing rematch spawn.');
+      initializeMovementState(player, spawn.center.x, spawn.center.z);
+      player.spawnRegionId = spawn.id;
+      player.aimAngleRadians = 0;
+      player.magazineAmmo = STARTING_PISTOL.magazineSize;
+      player.reserveAmmo = STARTING_PISTOL.reserveSize;
+      player.fireCooldownTicksRemaining = 0;
+      player.shotEvent = 0;
+      player.dryFireEvent = 0;
+      player.shotTargetId = '';
+      initializeReloadState(player);
+      player.meleeWindupTicksRemaining = 0;
+      player.meleeRecoveryTicksRemaining = 0;
+      player.meleeEvent = 0;
+      player.meleeTargetId = '';
+      player.health = PLAYER_MAXIMUM_HEALTH;
+      player.maximumHealth = PLAYER_MAXIMUM_HEALTH;
+      player.alive = true;
+      player.eliminationEvent = 0;
+      player.eliminatedById = '';
+    });
   }
 
   #assignConcealedSpawns() {
@@ -437,5 +472,17 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       target.reloadCompletionTick = 0;
       target.meleeWindupTicksRemaining = 0;
     }
+    this.#evaluateVictory();
+  }
+
+  #evaluateVictory() {
+    if (this.state.phase !== 'playing') return;
+    const result = resolveLastStanding([...this.state.players.values()]);
+    if (result.kind === 'ongoing') return;
+    this.state.phase = 'round_over';
+    this.state.resultKind = result.kind;
+    this.state.winnerPlayerId = result.winnerPlayerId;
+    this.state.resultEvent += 1;
+    this.#pendingDamage.length = 0;
   }
 }

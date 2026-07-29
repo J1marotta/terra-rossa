@@ -64,6 +64,9 @@ export const GameRoomState = schema(
     matchId: 'string',
     roundNumber: 'uint16',
     countdownTicksRemaining: 'uint16',
+    resultKind: 'string',
+    winnerPlayerId: 'string',
+    resultEvent: 'uint32',
     players: { map: PlayerState },
   },
   'GameRoomState',
@@ -82,6 +85,9 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.matchId = '';
   state.roundNumber = 0;
   state.countdownTicksRemaining = 0;
+  state.resultKind = '';
+  state.winnerPlayerId = '';
+  state.resultEvent = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   return state;
 }

@@ -1247,6 +1247,27 @@
             </article>
 
             <article class="decision reveal" data-category="gameplay technical">
+              <span class="tag">T3.4 / last dog standing</span>
+              <h3>One survivor, or none.</h3>
+              <p>
+                After each fixed-step damage batch, the room counts living dogs.
+                One produces a named winner; zero produces a draw. The result is
+                emitted exactly once, combat stops in round-over, and only the
+                host can return everyone to the private lobby for a clean
+                rematch.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> checking victory inside an individual hit
+                would break simultaneous deaths. Evaluating after the complete
+                damage batch preserves mutual-kill draws and makes two-, three-,
+                and four-player elimination order irrelevant. Rematch keeps
+                social continuity but restores health, ammunition, movement,
+                reload, melee, elimination, readiness, and spawn state rather
+                than carrying invisible debris into the next round.
+              </p>
+            </article>
+
+            <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>
               <p>

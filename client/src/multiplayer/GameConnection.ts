@@ -266,6 +266,7 @@ export class GameConnection {
     return sequence;
   };
   sendStart = () => this.#sendEmptyCommand('start');
+  sendRematch = () => this.#sendEmptyCommand('rematch');
 
   sendReloadAttempt = (clientElapsedMilliseconds: number) => {
     const room = this.#room;
@@ -282,7 +283,7 @@ export class GameConnection {
     return sequence;
   };
 
-  #sendEmptyCommand(type: 'reload_start' | 'melee' | 'start') {
+  #sendEmptyCommand(type: 'reload_start' | 'melee' | 'start' | 'rematch') {
     const room = this.#room;
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;

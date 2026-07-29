@@ -666,7 +666,7 @@ Acceptance:
 
 ## T3.4 — Implement last-player-standing victory
 
-- [ ] End the free-for-all when zero or one living player remains.
+- [x] End the free-for-all when zero or one living player remains.
 
 Prerequisites: T2.5 and T3.3.
 

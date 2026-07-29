@@ -54,6 +54,7 @@ describe.sequential('minimal game server', () => {
       displayName: 'Luna',
     });
     await nextPatch;
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     const players = Array.from(first.state.players.values());
     expect(players).toHaveLength(2);
@@ -148,6 +149,7 @@ describe.sequential('minimal game server', () => {
         ?.spawnRegionId,
     ).toBeTruthy();
     expect(resolvePrivateRoom(room.state.roomCode)?.closed).toBe(true);
+    room.state.phase = 'round_over';
     host.send(
       COMMAND_MESSAGE,
       createCommand(
@@ -295,6 +297,7 @@ describe.sequential('minimal game server', () => {
     await new Promise((resolve) => setTimeout(resolve, 75));
     expect(hostPlayer.x).toBeGreaterThan(spawnX);
 
+    room.state.phase = 'round_over';
     host.send(
       COMMAND_MESSAGE,
       createCommand(
@@ -647,6 +650,10 @@ describe.sequential('minimal game server', () => {
     expect(target.alive).toBe(false);
     expect(target.eliminatedById).toBe(attacker.id);
     expect(target.eliminationEvent).toBe(1);
+    expect(room.state.phase).toBe('round_over');
+    expect(room.state.resultKind).toBe('winner');
+    expect(room.state.winnerPlayerId).toBe(attacker.id);
+    expect(room.state.resultEvent).toBe(1);
 
     const deadX = target.x;
     targetClient.send(
@@ -665,6 +672,17 @@ describe.sequential('minimal game server', () => {
     );
     await new Promise((resolve) => setTimeout(resolve, 75));
     expect(target.eliminationEvent).toBe(1);
+    attackerClient.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 3, 'rematch', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(room.state.phase).toBe('lobby');
+    expect(target.alive).toBe(true);
+    expect(target.health).toBe(100);
+    expect(target.magazineAmmo).toBe(8);
+    expect(target.reserveAmmo).toBe(32);
+    expect(target.eliminationEvent).toBe(0);
     await Promise.all([attackerClient.leave(), targetClient.leave()]);
   });
 
@@ -708,6 +726,10 @@ describe.sequential('minimal game server', () => {
     expect(second.alive).toBe(false);
     expect(first.eliminatedById).toBe(second.id);
     expect(second.eliminatedById).toBe(first.id);
+    expect(room.state.phase).toBe('round_over');
+    expect(room.state.resultKind).toBe('draw');
+    expect(room.state.winnerPlayerId).toBe('');
+    expect(room.state.resultEvent).toBe(1);
     await Promise.all([firstClient.leave(), secondClient.leave()]);
   });
 

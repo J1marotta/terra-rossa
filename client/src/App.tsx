@@ -27,6 +27,8 @@ export function App() {
   const localPlayer = snapshot.room?.players.find((player) => player.isLocal);
   const room = snapshot.room;
   const inLobby = snapshot.status === 'connected' && room?.phase === 'lobby';
+  const inResults =
+    snapshot.status === 'connected' && room?.phase === 'round_over';
   const canStart =
     room !== null &&
     room !== undefined &&
@@ -132,7 +134,24 @@ export function App() {
           <p>Two to four dogs. Everyone must be ready.</p>
         </section>
       )}
-      {snapshot.status === 'connected' && !inLobby && (
+      {inResults && room !== null && room !== undefined && (
+        <section className="lobby-panel" aria-labelledby="results-title">
+          <p className="eyebrow">Round over</p>
+          <h1 id="results-title">
+            {room.resultKind === 'draw'
+              ? 'The night takes everyone.'
+              : `${room.players.find((player) => player.id === room.winnerPlayerId)?.displayName ?? 'One dog'} survives.`}
+          </h1>
+          {localPlayer?.id === room.hostPlayerId ? (
+            <button onClick={() => connection.sendRematch()} type="button">
+              Return to lobby
+            </button>
+          ) : (
+            <p>Waiting for the host.</p>
+          )}
+        </section>
+      )}
+      {snapshot.status === 'connected' && !inLobby && !inResults && (
         <section className="title-panel">
           <p className="eyebrow">Terra Rossa</p>
           <h1>
