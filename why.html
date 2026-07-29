@@ -523,6 +523,13 @@
             <p class="why"><strong>Why:</strong> multiplayer bugs become much easier to reason about when every fact has one owner and every boundary has one direction. Proving that path locally and over hosted WSS before adding movement means later gameplay failures can be isolated to commands, simulation, synchronization, or presentation instead of an unknown deployment foundation.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical world">
+            <span class="tag">T1.1 / numeric contract</span>
+            <h3>The world runs on metres and ticks.</h3>
+            <p>Simulation uses a flat X/Z plane, radians for direction, immutable conversion into Three.js X/Y/Z, and integer ticks at a fixed 30 Hz. Shared guards reject non-finite and out-of-bounds values, while seeded randomness makes later spawn choices exactly repeatable in tests.</p>
+            <p class="why"><strong>Why:</strong> render frames speed up, slow down, and disappear in background tabs; they cannot be the game clock. One fixed step makes movement and combat reproducible on server, client, and test runner. Explicit coordinate conversion also prevents the common mistake where simulation Y means “forward” but Three.js Y means “up,” and rejecting NaN early prevents one malformed command from poisoning an entire room.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

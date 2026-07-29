@@ -279,7 +279,7 @@ Goal: four clients move responsively through one server-owned authored map.
 
 ## T1.1 — Define shared coordinates and time conventions
 
-- [ ] Establish the numeric conventions used by simulation, protocol, and renderer.
+- [x] Establish the numeric conventions used by simulation, protocol, and renderer.
 
 Prerequisites: Phase 0 gate.
 

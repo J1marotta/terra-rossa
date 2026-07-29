@@ -120,3 +120,11 @@ Phase 0 proves the complete path before adding controls. A future browser input 
 In short: browser intent travels inward as commands, while server truth travels outward as schema. The client may predict presentation later, but it never gets to author the consequential result.
 
 Phase 0 passed with a pnpm 10.15.1 frozen install, strict type checking, lint and formatting, 24 automated tests, a production client build, local Chrome play, hosted HTTPS and WSS play, a synchronized server UUID, and a versioned Fly health check. Client and server release independently through the procedures in `DEPLOYMENT.md`.
+
+## Simulation conventions
+
+Gameplay is simulated on a flat world plane measured in metres. World `x` maps directly to Three.js `x`, world `z` maps directly to Three.js `z`, and render `y` is presentation elevation only. Direction is radians in the X/Z plane: zero points along positive X and increasing angles turn toward positive Z. Canonical angles occupy `[-π, π)`.
+
+The server will advance integer ticks at a fixed 30 Hz (`1/30` second per tick), independent of browser render frames. Durations are expressed in milliseconds at configuration and protocol boundaries, then rounded up to whole ticks for simulation. Positions are limited to ±2,048 metres per axis, render elevation to ±256, and tick counters to unsigned 32-bit range. Shared validators reject non-numbers, `NaN`, infinities, fractions where integers are required, and values outside those bounds.
+
+`SeededRandom` supplies repeatable pseudo-random choices for authored spawn allocation and tests. It is deterministic simulation tooling, not security or gambling randomness.
