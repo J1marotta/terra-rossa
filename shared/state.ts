@@ -34,6 +34,7 @@ export const PlayerState = schema(
     reloadAttempted: 'boolean',
     reloadOutcome: 'string',
     reloadEvent: 'uint32',
+    reloadResultTicksRemaining: 'uint8',
     meleeWindupTicksRemaining: 'uint8',
     meleeRecoveryTicksRemaining: 'uint8',
     meleeAngleRadians: 'float32',

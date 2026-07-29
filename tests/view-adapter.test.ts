@@ -32,6 +32,7 @@ describe('room view adapter', () => {
     player.reloadAttempted = false;
     player.reloadOutcome = 'normal';
     player.reloadEvent = 1;
+    player.reloadResultTicksRemaining = 12;
     player.meleeWindupTicksRemaining = 2;
     player.meleeRecoveryTicksRemaining = 0;
     player.meleeAngleRadians = 1;
@@ -73,6 +74,7 @@ describe('room view adapter', () => {
         reloadAttempted: false,
         reloadOutcome: 'normal',
         reloadEvent: 1,
+        reloadResultTicksRemaining: 12,
         meleeWindupTicksRemaining: 2,
         meleeRecoveryTicksRemaining: 0,
         meleeAngleRadians: 1,

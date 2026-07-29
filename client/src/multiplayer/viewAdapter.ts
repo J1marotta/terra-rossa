@@ -34,6 +34,7 @@ export function adaptRoomState(
         reloadAttempted: player.reloadAttempted,
         reloadOutcome: player.reloadOutcome,
         reloadEvent: player.reloadEvent,
+        reloadResultTicksRemaining: player.reloadResultTicksRemaining,
         meleeWindupTicksRemaining: player.meleeWindupTicksRemaining,
         meleeRecoveryTicksRemaining: player.meleeRecoveryTicksRemaining,
         meleeAngleRadians: player.meleeAngleRadians,

@@ -27,6 +27,7 @@ export interface PlayerView {
   readonly reloadAttempted: boolean;
   readonly reloadOutcome: string;
   readonly reloadEvent: number;
+  readonly reloadResultTicksRemaining: number;
   readonly meleeWindupTicksRemaining: number;
   readonly meleeRecoveryTicksRemaining: number;
   readonly meleeAngleRadians: number;

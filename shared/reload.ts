@@ -11,9 +11,11 @@ export interface ReloadingPlayer {
   reloadAttempted: boolean;
   reloadOutcome: string;
   reloadEvent: number;
+  reloadResultTicksRemaining: number;
 }
 
 export const MAX_RELOAD_COMPENSATION_MILLISECONDS = 150;
+export const RELOAD_RESULT_MILLISECONDS = 700;
 
 export function initializeReloadState(player: ReloadingPlayer) {
   player.reloadTicksElapsed = 0;
@@ -21,6 +23,7 @@ export function initializeReloadState(player: ReloadingPlayer) {
   player.reloadAttempted = false;
   player.reloadOutcome = 'none';
   player.reloadEvent = 0;
+  player.reloadResultTicksRemaining = 0;
 }
 
 export function startReload(player: ReloadingPlayer) {
@@ -84,6 +87,9 @@ export function attemptActiveReload(
 }
 
 export function advanceReload(player: ReloadingPlayer) {
+  if (player.reloadResultTicksRemaining > 0) {
+    player.reloadResultTicksRemaining -= 1;
+  }
   if (player.reloadCompletionTick === 0) return false;
   player.reloadTicksElapsed += 1;
   return completeReloadIfDue(player);
@@ -101,6 +107,9 @@ function completeReloadIfDue(player: ReloadingPlayer) {
   player.magazineAmmo += transferred;
   player.reserveAmmo -= transferred;
   player.reloadCompletionTick = 0;
+  player.reloadResultTicksRemaining = millisecondsToTicks(
+    RELOAD_RESULT_MILLISECONDS,
+  );
   player.reloadEvent += 1;
   return true;
 }

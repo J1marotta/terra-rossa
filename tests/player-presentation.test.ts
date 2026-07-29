@@ -37,6 +37,7 @@ const view = (
   reloadAttempted: false,
   reloadOutcome: 'none',
   reloadEvent: 0,
+  reloadResultTicksRemaining: 0,
   meleeWindupTicksRemaining: 0,
   meleeRecoveryTicksRemaining: 0,
   meleeAngleRadians: 0,

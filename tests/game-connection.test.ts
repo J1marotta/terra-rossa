@@ -38,6 +38,7 @@ function createFakeRoom() {
   player.reloadAttempted = false;
   player.reloadOutcome = 'none';
   player.reloadEvent = 0;
+  player.reloadResultTicksRemaining = 0;
   player.meleeWindupTicksRemaining = 0;
   player.meleeRecoveryTicksRemaining = 0;
   player.meleeAngleRadians = 0;
@@ -119,6 +120,7 @@ describe('game connection', () => {
       reloadAttempted: false,
       reloadOutcome: 'none',
       reloadEvent: 0,
+      reloadResultTicksRemaining: 0,
       meleeWindupTicksRemaining: 0,
       meleeRecoveryTicksRemaining: 0,
       meleeAngleRadians: 0,

@@ -19,6 +19,7 @@ function player(overrides: Partial<ReloadingPlayer> = {}): ReloadingPlayer {
     reloadAttempted: false,
     reloadOutcome: 'none',
     reloadEvent: 0,
+    reloadResultTicksRemaining: 0,
     ...overrides,
   };
   initializeReloadState(value);
