@@ -19,6 +19,12 @@ function createFakeRoom() {
   player.x = 5;
   player.z = -3;
   player.lastProcessedSequence = 2;
+  player.dashX = 0;
+  player.dashZ = 0;
+  player.dashTicksRemaining = 0;
+  player.dashCooldownTicksRemaining = 0;
+  player.dashRecoveryTicksRemaining = 0;
+  player.dashEvent = 0;
   state.players.set(player.id, player);
 
   let stateListener: ((state: GameRoomStateInstance) => void) | undefined;
@@ -71,6 +77,12 @@ describe('game connection', () => {
       x: 5,
       z: -3,
       lastProcessedSequence: 2,
+      dashX: 0,
+      dashZ: 0,
+      dashTicksRemaining: 0,
+      dashCooldownTicksRemaining: 0,
+      dashRecoveryTicksRemaining: 0,
+      dashEvent: 0,
     });
 
     connection.disconnect();
@@ -89,14 +101,15 @@ describe('game connection', () => {
 
     expect(connection.sendMovement(1, 0)).toBe(0);
     expect(connection.sendMovement(0, -1)).toBe(1);
-    expect(fake.room.send).toHaveBeenCalledTimes(2);
+    expect(connection.sendDash()).toBe(2);
+    expect(fake.room.send).toHaveBeenCalledTimes(3);
     expect(fake.room.send).toHaveBeenLastCalledWith(
       'command',
       expect.objectContaining({
         roomId: 'room-test',
-        sequence: 1,
-        type: 'move',
-        payload: { x: 0, z: -1 },
+        sequence: 2,
+        type: 'dash',
+        payload: {},
       }),
     );
     expect(fake.room.send).not.toHaveBeenCalledWith(

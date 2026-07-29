@@ -7,9 +7,14 @@ import { GameScene } from './GameScene';
 interface GameCanvasProps {
   players: readonly PlayerView[];
   sendMovement: (x: number, z: number) => number | null;
+  sendDash: () => number | null;
 }
 
-export function GameCanvas({ players, sendMovement }: GameCanvasProps) {
+export function GameCanvas({
+  players,
+  sendMovement,
+  sendDash,
+}: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
 
@@ -25,11 +30,15 @@ export function GameCanvas({ players, sendMovement }: GameCanvasProps) {
   }, []);
 
   useEffect(() => {
-    const input = new MovementInput(sendMovement, (x, z, sequence) =>
-      sceneRef.current?.applyPredictedMovement(x, z, sequence),
+    const input = new MovementInput(
+      sendMovement,
+      (x, z, sequence) =>
+        sceneRef.current?.applyPredictedMovement(x, z, sequence),
+      sendDash,
+      (sequence) => sceneRef.current?.applyPredictedDash(sequence),
     );
     return () => input.dispose();
-  }, [sendMovement]);
+  }, [sendDash, sendMovement]);
 
   useEffect(() => {
     sceneRef.current?.setPlayers(players, performance.now());

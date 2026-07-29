@@ -160,3 +160,9 @@ Remote dogs render 100 milliseconds behind receipt time and interpolate between 
 WASD is sampled at the shared 30 Hz step. Each normalized input receives the next sequence number, travels as a movement command with no claimed position, and is applied immediately to a client-side copy of the same map collision integrator. Pending inputs remain keyed by sequence until schema state acknowledges them.
 
 On an authoritative update, the client drops acknowledged inputs, resets its simulation to server X/Z, and replays the remainder. Errors up to 0.15 metres settle immediately; ordinary larger drift blends toward the corrected target at a frame-rate-independent rate; divergence above two metres hard-snaps as a safety boundary. A deterministic delay harness verifies immediate response and reconciliation at 150 ms round-trip latency with jitter, while an intentionally illegal multi-metre prediction is always corrected. Remote clients still receive only the server position.
+
+## Authoritative dash
+
+Space requests a 4.5-metre dash along the current movement direction. The dash lasts six fixed ticks (200 ms), then applies five ticks of movement recovery; its 1.2-second cooldown begins on acceptance. The room rejects zero-direction, active, recovering, and cooling-down requests, while still acknowledging their ordered command. Dash movement uses the same circle, obstacle, and map-bound resolver as walking, so it stops at walls and edges rather than tunnelling through them. It grants no invulnerability.
+
+The client predicts only after it has movement intent and replays dash commands alongside movement history during reconciliation. A successful server dash increments a synchronized event counter; the scene uses predicted input for an immediate squash and the server event for remote confirmation. Presentation can react quickly but cannot decide cooldown or legality.

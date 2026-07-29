@@ -15,6 +15,12 @@ export function adaptRoomState(
         x: player.x,
         z: player.z,
         lastProcessedSequence: player.lastProcessedSequence,
+        dashTicksRemaining: player.dashTicksRemaining,
+        dashCooldownTicksRemaining: player.dashCooldownTicksRemaining,
+        dashRecoveryTicksRemaining: player.dashRecoveryTicksRemaining,
+        dashX: player.dashX,
+        dashZ: player.dashZ,
+        dashEvent: player.dashEvent,
       }),
     );
   });

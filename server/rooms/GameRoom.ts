@@ -11,6 +11,7 @@ import { TERRA_ROSSA_MAP } from '../../shared/map';
 import {
   FixedStepAccumulator,
   applyMovementInput,
+  attemptDash,
   initializeMovementState,
   integratePlayerMovement,
 } from '../../shared/movement';
@@ -130,11 +131,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     }
     const command = result.command as GameCommand;
     player.lastProcessedSequence = command.sequence;
-    if (command.type !== 'move') return;
-    const payload = command.payload as {
-      readonly x: number;
-      readonly z: number;
-    };
-    applyMovementInput(player, payload.x, payload.z, command.sequence);
+    if (command.type === 'move') {
+      const payload = command.payload as {
+        readonly x: number;
+        readonly z: number;
+      };
+      applyMovementInput(player, payload.x, payload.z, command.sequence);
+    } else if (command.type === 'dash') {
+      attemptDash(player);
+    }
   }
 }

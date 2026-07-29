@@ -1,5 +1,9 @@
 import type { PlayerStateInstance } from './state';
-import { FIXED_STEP_MILLISECONDS, FIXED_STEP_SECONDS } from './time';
+import {
+  FIXED_STEP_MILLISECONDS,
+  FIXED_STEP_SECONDS,
+  millisecondsToTicks,
+} from './time';
 import {
   TERRA_ROSSA_MAP,
   type AuthoredMap,
@@ -8,6 +12,21 @@ import {
 
 export const PLAYER_SPEED_METRES_PER_SECOND = 6;
 export const PLAYER_COLLISION_RADIUS = 0.55;
+export const DASH_DISTANCE_METRES = 4.5;
+export const DASH_DURATION_MILLISECONDS = 200;
+export const DASH_COOLDOWN_MILLISECONDS = 1_200;
+export const DASH_RECOVERY_MILLISECONDS = 150;
+export const DASH_DURATION_TICKS = millisecondsToTicks(
+  DASH_DURATION_MILLISECONDS,
+);
+export const DASH_COOLDOWN_TICKS = millisecondsToTicks(
+  DASH_COOLDOWN_MILLISECONDS,
+);
+export const DASH_RECOVERY_TICKS = millisecondsToTicks(
+  DASH_RECOVERY_MILLISECONDS,
+);
+export const DASH_SPEED_METRES_PER_SECOND =
+  DASH_DISTANCE_METRES / (DASH_DURATION_TICKS * FIXED_STEP_SECONDS);
 
 export interface MovingPlayer {
   x: number;
@@ -17,6 +36,12 @@ export interface MovingPlayer {
   speed: number;
   collisionRadius: number;
   lastProcessedSequence: number;
+  dashX: number;
+  dashZ: number;
+  dashTicksRemaining: number;
+  dashCooldownTicksRemaining: number;
+  dashRecoveryTicksRemaining: number;
+  dashEvent: number;
 }
 
 export function initializeMovementState(
@@ -31,6 +56,30 @@ export function initializeMovementState(
   player.speed = PLAYER_SPEED_METRES_PER_SECOND;
   player.collisionRadius = PLAYER_COLLISION_RADIUS;
   player.lastProcessedSequence = -1;
+  player.dashX = 0;
+  player.dashZ = 0;
+  player.dashTicksRemaining = 0;
+  player.dashCooldownTicksRemaining = 0;
+  player.dashRecoveryTicksRemaining = 0;
+  player.dashEvent = 0;
+}
+
+export function attemptDash(player: MovingPlayer) {
+  if (
+    player.dashTicksRemaining > 0 ||
+    player.dashCooldownTicksRemaining > 0 ||
+    player.dashRecoveryTicksRemaining > 0
+  ) {
+    return false;
+  }
+  const magnitude = Math.hypot(player.moveX, player.moveZ);
+  if (magnitude === 0) return false;
+  player.dashX = player.moveX / magnitude;
+  player.dashZ = player.moveZ / magnitude;
+  player.dashTicksRemaining = DASH_DURATION_TICKS;
+  player.dashCooldownTicksRemaining = DASH_COOLDOWN_TICKS;
+  player.dashEvent += 1;
+  return true;
 }
 
 export function applyMovementInput(
@@ -74,10 +123,23 @@ export function integratePlayerMovement(
   seconds = FIXED_STEP_SECONDS,
   map: AuthoredMap = TERRA_ROSSA_MAP,
 ) {
+  if (player.dashCooldownTicksRemaining > 0)
+    player.dashCooldownTicksRemaining -= 1;
+  const dashing = player.dashTicksRemaining > 0;
+  const recovering = player.dashRecoveryTicksRemaining > 0;
   const magnitude = Math.hypot(player.moveX, player.moveZ);
   const scale = magnitude > 1 ? 1 / magnitude : 1;
-  const deltaX = player.moveX * scale * player.speed * seconds;
-  const deltaZ = player.moveZ * scale * player.speed * seconds;
+  const canWalk = !recovering;
+  const deltaX = dashing
+    ? player.dashX * DASH_SPEED_METRES_PER_SECOND * seconds
+    : canWalk
+      ? player.moveX * scale * player.speed * seconds
+      : 0;
+  const deltaZ = dashing
+    ? player.dashZ * DASH_SPEED_METRES_PER_SECOND * seconds
+    : canWalk
+      ? player.moveZ * scale * player.speed * seconds
+      : 0;
   const minimumX = map.bounds.minX + player.collisionRadius;
   const maximumX = map.bounds.maxX - player.collisionRadius;
   const minimumZ = map.bounds.minZ + player.collisionRadius;
@@ -91,6 +153,14 @@ export function integratePlayerMovement(
   const nextZ = Math.max(minimumZ, Math.min(maximumZ, player.z + deltaZ));
   if (!collides(map, player.x, nextZ, player.collisionRadius)) {
     player.z = nextZ;
+  }
+  if (dashing) {
+    player.dashTicksRemaining -= 1;
+    if (player.dashTicksRemaining === 0) {
+      player.dashRecoveryTicksRemaining = DASH_RECOVERY_TICKS;
+    }
+  } else if (recovering) {
+    player.dashRecoveryTicksRemaining -= 1;
   }
 }
 

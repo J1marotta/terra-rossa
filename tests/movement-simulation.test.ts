@@ -19,6 +19,12 @@ function player(overrides: Partial<MovingPlayer> = {}): MovingPlayer {
     speed: PLAYER_SPEED_METRES_PER_SECOND,
     collisionRadius: PLAYER_COLLISION_RADIUS,
     lastProcessedSequence: -1,
+    dashX: 0,
+    dashZ: 0,
+    dashTicksRemaining: 0,
+    dashCooldownTicksRemaining: 0,
+    dashRecoveryTicksRemaining: 0,
+    dashEvent: 0,
     ...overrides,
   };
 }

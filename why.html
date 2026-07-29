@@ -565,6 +565,13 @@
             <p class="why"><strong>Why:</strong> waiting a full network round trip makes correct movement feel broken. Prediction removes that wait without granting authority because no predicted position is sent or shown to opponents. Reusing the same collision integrator reduces ordinary disagreement, while explicit soft and hard thresholds make correction behaviour testable under 150 milliseconds of latency and jitter instead of tuning it by hope.</p>
           </article>
 
+          <article class="decision reveal" data-category="technical gameplay interface">
+            <span class="tag">T1.7 / dash</span>
+            <h3>Space asks; the room decides.</h3>
+            <p>A dash covers 4.5 metres over six fixed ticks, respects the same walls and bounds as walking, pauses movement briefly afterward, and cannot begin again during its 1.2-second cooldown. Clients predict the motion and squash the dog immediately, while a server event confirms legal dashes to everyone.</p>
+            <p class="why"><strong>Why:</strong> dash should feel like a sharp movement verb, not a loophole through geometry or cooldown. Sharing collision and replay logic keeps it responsive under latency without accepting a client-authored destination. A monotonic event counter gives presentation something distinct to celebrate while remaining evidence of a server decision; no invulnerability was smuggled into the mechanic.</p>
+          </article>
+
           <article class="decision reveal" data-category="gameplay technical">
             <span class="tag">Process / first product</span>
             <h3>The solo study remains, but it is not the build.</h3>

@@ -13,6 +13,12 @@ describe('room view adapter', () => {
     player.x = 12;
     player.z = -4;
     player.lastProcessedSequence = 7;
+    player.dashX = 1;
+    player.dashZ = 0;
+    player.dashTicksRemaining = 3;
+    player.dashCooldownTicksRemaining = 20;
+    player.dashRecoveryTicksRemaining = 0;
+    player.dashEvent = 2;
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
@@ -25,6 +31,12 @@ describe('room view adapter', () => {
         x: 12,
         z: -4,
         lastProcessedSequence: 7,
+        dashX: 1,
+        dashZ: 0,
+        dashTicksRemaining: 3,
+        dashCooldownTicksRemaining: 20,
+        dashRecoveryTicksRemaining: 0,
+        dashEvent: 2,
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

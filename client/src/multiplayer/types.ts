@@ -8,6 +8,12 @@ export interface PlayerView {
   readonly x: number;
   readonly z: number;
   readonly lastProcessedSequence: number;
+  readonly dashTicksRemaining: number;
+  readonly dashCooldownTicksRemaining: number;
+  readonly dashRecoveryTicksRemaining: number;
+  readonly dashX: number;
+  readonly dashZ: number;
+  readonly dashEvent: number;
 }
 
 export interface RoomView {

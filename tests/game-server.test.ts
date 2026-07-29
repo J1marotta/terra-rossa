@@ -124,9 +124,22 @@ describe.sequential('minimal game server', () => {
         z: 0,
       }),
     );
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(local()?.moveX).toBe(1);
     expect(local()?.lastProcessedSequence).toBe(1);
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'dash', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(local()?.dashEvent).toBe(1);
+    client.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 3, 'dash', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(local()?.dashEvent).toBe(1);
+    expect(local()?.lastProcessedSequence).toBe(3);
     await client.leave();
   });
 

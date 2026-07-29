@@ -27,6 +27,8 @@ export class GameScene {
   readonly #renderer: WebGLRenderer;
   readonly #players = new PlayerPresentationRegistry<Group>();
   readonly #localPrediction = new LocalPrediction();
+  readonly #lastDashEvent = new Map<string, number>();
+  readonly #dashPulseUntil = new Map<string, number>();
   readonly #reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   );
@@ -104,6 +106,20 @@ export class GameScene {
       },
       (group) => this.#removeDog(group),
     );
+    const activeIds = new Set(players.map((player) => player.id));
+    this.#lastDashEvent.forEach((_event, id) => {
+      if (!activeIds.has(id)) {
+        this.#lastDashEvent.delete(id);
+        this.#dashPulseUntil.delete(id);
+      }
+    });
+    players.forEach((player) => {
+      const previousEvent = this.#lastDashEvent.get(player.id);
+      if (previousEvent !== undefined && player.dashEvent > previousEvent) {
+        this.#dashPulseUntil.set(player.id, receivedAt + 180);
+      }
+      this.#lastDashEvent.set(player.id, player.dashEvent);
+    });
     const localPlayer = players.find((player) => player.isLocal);
     if (localPlayer === undefined) {
       this.#localPlayerId = null;
@@ -117,12 +133,29 @@ export class GameScene {
         localPlayer.x,
         localPlayer.z,
         localPlayer.lastProcessedSequence,
+        {
+          dashX: localPlayer.dashX,
+          dashZ: localPlayer.dashZ,
+          dashTicksRemaining: localPlayer.dashTicksRemaining,
+          dashCooldownTicksRemaining: localPlayer.dashCooldownTicksRemaining,
+          dashRecoveryTicksRemaining: localPlayer.dashRecoveryTicksRemaining,
+          dashEvent: localPlayer.dashEvent,
+        },
       );
     }
   }
 
   applyPredictedMovement(x: number, z: number, sequence: number) {
     this.#localPrediction.predict(sequence, x, z);
+  }
+
+  applyPredictedDash(sequence: number) {
+    if (
+      this.#localPlayerId !== null &&
+      this.#localPrediction.predictDash(sequence)
+    ) {
+      this.#dashPulseUntil.set(this.#localPlayerId, performance.now() + 180);
+    }
   }
 
   #createDog(player: PlayerView) {
@@ -185,6 +218,8 @@ export class GameScene {
           this.#camera.lookAt(position.x, 0, position.z);
         }
       }
+      const dashing = (this.#dashPulseUntil.get(entry.player.id) ?? 0) > time;
+      entry.object.scale.set(dashing ? 1.15 : 1, dashing ? 0.82 : 1, 1);
     });
     this.#renderer.render(this.#scene, this.#camera);
     this.#animationFrame = requestAnimationFrame(this.#render);
@@ -197,6 +232,8 @@ export class GameScene {
       cancelAnimationFrame(this.#animationFrame);
     this.#resizeObserver.disconnect();
     this.#players.disposeAll((group) => this.#removeDog(group));
+    this.#lastDashEvent.clear();
+    this.#dashPulseUntil.clear();
     this.#scene.traverse((object) => {
       if (!(object instanceof Mesh)) return;
       object.geometry.dispose();

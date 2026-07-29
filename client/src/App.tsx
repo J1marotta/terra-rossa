@@ -30,6 +30,7 @@ export function App() {
       <GameCanvas
         players={snapshot.room?.players ?? []}
         sendMovement={connection.sendMovement}
+        sendDash={connection.sendDash}
       />
       <section className="title-panel">
         <p className="eyebrow">Terra Rossa</p>

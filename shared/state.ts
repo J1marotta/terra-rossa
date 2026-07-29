@@ -14,6 +14,12 @@ export const PlayerState = schema(
     speed: 'float32',
     collisionRadius: 'float32',
     lastProcessedSequence: 'int64',
+    dashX: 'float32',
+    dashZ: 'float32',
+    dashTicksRemaining: 'uint8',
+    dashCooldownTicksRemaining: 'uint16',
+    dashRecoveryTicksRemaining: 'uint8',
+    dashEvent: 'uint32',
   },
   'PlayerState',
 );

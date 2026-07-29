@@ -412,7 +412,7 @@ Acceptance:
 
 ## T1.7 — Implement authoritative dash
 
-- [ ] Add the shared dash as a server-validated movement action.
+- [x] Add the shared dash as a server-validated movement action.
 
 Prerequisites: T1.6.
 

@@ -2,6 +2,8 @@ import { FixedStepAccumulator } from '../../../shared/movement';
 
 type SendMovement = (x: number, z: number) => number | null;
 type PredictMovement = (x: number, z: number, sequence: number) => void;
+type SendDash = () => number | null;
+type PredictDash = (sequence: number) => void;
 
 const MOVEMENT_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD']);
 
@@ -21,13 +23,23 @@ export class MovementInput {
   readonly #accumulator = new FixedStepAccumulator();
   readonly #sendMovement: SendMovement;
   readonly #predictMovement: PredictMovement;
+  readonly #sendDash: SendDash;
+  readonly #predictDash: PredictDash;
   #frame: number | undefined;
   #previousTime = performance.now();
   #disposed = false;
+  #dashQueued = false;
 
-  constructor(sendMovement: SendMovement, predictMovement: PredictMovement) {
+  constructor(
+    sendMovement: SendMovement,
+    predictMovement: PredictMovement,
+    sendDash: SendDash,
+    predictDash: PredictDash,
+  ) {
     this.#sendMovement = sendMovement;
     this.#predictMovement = predictMovement;
+    this.#sendDash = sendDash;
+    this.#predictDash = predictDash;
     window.addEventListener('keydown', this.#onKeyDown);
     window.addEventListener('keyup', this.#onKeyUp);
     window.addEventListener('blur', this.#onBlur);
@@ -35,6 +47,11 @@ export class MovementInput {
   }
 
   #onKeyDown = (event: KeyboardEvent) => {
+    if (event.code === 'Space') {
+      if (!event.repeat) this.#dashQueued = true;
+      event.preventDefault();
+      return;
+    }
     if (!MOVEMENT_KEYS.has(event.code)) return;
     this.#pressed.add(event.code);
     event.preventDefault();
@@ -56,6 +73,11 @@ export class MovementInput {
       const { x, z } = movementVectorFromKeys(this.#pressed);
       const sequence = this.#sendMovement(x, z);
       if (sequence !== null) this.#predictMovement(x, z, sequence);
+      if (this.#dashQueued) {
+        const dashSequence = this.#sendDash();
+        if (dashSequence !== null) this.#predictDash(dashSequence);
+        this.#dashQueued = false;
+      }
     });
     this.#frame = requestAnimationFrame(this.#update);
   };
@@ -68,5 +90,6 @@ export class MovementInput {
     window.removeEventListener('keyup', this.#onKeyUp);
     window.removeEventListener('blur', this.#onBlur);
     this.#pressed.clear();
+    this.#dashQueued = false;
   }
 }

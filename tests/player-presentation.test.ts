@@ -18,6 +18,12 @@ const view = (
   x,
   z,
   lastProcessedSequence: 0,
+  dashX: 0,
+  dashZ: 0,
+  dashTicksRemaining: 0,
+  dashCooldownTicksRemaining: 0,
+  dashRecoveryTicksRemaining: 0,
+  dashEvent: 0,
 });
 
 describe('remote position presentation', () => {
