@@ -210,7 +210,7 @@ Do not:
 
 ## T0.6 — Connect the rendered client to synchronized room state
 
-- [ ] Display the local server-owned player placeholder in the Three.js scene.
+- [x] Display the local server-owned player placeholder in the Three.js scene.
 
 Prerequisites: T0.4 and T0.5.
 

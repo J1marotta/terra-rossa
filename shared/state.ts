@@ -1,6 +1,6 @@
 import { MapSchema, schema, type SchemaType } from '@colyseus/schema';
 
-import { PROTOCOL_VERSION } from '../../shared/protocol';
+import { PROTOCOL_VERSION } from './protocol';
 
 export const PlayerState = schema(
   {

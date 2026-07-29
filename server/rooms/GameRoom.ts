@@ -7,13 +7,13 @@ import {
   PROTOCOL_VERSION,
   type JoinOptions,
 } from '../../shared/protocol';
-import { consoleLogger, type GameLogger } from '../logger';
-import { sanitizeDisplayName } from './displayName';
 import {
   PlayerState,
   createGameRoomState,
   type GameRoomStateInstance,
-} from './state';
+} from '../../shared/state';
+import { consoleLogger, type GameLogger } from '../logger';
+import { sanitizeDisplayName } from './displayName';
 
 interface RoomOptions {
   logger?: GameLogger;

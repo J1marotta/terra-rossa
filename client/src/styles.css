@@ -68,6 +68,26 @@ button {
   opacity: 0.8;
 }
 
+.connection-status,
+.connection-error {
+  width: min(32rem, 100%);
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgb(216 107 75 / 45%);
+  background: rgb(18 15 23 / 82%);
+  font-family: system-ui, sans-serif;
+  font-size: 0.9rem;
+}
+
+.connection-status[data-status='connected'] {
+  border-color: #88a96b;
+  color: #dce9c6;
+}
+
+.connection-error {
+  border-color: #e15353;
+  color: #ffd4cc;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

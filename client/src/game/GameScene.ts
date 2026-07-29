@@ -12,6 +12,7 @@ import {
   WebGLRenderer,
 } from 'three';
 
+import type { PlayerView } from '../multiplayer/types';
 import { calculateOrthographicBounds } from './projection';
 
 const CAMERA_HEIGHT = 18;
@@ -21,7 +22,7 @@ export class GameScene {
   readonly #scene = new Scene();
   readonly #camera = new OrthographicCamera();
   readonly #renderer: WebGLRenderer;
-  readonly #dog = new Group();
+  readonly #players = new Map<string, Group>();
   readonly #reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   );
@@ -66,20 +67,6 @@ export class GameScene {
     obstacle.position.set(3, 1.25, -1.5);
     this.#scene.add(obstacle);
 
-    const body = new Mesh(
-      new BoxGeometry(1.25, 1.8, 0.8),
-      new MeshStandardMaterial({ color: '#cf754b', roughness: 0.8 }),
-    );
-    body.position.y = 1.1;
-    const head = new Mesh(
-      new BoxGeometry(1.05, 0.9, 0.9),
-      new MeshStandardMaterial({ color: '#e0a46d', roughness: 0.8 }),
-    );
-    head.position.set(0, 2.25, -0.1);
-    this.#dog.add(body, head);
-    this.#dog.position.set(-2.5, 0, 1.5);
-    this.#scene.add(this.#dog);
-
     this.#scene.add(new AmbientLight('#c2b1d2', 1.6));
     const moonlight = new DirectionalLight('#f4d7ba', 2.8);
     moonlight.position.set(-8, 14, 6);
@@ -89,6 +76,52 @@ export class GameScene {
     this.#camera.lookAt(0, 0, 0);
     this.#camera.near = 0.1;
     this.#camera.far = 100;
+  }
+
+  setPlayers(players: readonly PlayerView[]) {
+    if (this.#disposed) return;
+    const activeIds = new Set(players.map((player) => player.id));
+    this.#players.forEach((group, id) => {
+      if (activeIds.has(id)) return;
+      this.#scene.remove(group);
+      this.#disposeGroup(group);
+      this.#players.delete(id);
+    });
+
+    players.forEach((player, index) => {
+      let group = this.#players.get(player.id);
+      if (group === undefined) {
+        group = this.#createDog(player);
+        this.#players.set(player.id, group);
+        this.#scene.add(group);
+      }
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      group.position.set(-3 + column * 2.2, 0, 1 + row * 2.2);
+    });
+  }
+
+  #createDog(player: PlayerView) {
+    const group = new Group();
+    group.name = player.id;
+    const body = new Mesh(
+      new BoxGeometry(1.25, 1.8, 0.8),
+      new MeshStandardMaterial({
+        color: player.isLocal ? '#cf754b' : '#756c9b',
+        roughness: 0.8,
+      }),
+    );
+    body.position.y = 1.1;
+    const head = new Mesh(
+      new BoxGeometry(1.05, 0.9, 0.9),
+      new MeshStandardMaterial({
+        color: player.isLocal ? '#e0a46d' : '#9a91bd',
+        roughness: 0.8,
+      }),
+    );
+    head.position.set(0, 2.25, -0.1);
+    group.add(body, head);
+    return group;
   }
 
   resize() {
@@ -104,9 +137,14 @@ export class GameScene {
   #render = (time: number) => {
     if (this.#disposed) return;
     if (!this.#reducedMotion.matches) {
-      this.#dog.position.y = Math.sin((time - this.#startTime) / 450) * 0.08;
+      const offset = Math.sin((time - this.#startTime) / 450) * 0.08;
+      this.#players.forEach((player) => {
+        player.position.y = offset;
+      });
     } else {
-      this.#dog.position.y = 0;
+      this.#players.forEach((player) => {
+        player.position.y = 0;
+      });
     }
     this.#renderer.render(this.#scene, this.#camera);
     this.#animationFrame = requestAnimationFrame(this.#render);
@@ -128,5 +166,17 @@ export class GameScene {
     });
     this.#renderer.dispose();
     this.#renderer.domElement.remove();
+    this.#players.clear();
+  }
+
+  #disposeGroup(group: Group) {
+    group.traverse((object) => {
+      if (!(object instanceof Mesh)) return;
+      object.geometry.dispose();
+      const materials = Array.isArray(object.material)
+        ? object.material
+        : [object.material];
+      materials.forEach((material) => material.dispose());
+    });
   }
 }

@@ -95,3 +95,11 @@ The client owns one orthographic Three.js scene beneath a separate React title l
 React creates the scene once and calls its explicit disposal method on unmount. Disposal cancels the animation frame, disconnects resize observation, releases geometry, materials, and renderer resources, and removes the canvas. Reduced-motion preference disables the placeholder dog’s idle bob.
 
 The supported MVP browser is current desktop Google Chrome. Firefox, Safari, Edge, mobile browsers, and native clients are outside the acceptance matrix unless the scope is changed explicitly.
+
+### First synchronized player
+
+The Chrome client now joins `terra_rossa_v1` automatically and presents the display name plus short form of the stable player ID assigned by the server. The React layer reports idle, connecting, connected, failed, and closed states; failures name the attempted endpoint and tell a local developer to start the server and reload Chrome.
+
+Network schema objects stop at a dedicated view adapter. That adapter copies each update into sorted, immutable plain data before React or Three.js sees it. The scene reconciles upright dog placeholders by stable player ID, so a state update reuses an existing object while a departure removes and disposes it. Unmounting removes Colyseus listeners, leaves the room, and invalidates late connection promises to prevent stale subscriptions after refresh.
+
+Run `pnpm dev:all`, then open `http://localhost:5173` in current desktop Chrome to exercise the local handshake. The on-screen connection line should change to `Connected as Scout` followed by the server-owned ID; refreshing should yield exactly one connected dog and a new identity.

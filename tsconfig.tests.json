@@ -9,6 +9,7 @@
     "tests/**/*.ts",
     "client/src/config.ts",
     "client/src/game/projection.ts",
+    "client/src/multiplayer/**/*.ts",
     "client/src/vite-env.d.ts",
     "server/config.ts",
     "server/index.ts",
