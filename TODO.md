@@ -1149,6 +1149,13 @@ Acceptance:
 
 - [ ] Test whether the continuous four-player PvPvE hypothesis is actually fun.
 
+Progress: three complete hosted four-client harness matches passed on release
+`b92f398` across 45±20 ms, 70±30 ms, and 95±40 ms command delay, including
+visibility, combat, authoritative results, and clean rematches. `PLAYTEST.md`
+records the evidence and supplies a three-match observation/decision protocol.
+Multiple full matches with four human friends and the resulting fun/scope
+recommendation remain required; automation cannot satisfy this task.
+
 Prerequisites: T5.1 through T5.7.
 
 Deliverables:
