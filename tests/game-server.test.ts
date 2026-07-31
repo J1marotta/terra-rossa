@@ -233,6 +233,65 @@ describe.sequential('minimal game server', () => {
     await Promise.all([host.leave(), guest.leave()]);
   });
 
+  it('awards one shotgun and resolves its pellet burst', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const clients = await Promise.all(
+      ['Shotgun One', 'Shotgun Two'].map((displayName) =>
+        testServer.connectTo(room, {
+          protocolVersion: PROTOCOL_VERSION,
+          displayName,
+        }),
+      ),
+    );
+    room.state.phase = 'playing';
+    const players = [...room.state.players.values()];
+    Object.assign(players[0]!, { x: -10, z: -10, aimAngleRadians: 0 });
+    Object.assign(players[1]!, { x: -7, z: -10, health: 100 });
+    const weapon = new PickupState();
+    Object.assign(weapon, {
+      id: 'shotgun-race',
+      kind: 'weapon',
+      x: -10,
+      z: -10,
+      amount: 0,
+      weaponId: 'centre-shotgun',
+      magazineAmmo: 4,
+      reserveAmmo: 12,
+    });
+    room.state.pickups.set(weapon.id, weapon);
+    clients.forEach((client) =>
+      client.send(
+        COMMAND_MESSAGE,
+        createCommand(
+          { roomId: room.roomId, matchId: null },
+          1,
+          'interact',
+          {},
+        ),
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    const holderIndex = players.findIndex(
+      (player) => player.weaponId === 'centre-shotgun',
+    );
+    expect(holderIndex).toBeGreaterThanOrEqual(0);
+    expect(
+      players.filter((player) => player.weaponId === 'centre-shotgun'),
+    ).toHaveLength(1);
+    const holder = players[holderIndex]!;
+    const target = players[holderIndex === 0 ? 1 : 0]!;
+    Object.assign(holder, { x: -10, z: -10, aimAngleRadians: 0 });
+    Object.assign(target, { x: -7, z: -10, health: 100 });
+    clients[holderIndex]!.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'fire', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(holder.magazineAmmo).toBe(3);
+    expect(target.health).toBeLessThanOrEqual(34);
+    await Promise.all(clients.map((client) => client.leave()));
+  });
+
   it.each([2, 3, 4])(
     'approves a fully ready %i-player lobby',
     async (count) => {

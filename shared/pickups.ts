@@ -59,3 +59,16 @@ export function planPickups(seed: number): readonly PlannedPickup[] {
       }),
   );
 }
+
+const SHOTGUN_POINTS: readonly WorldPoint[] = Object.freeze([
+  Object.freeze({ x: -3.5, z: 0 }),
+  Object.freeze({ x: 3.5, z: 0 }),
+  Object.freeze({ x: 0, z: -5 }),
+  Object.freeze({ x: 0, z: 5 }),
+]);
+
+export function planShotgunPickup(seed: number) {
+  return SHOTGUN_POINTS[
+    new SeededRandom(seed).nextInteger(0, SHOTGUN_POINTS.length)
+  ]!;
+}

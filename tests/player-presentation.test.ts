@@ -30,6 +30,7 @@ const view = (
   dashRecoveryTicksRemaining: 0,
   dashEvent: 0,
   aimAngleRadians: 0,
+  weaponId: 'red-hollow-pistol',
   magazineAmmo: 8,
   reserveAmmo: 32,
   shotEvent: 0,

@@ -244,3 +244,11 @@ Each round seeds twelve non-respawning supplies across sixteen authored, collisi
 Interaction is deliberate and immediate: press `E` within 1.6 metres while the pickup is visible. The server selects the nearest eligible supply, applies its benefit, deletes it once, and increments a synchronized pickup event. Concurrent claims are serialized by the room; only the first valid command consumes and benefits. There is no hold timer because the short range and explicit key already create exposure without adding another progress UI.
 
 Pistol reserve ammunition caps at 64 and health caps at the dog's synchronized maximum. A full player cannot waste that supply, so another dog may still take it. Pickups never respawn during a round; rematch creates a new seeded layout. Three.js uses small rotating yellow ammo and red heal blocks as temporary readable silhouettes.
+
+## Centre shotgun
+
+One seeded purple weapon pickup appears at a validated point inside the central conflict area. Taking it replaces the starting pistol with a visually longer shotgun carrying four shells and twelve reserve rounds. The weapon fires seven server traces across a fixed 0.36-radian fan, each dealing 11 damage through the same obstacle and target rules. At ten metres it has less than half the pistol's reach; close pellet concentration and small per-pellet knockback make it threatening without improving every situation.
+
+The shotgun fires no faster than every 780 ms and reloads over 1.9 seconds with its own good, perfect, and fumble windows. Ordinary ammo boxes grant only three shells and shotgun reserve caps at sixteen, so possession cannot sustain indefinite bursts. Weapon identity, ammunition, reload, hits, and knockback remain authoritative.
+
+A dog holds only one found weapon. Replacing a found shotgun mutates the claimed world pickup into the old shotgun with its exact remaining magazine and reserve; replacing the initial pistol consumes the shotgun pickup because starting weapons are not loot. This transfer rule preserves one world/held shotgun rather than cloning it. Player and pickup silhouettes visibly distinguish shotgun ownership without adding inventory HUD.

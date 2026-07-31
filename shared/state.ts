@@ -25,6 +25,7 @@ export const PlayerState = schema(
     dashRecoveryTicksRemaining: 'uint8',
     dashEvent: 'uint32',
     aimAngleRadians: 'float32',
+    weaponId: 'string',
     magazineAmmo: 'uint16',
     reserveAmmo: 'uint16',
     fireCooldownTicksRemaining: 'uint16',
@@ -107,6 +108,9 @@ export const PickupState = schema(
     x: { type: 'float32', view: 1 },
     z: { type: 'float32', view: 1 },
     amount: 'uint16',
+    weaponId: 'string',
+    magazineAmmo: 'uint16',
+    reserveAmmo: 'uint16',
   },
   'PickupState',
 );

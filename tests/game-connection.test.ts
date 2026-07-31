@@ -30,6 +30,7 @@ function createFakeRoom() {
   player.dashRecoveryTicksRemaining = 0;
   player.dashEvent = 0;
   player.aimAngleRadians = 0;
+  player.weaponId = 'red-hollow-pistol';
   player.magazineAmmo = 8;
   player.reserveAmmo = 32;
   player.shotEvent = 0;
@@ -119,6 +120,7 @@ describe('game connection', () => {
       dashRecoveryTicksRemaining: 0,
       dashEvent: 0,
       aimAngleRadians: 0,
+      weaponId: 'red-hollow-pistol',
       magazineAmmo: 8,
       reserveAmmo: 32,
       shotEvent: 0,

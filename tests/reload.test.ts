@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { STARTING_PISTOL } from '../shared/combat';
+import { CENTRE_SHOTGUN, STARTING_PISTOL } from '../shared/combat';
 import {
   advanceReload,
   attemptActiveReload,
@@ -94,5 +94,27 @@ describe('active reload', () => {
     while (dog.reloadCompletionTick > 0) advanceReload(dog);
     expect(dog.magazineAmmo).toBe(8);
     expect(dog.reserveAmmo).toBe(0);
+  });
+
+  it('uses the equipped shotgun magazine and active-reload timing', () => {
+    const dog = player({
+      magazineAmmo: 0,
+      reserveAmmo: CENTRE_SHOTGUN.reserveSize,
+    });
+    expect(startReload(dog, CENTRE_SHOTGUN)).toBe(true);
+    while (
+      dog.reloadTicksElapsed * (1_000 / 30) <
+      CENTRE_SHOTGUN.reload.perfectWindowStartMilliseconds
+    )
+      advanceReload(dog, CENTRE_SHOTGUN);
+    expect(
+      attemptActiveReload(
+        dog,
+        CENTRE_SHOTGUN.reload.perfectWindowStartMilliseconds,
+        CENTRE_SHOTGUN,
+      ),
+    ).toBe(true);
+    while (dog.reloadCompletionTick > 0) advanceReload(dog, CENTRE_SHOTGUN);
+    expect(dog.magazineAmmo).toBe(CENTRE_SHOTGUN.magazineSize);
   });
 });

@@ -4,6 +4,7 @@ import {
   AUTHORED_PICKUP_POINTS,
   PICKUP_DEFINITIONS,
   planPickups,
+  planShotgunPickup,
 } from '../shared/pickups';
 import {
   pointInsideBounds,
@@ -32,5 +33,16 @@ describe('pickup plan', () => {
         (pickup) => pickup.amount === PICKUP_DEFINITIONS[pickup.kind].amount,
       ),
     ).toBe(true);
+  });
+
+  it('chooses one valid centre-biased shotgun point deterministically', () => {
+    const point = planShotgunPickup(99);
+    expect(pointInsideBounds(point, TERRA_ROSSA_MAP.conflictBounds)).toBe(true);
+    expect(
+      TERRA_ROSSA_MAP.obstacles.some((obstacle) =>
+        pointInsideObstacle(point, obstacle),
+      ),
+    ).toBe(false);
+    expect(planShotgunPickup(99)).toEqual(point);
   });
 });

@@ -284,7 +284,12 @@ export class GameScene {
         const mesh = new Mesh(
           new BoxGeometry(0.55, 0.25, 0.55),
           new MeshBasicMaterial({
-            color: pickup.kind === 'heal' ? '#db6c72' : '#e6c35d',
+            color:
+              pickup.kind === 'heal'
+                ? '#db6c72'
+                : pickup.kind === 'weapon'
+                  ? '#8f78c6'
+                  : '#e6c35d',
           }),
         );
         mesh.position.y = 0.2;
@@ -415,6 +420,19 @@ export class GameScene {
     );
     head.position.set(0, 2.25, -0.1);
     group.add(body, head);
+    const pistol = new Mesh(
+      new BoxGeometry(0.18, 0.18, 0.8),
+      new MeshStandardMaterial({ color: '#b9a68d', roughness: 0.7 }),
+    );
+    pistol.name = 'pistol';
+    pistol.position.set(0.72, 1.35, -0.25);
+    const shotgun = new Mesh(
+      new BoxGeometry(0.28, 0.22, 1.35),
+      new MeshStandardMaterial({ color: '#7f6351', roughness: 0.8 }),
+    );
+    shotgun.name = 'shotgun';
+    shotgun.position.set(0.75, 1.3, -0.45);
+    group.add(pistol, shotgun);
     return group;
   }
 
@@ -499,6 +517,12 @@ export class GameScene {
       entry.object.rotation.y =
         entry.player.alive && melee ? -entry.player.meleeAngleRadians : 0;
       entry.object.rotation.z = entry.player.alive ? 0 : Math.PI / 2;
+      const shotgun = entry.object.getObjectByName('shotgun');
+      const pistol = entry.object.getObjectByName('pistol');
+      if (shotgun !== undefined)
+        shotgun.visible = entry.player.weaponId === 'centre-shotgun';
+      if (pistol !== undefined)
+        pistol.visible = entry.player.weaponId !== 'centre-shotgun';
     });
     this.#creatures.forEach((entry) => {
       const position = entry.buffer.sample(time);

@@ -876,7 +876,7 @@ Acceptance:
 
 ## T4.6 — Add the centre-biased shotgun
 
-- [ ] Create one situational weapon pickup that attracts conflict.
+- [x] Create one situational weapon pickup that attracts conflict.
 
 Prerequisites: T2.3 and T4.5.
 

@@ -13,6 +13,9 @@ import {
   PLAYER_MAXIMUM_HEALTH,
   SHARED_MELEE,
   STARTING_PISTOL,
+  CENTRE_SHOTGUN,
+  SHOTGUN_PELLET_OFFSETS,
+  getWeaponDefinition,
   resolveDamageEvents,
   type DamageEvent,
 } from '../../shared/combat';
@@ -60,6 +63,7 @@ import {
   MAXIMUM_PISTOL_RESERVE_AMMO,
   PICKUP_INTERACTION_RANGE_METRES,
   planPickups,
+  planShotgunPickup,
 } from '../../shared/pickups';
 import { CreatureRegistry } from '../creatures/CreatureRegistry';
 import { ProjectileRegistry } from '../creatures/ProjectileRegistry';
@@ -127,7 +131,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           if (player.fireCooldownTicksRemaining > 0) {
             player.fireCooldownTicksRemaining -= 1;
           }
-          advanceReload(player);
+          advanceReload(player, getWeaponDefinition(player.weaponId));
           this.#advanceMelee(player);
         });
         const creatureUpdateStarted = performance.now();
@@ -188,6 +192,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     initializeMovementState(player, spawn.center.x, spawn.center.z);
     player.spawnRegionId = spawn.id;
     player.aimAngleRadians = 0;
+    player.weaponId = STARTING_PISTOL.id;
     player.magazineAmmo = STARTING_PISTOL.magazineSize;
     player.reserveAmmo = STARTING_PISTOL.reserveSize;
     player.fireCooldownTicksRemaining = 0;
@@ -355,12 +360,16 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     } else if (command.type === 'fire') {
       this.#attemptFire(player);
     } else if (command.type === 'reload_start') {
-      startReload(player);
+      startReload(player, getWeaponDefinition(player.weaponId));
     } else if (command.type === 'reload_attempt') {
       const payload = command.payload as {
         readonly clientElapsedMilliseconds: number;
       };
-      attemptActiveReload(player, payload.clientElapsedMilliseconds);
+      attemptActiveReload(
+        player,
+        payload.clientElapsedMilliseconds,
+        getWeaponDefinition(player.weaponId),
+      );
     } else if (command.type === 'melee') {
       this.#attemptMelee(player);
     } else if (command.type === 'interact') {
@@ -402,6 +411,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       initializeMovementState(player, spawn.center.x, spawn.center.z);
       player.spawnRegionId = spawn.id;
       player.aimAngleRadians = 0;
+      player.weaponId = STARTING_PISTOL.id;
       player.magazineAmmo = STARTING_PISTOL.magazineSize;
       player.reserveAmmo = STARTING_PISTOL.reserveSize;
       player.fireCooldownTicksRemaining = 0;
@@ -461,9 +471,25 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         pickup.x = planned.x;
         pickup.z = planned.z;
         pickup.amount = planned.amount;
+        pickup.weaponId = '';
+        pickup.magazineAmmo = 0;
+        pickup.reserveAmmo = 0;
         this.state.pickups.set(pickup.id, pickup);
       },
     );
+    const point = planShotgunPickup(
+      this.state.matchSeed ^ (this.state.roundNumber * 73),
+    );
+    const shotgun = new PickupState();
+    shotgun.id = `round-${this.state.roundNumber}-shotgun`;
+    shotgun.kind = 'weapon';
+    shotgun.x = point.x;
+    shotgun.z = point.z;
+    shotgun.amount = 0;
+    shotgun.weaponId = CENTRE_SHOTGUN.id;
+    shotgun.magazineAmmo = CENTRE_SHOTGUN.magazineSize;
+    shotgun.reserveAmmo = CENTRE_SHOTGUN.reserveSize;
+    this.state.pickups.set(shotgun.id, shotgun);
   }
 
   #updateVisibilityViews() {
@@ -536,10 +562,17 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       )[0];
     if (pickup === undefined) return;
     if (pickup.kind === 'ammo') {
-      if (player.reserveAmmo >= MAXIMUM_PISTOL_RESERVE_AMMO) return;
+      const maximumReserve =
+        player.weaponId === CENTRE_SHOTGUN.id
+          ? CENTRE_SHOTGUN.reserveSize + CENTRE_SHOTGUN.magazineSize
+          : MAXIMUM_PISTOL_RESERVE_AMMO;
+      if (player.reserveAmmo >= maximumReserve) return;
       player.reserveAmmo = Math.min(
-        MAXIMUM_PISTOL_RESERVE_AMMO,
-        player.reserveAmmo + pickup.amount,
+        maximumReserve,
+        player.reserveAmmo +
+          (player.weaponId === CENTRE_SHOTGUN.id
+            ? Math.ceil(pickup.amount / 4)
+            : pickup.amount),
       );
     } else if (pickup.kind === 'heal') {
       if (player.health >= player.maximumHealth) return;
@@ -547,6 +580,22 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         player.maximumHealth,
         player.health + pickup.amount,
       );
+    } else if (pickup.kind === 'weapon') {
+      const oldWeaponId = player.weaponId;
+      const oldMagazine = player.magazineAmmo;
+      const oldReserve = player.reserveAmmo;
+      player.weaponId = pickup.weaponId;
+      player.magazineAmmo = pickup.magazineAmmo;
+      player.reserveAmmo = pickup.reserveAmmo;
+      initializeReloadState(player);
+      if (oldWeaponId !== STARTING_PISTOL.id) {
+        pickup.weaponId = oldWeaponId;
+        pickup.magazineAmmo = oldMagazine;
+        pickup.reserveAmmo = oldReserve;
+        player.pickupKind = 'weapon';
+        player.pickupEvent += 1;
+        return;
+      }
     } else {
       return;
     }
@@ -556,13 +605,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   }
 
   #attemptFire(player: InstanceType<typeof PlayerState>) {
+    const weapon = getWeaponDefinition(player.weaponId);
     if (
       player.fireCooldownTicksRemaining > 0 ||
       player.reloadCompletionTick > 0
     )
       return;
     player.fireCooldownTicksRemaining = millisecondsToTicks(
-      STARTING_PISTOL.fireIntervalMilliseconds,
+      weapon.fireIntervalMilliseconds,
     );
     if (player.magazineAmmo === 0) {
       player.dryFireEvent += 1;
@@ -580,30 +630,41 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         z: candidate.z,
         radius: candidate.collisionRadius,
       }));
-    const hit = traceHitscan(
-      TERRA_ROSSA_MAP,
-      player.x,
-      player.z,
-      player.aimAngleRadians,
-      STARTING_PISTOL.rangeMetres,
-      targets,
+    const offsets =
+      weapon.id === CENTRE_SHOTGUN.id ? SHOTGUN_PELLET_OFFSETS : [0];
+    const hits = offsets.map((offset) =>
+      traceHitscan(
+        TERRA_ROSSA_MAP,
+        player.x,
+        player.z,
+        player.aimAngleRadians + offset,
+        weapon.rangeMetres,
+        targets,
+      ),
     );
-    player.shotEndX = hit.endX;
-    player.shotEndZ = hit.endZ;
-    player.shotTargetId = hit.targetId ?? '';
+    const centreHit = hits[Math.floor(hits.length / 2)]!;
+    player.shotEndX = centreHit.endX;
+    player.shotEndZ = centreHit.endZ;
+    player.shotTargetId =
+      hits.find((candidate) => candidate.targetId !== null)?.targetId ?? '';
     player.shotEvent += 1;
-    if (hit.targetId !== null) {
-      if (this.state.creatures.has(hit.targetId)) {
-        this.#creatures.damage(hit.targetId, STARTING_PISTOL.damage);
-      } else {
-        this.#queueDamage(
-          player.id,
-          hit.targetId,
-          'firearm',
-          STARTING_PISTOL.damage,
-        );
+    hits.forEach((hit) => {
+      if (hit.targetId !== null) {
+        if (this.state.creatures.has(hit.targetId)) {
+          this.#creatures.damage(hit.targetId, weapon.damage);
+        } else {
+          this.#queueDamage(player.id, hit.targetId, 'firearm', weapon.damage);
+          const target = this.state.players.get(hit.targetId);
+          if (target !== undefined && weapon.id === CENTRE_SHOTGUN.id) {
+            applyPlayerDisplacement(
+              target,
+              Math.cos(player.aimAngleRadians) * 0.18,
+              Math.sin(player.aimAngleRadians) * 0.18,
+            );
+          }
+        }
       }
-    }
+    });
   }
 
   #attemptMelee(player: InstanceType<typeof PlayerState>) {

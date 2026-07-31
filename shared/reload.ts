@@ -1,4 +1,4 @@
-import { STARTING_PISTOL } from './combat';
+import { STARTING_PISTOL, type HitscanWeaponDefinition } from './combat';
 import { FIXED_STEP_MILLISECONDS, millisecondsToTicks } from './time';
 
 export type ReloadOutcome = 'none' | 'normal' | 'good' | 'perfect' | 'failed';
@@ -26,17 +26,20 @@ export function initializeReloadState(player: ReloadingPlayer) {
   player.reloadResultTicksRemaining = 0;
 }
 
-export function startReload(player: ReloadingPlayer) {
+export function startReload(
+  player: ReloadingPlayer,
+  weapon: HitscanWeaponDefinition = STARTING_PISTOL,
+) {
   if (
     player.reloadCompletionTick > 0 ||
-    player.magazineAmmo >= STARTING_PISTOL.magazineSize ||
+    player.magazineAmmo >= weapon.magazineSize ||
     player.reserveAmmo === 0
   ) {
     return false;
   }
   player.reloadTicksElapsed = 0;
   player.reloadCompletionTick = millisecondsToTicks(
-    STARTING_PISTOL.reload.durationMilliseconds,
+    weapon.reload.durationMilliseconds,
   );
   player.reloadAttempted = false;
   player.reloadOutcome = 'normal';
@@ -47,6 +50,7 @@ export function startReload(player: ReloadingPlayer) {
 export function attemptActiveReload(
   player: ReloadingPlayer,
   clientElapsedMilliseconds: number,
+  weapon: HitscanWeaponDefinition = STARTING_PISTOL,
 ) {
   if (player.reloadCompletionTick === 0 || player.reloadAttempted) return false;
   player.reloadAttempted = true;
@@ -58,7 +62,7 @@ export function attemptActiveReload(
       serverElapsed + MAX_RELOAD_COMPENSATION_MILLISECONDS,
     ),
   );
-  const timing = STARTING_PISTOL.reload;
+  const timing = weapon.reload;
   if (
     compensatedElapsed >= timing.perfectWindowStartMilliseconds &&
     compensatedElapsed <= timing.perfectWindowEndMilliseconds
@@ -82,27 +86,33 @@ export function attemptActiveReload(
     );
   }
   player.reloadEvent += 1;
-  completeReloadIfDue(player);
+  completeReloadIfDue(player, weapon);
   return true;
 }
 
-export function advanceReload(player: ReloadingPlayer) {
+export function advanceReload(
+  player: ReloadingPlayer,
+  weapon: HitscanWeaponDefinition = STARTING_PISTOL,
+) {
   if (player.reloadResultTicksRemaining > 0) {
     player.reloadResultTicksRemaining -= 1;
   }
   if (player.reloadCompletionTick === 0) return false;
   player.reloadTicksElapsed += 1;
-  return completeReloadIfDue(player);
+  return completeReloadIfDue(player, weapon);
 }
 
-function completeReloadIfDue(player: ReloadingPlayer) {
+function completeReloadIfDue(
+  player: ReloadingPlayer,
+  weapon: HitscanWeaponDefinition,
+) {
   if (
     player.reloadCompletionTick === 0 ||
     player.reloadTicksElapsed < player.reloadCompletionTick
   ) {
     return false;
   }
-  const missing = STARTING_PISTOL.magazineSize - player.magazineAmmo;
+  const missing = weapon.magazineSize - player.magazineAmmo;
   const transferred = Math.min(missing, player.reserveAmmo);
   player.magazineAmmo += transferred;
   player.reserveAmmo -= transferred;

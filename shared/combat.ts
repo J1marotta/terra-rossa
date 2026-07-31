@@ -47,6 +47,36 @@ export const STARTING_PISTOL = validateWeaponDefinition({
   },
 });
 
+export const CENTRE_SHOTGUN = validateWeaponDefinition({
+  id: 'centre-shotgun',
+  displayName: 'Centre Shotgun',
+  damage: 11,
+  fireIntervalMilliseconds: 780,
+  magazineSize: 4,
+  reserveSize: 12,
+  rangeMetres: 10,
+  spreadRadians: 0.22,
+  knockbackMetresPerSecond: 5,
+  reload: {
+    durationMilliseconds: 1_900,
+    attemptWindowStartMilliseconds: 1_050,
+    attemptWindowEndMilliseconds: 1_450,
+    perfectWindowStartMilliseconds: 1_180,
+    perfectWindowEndMilliseconds: 1_300,
+    fumblePenaltyMilliseconds: 650,
+    goodCompletionDelayMilliseconds: 350,
+    perfectCompletionDelayMilliseconds: 0,
+  },
+});
+
+export const SHOTGUN_PELLET_OFFSETS = Object.freeze([
+  -0.18, -0.12, -0.06, 0, 0.06, 0.12, 0.18,
+]);
+
+export function getWeaponDefinition(id: string) {
+  return id === CENTRE_SHOTGUN.id ? CENTRE_SHOTGUN : STARTING_PISTOL;
+}
+
 export const SHARED_MELEE = Object.freeze({
   damage: 30,
   rangeMetres: 2.1,

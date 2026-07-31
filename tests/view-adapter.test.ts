@@ -29,6 +29,7 @@ describe('room view adapter', () => {
     player.dashRecoveryTicksRemaining = 0;
     player.dashEvent = 2;
     player.aimAngleRadians = 1;
+    player.weaponId = 'red-hollow-pistol';
     player.magazineAmmo = 7;
     player.reserveAmmo = 32;
     player.shotEvent = 1;
@@ -78,6 +79,7 @@ describe('room view adapter', () => {
         dashRecoveryTicksRemaining: 0,
         dashEvent: 2,
         aimAngleRadians: 1,
+        weaponId: 'red-hollow-pistol',
         magazineAmmo: 7,
         reserveAmmo: 32,
         shotEvent: 1,

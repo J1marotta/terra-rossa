@@ -35,6 +35,7 @@ export function adaptRoomState(
         dashZ: player.dashZ,
         dashEvent: player.dashEvent,
         aimAngleRadians: player.aimAngleRadians,
+        weaponId: player.weaponId,
         magazineAmmo: player.magazineAmmo,
         reserveAmmo: player.reserveAmmo,
         shotEvent: player.shotEvent,

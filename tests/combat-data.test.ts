@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  CENTRE_SHOTGUN,
   resolveDamageEvents,
+  SHOTGUN_PELLET_OFFSETS,
   STARTING_PISTOL,
   validateWeaponDefinition,
   type DamageEvent,
@@ -18,6 +20,16 @@ describe('combat data', () => {
     ).toBeGreaterThan(STARTING_PISTOL.reload.attemptWindowStartMilliseconds);
     expect(Object.isFrozen(STARTING_PISTOL)).toBe(true);
     expect(Object.isFrozen(STARTING_PISTOL.reload)).toBe(true);
+  });
+
+  it('defines a short-range ammo-constrained shotgun spread', () => {
+    expect(CENTRE_SHOTGUN.magazineSize).toBe(4);
+    expect(CENTRE_SHOTGUN.reserveSize).toBe(12);
+    expect(CENTRE_SHOTGUN.rangeMetres).toBeLessThan(
+      STARTING_PISTOL.rangeMetres,
+    );
+    expect(SHOTGUN_PELLET_OFFSETS).toHaveLength(7);
+    expect(SHOTGUN_PELLET_OFFSETS).toContain(0);
   });
 
   it('rejects incomplete and contradictory weapon definitions clearly', () => {

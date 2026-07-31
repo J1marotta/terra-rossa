@@ -20,6 +20,7 @@ export interface PlayerView {
   readonly dashZ: number;
   readonly dashEvent: number;
   readonly aimAngleRadians: number;
+  readonly weaponId: string;
   readonly magazineAmmo: number;
   readonly reserveAmmo: number;
   readonly shotEvent: number;
