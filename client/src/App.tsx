@@ -47,6 +47,7 @@ export function App() {
           creatureProjectiles={room.creatureProjectiles.filter(
             (projectile) => projectile.positionVisible,
           )}
+          pickups={room.pickups.filter((pickup) => pickup.positionVisible)}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}
@@ -54,6 +55,7 @@ export function App() {
           sendReloadStart={connection.sendReloadStart}
           sendReloadAttempt={connection.sendReloadAttempt}
           sendMelee={connection.sendMelee}
+          sendInteract={connection.sendInteract}
         />
       )}
       {snapshot.status !== 'connected' && (

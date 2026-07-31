@@ -23,6 +23,7 @@ import {
 import type {
   CreatureProjectileView,
   CreatureView,
+  PickupView,
   PlayerView,
 } from '../multiplayer/types';
 import { createMapVisuals, TERRA_ROSSA_MAP } from '../../../shared/map';
@@ -49,6 +50,7 @@ export class GameScene {
     Mesh,
     CreatureProjectileView
   >();
+  readonly #pickups = new PlayerPresentationRegistry<Mesh, PickupView>();
   readonly #localPrediction = new LocalPrediction();
   readonly #lastDashEvent = new Map<string, number>();
   readonly #dashPulseUntil = new Map<string, number>();
@@ -273,6 +275,33 @@ export class GameScene {
     );
   }
 
+  setPickups(pickups: readonly PickupView[], receivedAt: number) {
+    if (this.#disposed) return;
+    this.#pickups.reconcile(
+      pickups,
+      receivedAt,
+      (pickup) => {
+        const mesh = new Mesh(
+          new BoxGeometry(0.55, 0.25, 0.55),
+          new MeshBasicMaterial({
+            color: pickup.kind === 'heal' ? '#db6c72' : '#e6c35d',
+          }),
+        );
+        mesh.position.y = 0.2;
+        this.#scene.add(mesh);
+        return mesh;
+      },
+      (mesh) => {
+        this.#scene.remove(mesh);
+        mesh.geometry.dispose();
+        const materials = Array.isArray(mesh.material)
+          ? mesh.material
+          : [mesh.material];
+        materials.forEach((material) => material.dispose());
+      },
+    );
+  }
+
   applyPredictedMovement(x: number, z: number, sequence: number) {
     this.#localPrediction.predict(sequence, x, z);
   }
@@ -489,6 +518,14 @@ export class GameScene {
         entry.object.position.z = position.z;
       }
     });
+    this.#pickups.forEach((entry) => {
+      const position = entry.buffer.sample(time);
+      if (position !== null) {
+        entry.object.position.x = position.x;
+        entry.object.position.z = position.z;
+      }
+      entry.object.rotation.y = time * 0.0015;
+    });
     if (time < this.#cameraShakeUntil && !this.#reducedEffects) {
       const remaining = (this.#cameraShakeUntil - time) / 140;
       this.#camera.position.x += Math.sin(time * 0.18) * 0.16 * remaining;
@@ -512,6 +549,14 @@ export class GameScene {
       const materials = Array.isArray(projectile.material)
         ? projectile.material
         : [projectile.material];
+      materials.forEach((material) => material.dispose());
+    });
+    this.#pickups.disposeAll((pickup) => {
+      this.#scene.remove(pickup);
+      pickup.geometry.dispose();
+      const materials = Array.isArray(pickup.material)
+        ? pickup.material
+        : [pickup.material];
       materials.forEach((material) => material.dispose());
     });
     this.#lastDashEvent.clear();

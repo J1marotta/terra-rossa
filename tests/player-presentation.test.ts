@@ -53,6 +53,8 @@ const view = (
   alive: true,
   eliminationEvent: 0,
   eliminatedById: '',
+  pickupEvent: 0,
+  pickupKind: '',
 });
 
 describe('remote position presentation', () => {

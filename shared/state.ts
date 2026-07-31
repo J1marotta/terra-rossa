@@ -49,6 +49,8 @@ export const PlayerState = schema(
     alive: 'boolean',
     eliminationEvent: 'uint32',
     eliminatedById: 'string',
+    pickupEvent: 'uint32',
+    pickupKind: 'string',
   },
   'PlayerState',
 );
@@ -98,6 +100,19 @@ export type CreatureProjectileStateInstance = SchemaType<
   typeof CreatureProjectileState
 >;
 
+export const PickupState = schema(
+  {
+    id: 'string',
+    kind: 'string',
+    x: { type: 'float32', view: 1 },
+    z: { type: 'float32', view: 1 },
+    amount: 'uint16',
+  },
+  'PickupState',
+);
+
+export type PickupStateInstance = SchemaType<typeof PickupState>;
+
 export const GameRoomState = schema(
   {
     protocolVersion: 'string',
@@ -117,6 +132,7 @@ export const GameRoomState = schema(
     players: { map: PlayerState },
     creatures: { map: CreatureState },
     creatureProjectiles: { map: CreatureProjectileState },
+    pickups: { map: PickupState },
   },
   'GameRoomState',
 );
@@ -142,5 +158,6 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.players = new MapSchema<PlayerStateInstance>();
   state.creatures = new MapSchema<CreatureStateInstance>();
   state.creatureProjectiles = new MapSchema<CreatureProjectileStateInstance>();
+  state.pickups = new MapSchema<PickupStateInstance>();
   return state;
 }

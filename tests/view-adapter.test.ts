@@ -52,6 +52,8 @@ describe('room view adapter', () => {
     player.alive = true;
     player.eliminationEvent = 0;
     player.eliminatedById = '';
+    player.pickupEvent = 1;
+    player.pickupKind = 'ammo';
     state.players.set(player.id, player);
 
     const view = adaptRoomState(state, 'session-local');
@@ -99,6 +101,8 @@ describe('room view adapter', () => {
         alive: true,
         eliminationEvent: 0,
         eliminatedById: '',
+        pickupEvent: 1,
+        pickupKind: 'ammo',
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

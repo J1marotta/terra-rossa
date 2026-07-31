@@ -236,3 +236,11 @@ Red Hollow now has four equal pressure zones, one between each starting corner a
 No selected point may be within five metres of a player when population occurs. A deterministic stress plan can fill all 48 authored points, matching the hard creature cap without inventing runtime geometry. If safety removes candidates, the plan returns fewer creatures rather than violating the exclusion distance or duplicating an entity.
 
 The room synchronizes living creature population and the measured milliseconds spent updating creature behaviours and projectiles on the latest fixed tick. These are intentionally small debug metrics, not player HUD. Rematch and disposal clear creatures, projectiles, population, and timing together.
+
+## Ammunition and healing supplies
+
+Each round seeds twelve non-respawning supplies across sixteen authored, collision-free route and conflict points: eight ammunition boxes worth 12 reserve rounds and four small heals worth 25 health. Exact pickup coordinates use per-client schema filtering. Supplies do not appear on the compass or a separate HUD.
+
+Interaction is deliberate and immediate: press `E` within 1.6 metres while the pickup is visible. The server selects the nearest eligible supply, applies its benefit, deletes it once, and increments a synchronized pickup event. Concurrent claims are serialized by the room; only the first valid command consumes and benefits. There is no hold timer because the short range and explicit key already create exposure without adding another progress UI.
+
+Pistol reserve ammunition caps at 64 and health caps at the dog's synchronized maximum. A full player cannot waste that supply, so another dog may still take it. Pickups never respawn during a round; rematch creates a new seeded layout. Three.js uses small rotating yellow ammo and red heal blocks as temporary readable silhouettes.

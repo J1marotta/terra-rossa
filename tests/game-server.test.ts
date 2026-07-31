@@ -11,6 +11,7 @@ import { createGameServer } from '../server/index';
 import type { GameLogger, LogFields } from '../server/logger';
 import type { GameRoom } from '../server/rooms/GameRoom';
 import { resolvePrivateRoom } from '../server/roomRegistry';
+import { PickupState } from '../shared/state';
 
 describe.sequential('minimal game server', () => {
   const events: Array<{ event: string; fields: LogFields | undefined }> = [];
@@ -799,6 +800,107 @@ describe.sequential('minimal game server', () => {
     expect(room.state.winnerPlayerId).toBe('');
     expect(room.state.resultEvent).toBe(1);
     await Promise.all([firstClient.leave(), secondClient.leave()]);
+  });
+
+  it('consumes one visible pickup for exactly one simultaneous claimant', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const clients = await Promise.all(
+      ['First', 'Second'].map((displayName) =>
+        testServer.connectTo(room, {
+          protocolVersion: PROTOCOL_VERSION,
+          displayName,
+        }),
+      ),
+    );
+    room.state.phase = 'playing';
+    const players = [...room.state.players.values()];
+    players.forEach((player) => {
+      player.x = -10;
+      player.z = -10;
+      player.reserveAmmo = 0;
+    });
+    const pickup = new PickupState();
+    Object.assign(pickup, {
+      id: 'race-ammo',
+      kind: 'ammo',
+      x: -10,
+      z: -10,
+      amount: 12,
+    });
+    room.state.pickups.set(pickup.id, pickup);
+    clients.forEach((client) =>
+      client.send(
+        COMMAND_MESSAGE,
+        createCommand(
+          { roomId: room.roomId, matchId: null },
+          1,
+          'interact',
+          {},
+        ),
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(room.state.pickups.size).toBe(0);
+    expect(players.reduce((sum, player) => sum + player.reserveAmmo, 0)).toBe(
+      12,
+    );
+    expect(players.reduce((sum, player) => sum + player.pickupEvent, 0)).toBe(
+      1,
+    );
+    await Promise.all(clients.map((client) => client.leave()));
+  });
+
+  it('caps pickup health and ammunition and filters coordinates by viewer', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
+    const first = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Near',
+    });
+    const second = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Far',
+    });
+    room.state.phase = 'playing';
+    const near = [...room.state.players.values()].find(
+      (player) => player.sessionId === first.sessionId,
+    )!;
+    const far = [...room.state.players.values()].find(
+      (player) => player.sessionId === second.sessionId,
+    )!;
+    Object.assign(near, { x: -10, z: -10, reserveAmmo: 60, health: 90 });
+    Object.assign(far, { x: 20, z: 15 });
+    const createPickup = (id: string, kind: string, amount: number) => {
+      const pickup = new PickupState();
+      Object.assign(pickup, { id, kind, x: -10, z: -10, amount });
+      room.state.pickups.set(id, pickup);
+      return pickup;
+    };
+    createPickup('cap-ammo', 'ammo', 12);
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(
+      [...first.state.pickups.values()].find(
+        (pickup) => pickup.id === 'cap-ammo',
+      )?.x,
+    ).toBeTypeOf('number');
+    expect(
+      [...second.state.pickups.values()].find(
+        (pickup) => pickup.id === 'cap-ammo',
+      )?.x,
+    ).toBeUndefined();
+    first.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'interact', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(near.reserveAmmo).toBe(64);
+    createPickup('cap-heal', 'heal', 25);
+    first.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'interact', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(near.health).toBe(100);
+    await Promise.all([first.leave(), second.leave()]);
   });
 
   it.each([2, 3, 4])(

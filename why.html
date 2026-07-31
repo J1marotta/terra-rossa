@@ -1453,6 +1453,30 @@
               </p>
             </article>
 
+            <article
+              class="decision reveal"
+              data-category="gameplay technical interface"
+            >
+              <span class="tag">T4.5 / finite supplies</span>
+              <h3>One key, one claimant, one disappearing box.</h3>
+              <p>
+                Twelve seeded supplies now occupy authored route and conflict
+                points: eight ammo boxes and four small heals. Pressing
+                <code>E</code> within 1.6 metres asks the server to consume the
+                nearest visible eligible item immediately. Health and reserve
+                ammunition are capped, and supplies do not respawn.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> an explicit interaction preserves the risk
+                of stopping near a resource without requiring a hold bar in a
+                deliberately sparse HUD. The room serializes simultaneous claims
+                and deletes before another command can benefit, making
+                duplication impossible. Refusing consumption at a stat cap
+                prevents one player from accidentally denying a useful item to
+                everyone else.
+              </p>
+            </article>
+
             <article class="decision reveal" data-category="gameplay technical">
               <span class="tag">Process / first product</span>
               <h3>The solo study remains, but it is not the build.</h3>

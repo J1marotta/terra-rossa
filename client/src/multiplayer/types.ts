@@ -43,6 +43,8 @@ export interface PlayerView {
   readonly alive: boolean;
   readonly eliminationEvent: number;
   readonly eliminatedById: string;
+  readonly pickupEvent: number;
+  readonly pickupKind: string;
 }
 
 export interface CreatureView {
@@ -68,6 +70,14 @@ export interface CreatureProjectileView {
   readonly z: number;
 }
 
+export interface PickupView {
+  readonly id: string;
+  readonly kind: string;
+  readonly positionVisible: boolean;
+  readonly x: number;
+  readonly z: number;
+}
+
 export interface RoomView {
   readonly protocolVersion: string;
   readonly phase: string;
@@ -86,6 +96,7 @@ export interface RoomView {
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
   readonly creatureProjectiles: readonly CreatureProjectileView[];
+  readonly pickups: readonly PickupView[];
 }
 
 export interface ConnectionSnapshot {

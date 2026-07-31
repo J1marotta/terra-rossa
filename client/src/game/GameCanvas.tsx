@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import type {
   CreatureProjectileView,
   CreatureView,
+  PickupView,
   PlayerView,
 } from '../multiplayer/types';
 import { MovementInput } from '../input/MovementInput';
@@ -13,6 +14,7 @@ interface GameCanvasProps {
   players: readonly PlayerView[];
   creatures: readonly CreatureView[];
   creatureProjectiles: readonly CreatureProjectileView[];
+  pickups: readonly PickupView[];
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
@@ -20,12 +22,14 @@ interface GameCanvasProps {
   sendReloadStart: () => number | null;
   sendReloadAttempt: (clientElapsedMilliseconds: number) => number | null;
   sendMelee: () => number | null;
+  sendInteract: () => number | null;
 }
 
 export function GameCanvas({
   players,
   creatures,
   creatureProjectiles,
+  pickups,
   sendMovement,
   sendDash,
   sendAim,
@@ -33,6 +37,7 @@ export function GameCanvas({
   sendReloadStart,
   sendReloadAttempt,
   sendMelee,
+  sendInteract,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
@@ -95,6 +100,16 @@ export function GameCanvas({
   }, [sendReloadAttempt, sendReloadStart]);
 
   useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'KeyE' || event.repeat) return;
+      sendInteract();
+      event.preventDefault();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [sendInteract]);
+
+  useEffect(() => {
     sceneRef.current?.setPlayers(players, performance.now());
   }, [players]);
 
@@ -108,6 +123,10 @@ export function GameCanvas({
       performance.now(),
     );
   }, [creatureProjectiles]);
+
+  useEffect(() => {
+    sceneRef.current?.setPickups(pickups, performance.now());
+  }, [pickups]);
 
   const localPlayer = players.find((player) => player.isLocal);
   const worldLabel = `Game world with ${players.length} connected ${players.length === 1 ? 'dog' : 'dogs'}${

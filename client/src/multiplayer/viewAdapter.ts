@@ -2,6 +2,7 @@ import type { GameRoomStateInstance } from '../../../shared/state';
 import type {
   CreatureProjectileView,
   CreatureView,
+  PickupView,
   PlayerView,
   RoomView,
 } from './types';
@@ -57,6 +58,8 @@ export function adaptRoomState(
         alive: player.alive,
         eliminationEvent: player.eliminationEvent,
         eliminatedById: player.eliminatedById,
+        pickupEvent: player.pickupEvent,
+        pickupKind: player.pickupKind,
       }),
     );
   });
@@ -98,6 +101,21 @@ export function adaptRoomState(
     );
   });
   creatureProjectiles.sort((left, right) => left.id.localeCompare(right.id));
+  const pickups: PickupView[] = [];
+  state.pickups.forEach((pickup) => {
+    const positionVisible =
+      Number.isFinite(pickup.x) && Number.isFinite(pickup.z);
+    pickups.push(
+      Object.freeze({
+        id: pickup.id,
+        kind: pickup.kind,
+        positionVisible,
+        x: positionVisible ? pickup.x : 0,
+        z: positionVisible ? pickup.z : 0,
+      }),
+    );
+  });
+  pickups.sort((left, right) => left.id.localeCompare(right.id));
 
   return Object.freeze({
     protocolVersion: state.protocolVersion,
@@ -117,5 +135,6 @@ export function adaptRoomState(
     players: Object.freeze(players),
     creatures: Object.freeze(creatures),
     creatureProjectiles: Object.freeze(creatureProjectiles),
+    pickups: Object.freeze(pickups),
   });
 }

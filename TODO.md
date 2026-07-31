@@ -855,7 +855,7 @@ Acceptance:
 
 ## T4.5 — Add ammunition and healing pickups
 
-- [ ] Create server-owned, single-consumption supplies.
+- [x] Create server-owned, single-consumption supplies.
 
 Prerequisites: T4.1 and T2.2.
 

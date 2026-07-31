@@ -53,6 +53,8 @@ function createFakeRoom() {
   player.alive = true;
   player.eliminationEvent = 0;
   player.eliminatedById = '';
+  player.pickupEvent = 0;
+  player.pickupKind = '';
   state.players.set(player.id, player);
 
   let stateListener: ((state: GameRoomStateInstance) => void) | undefined;
@@ -140,6 +142,8 @@ describe('game connection', () => {
       alive: true,
       eliminationEvent: 0,
       eliminatedById: '',
+      pickupEvent: 0,
+      pickupKind: '',
     });
 
     connection.disconnect();

@@ -36,6 +36,7 @@ import {
 } from '../../shared/protocol';
 import {
   PlayerState,
+  PickupState,
   createGameRoomState,
   type GameRoomStateInstance,
 } from '../../shared/state';
@@ -55,6 +56,11 @@ import {
   NORMAL_CREATURE_BUDGET,
   planCreaturePopulation,
 } from '../../shared/creaturePacing';
+import {
+  MAXIMUM_PISTOL_RESERVE_AMMO,
+  PICKUP_INTERACTION_RANGE_METRES,
+  planPickups,
+} from '../../shared/pickups';
 import { CreatureRegistry } from '../creatures/CreatureRegistry';
 import { ProjectileRegistry } from '../creatures/ProjectileRegistry';
 import { SpitterSystem } from '../creatures/SpitterSystem';
@@ -109,6 +115,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           if (this.state.countdownTicksRemaining === 0) {
             this.state.phase = 'playing';
             this.#populateCreatures();
+            this.#populatePickups();
             this.#updateVisibilityViews();
           }
           return;
@@ -200,6 +207,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.alive = true;
     player.eliminationEvent = 0;
     player.eliminatedById = '';
+    player.pickupEvent = 0;
+    player.pickupKind = '';
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#clientByPlayerId.set(playerId, client);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
@@ -274,6 +283,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#pendingDamage.length = 0;
     this.#creatures.clear();
     this.#projectiles.clear();
+    this.state.pickups.clear();
     this.state.creaturePopulation = 0;
     this.state.creatureUpdateMilliseconds = 0;
     removePrivateRoom(this.state.roomCode);
@@ -353,6 +363,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       attemptActiveReload(player, payload.clientElapsedMilliseconds);
     } else if (command.type === 'melee') {
       this.#attemptMelee(player);
+    } else if (command.type === 'interact') {
+      this.#attemptPickup(player);
     }
   }
 
@@ -373,6 +385,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     if (resetPlayers) {
       this.#creatures.clear();
       this.#projectiles.clear();
+      this.state.pickups.clear();
       this.state.creaturePopulation = 0;
       this.state.creatureUpdateMilliseconds = 0;
       this.#resetPlayersForRematch();
@@ -406,6 +419,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       player.eliminationEvent = 0;
       player.eliminatedById = '';
       player.connected = true;
+      player.pickupEvent = 0;
+      player.pickupKind = '';
     });
   }
 
@@ -434,6 +449,21 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       });
     });
     this.state.creaturePopulation = this.#creatures.size;
+  }
+
+  #populatePickups() {
+    this.state.pickups.clear();
+    planPickups(this.state.matchSeed ^ (this.state.roundNumber * 31)).forEach(
+      (planned) => {
+        const pickup = new PickupState();
+        pickup.id = `round-${this.state.roundNumber}-${planned.id}`;
+        pickup.kind = planned.kind;
+        pickup.x = planned.x;
+        pickup.z = planned.z;
+        pickup.amount = planned.amount;
+        this.state.pickups.set(pickup.id, pickup);
+      },
+    );
   }
 
   #updateVisibilityViews() {
@@ -471,7 +501,58 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           view.remove(projectile, 1);
         }
       });
+      this.state.pickups.forEach((pickup) => {
+        if (
+          canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, {
+            x: pickup.x,
+            z: pickup.z,
+            alive: true,
+          })
+        ) {
+          view.add(pickup, 1);
+        } else {
+          view.remove(pickup, 1);
+        }
+      });
     });
+  }
+
+  #attemptPickup(player: InstanceType<typeof PlayerState>) {
+    const pickup = [...this.state.pickups.values()]
+      .filter(
+        (candidate) =>
+          Math.hypot(candidate.x - player.x, candidate.z - player.z) <=
+            PICKUP_INTERACTION_RANGE_METRES &&
+          canViewerSeeTarget(TERRA_ROSSA_MAP, player, {
+            x: candidate.x,
+            z: candidate.z,
+            alive: true,
+          }),
+      )
+      .sort(
+        (left, right) =>
+          Math.hypot(left.x - player.x, left.z - player.z) -
+          Math.hypot(right.x - player.x, right.z - player.z),
+      )[0];
+    if (pickup === undefined) return;
+    if (pickup.kind === 'ammo') {
+      if (player.reserveAmmo >= MAXIMUM_PISTOL_RESERVE_AMMO) return;
+      player.reserveAmmo = Math.min(
+        MAXIMUM_PISTOL_RESERVE_AMMO,
+        player.reserveAmmo + pickup.amount,
+      );
+    } else if (pickup.kind === 'heal') {
+      if (player.health >= player.maximumHealth) return;
+      player.health = Math.min(
+        player.maximumHealth,
+        player.health + pickup.amount,
+      );
+    } else {
+      return;
+    }
+    if (!this.state.pickups.delete(pickup.id)) return;
+    player.pickupKind = pickup.kind;
+    player.pickupEvent += 1;
   }
 
   #attemptFire(player: InstanceType<typeof PlayerState>) {
