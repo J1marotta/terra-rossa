@@ -19,6 +19,7 @@ export function adaptRoomState(
       Object.freeze({
         id: player.id,
         displayName: player.displayName,
+        visualSlot: player.visualSlot,
         ready: player.ready,
         connected: player.connected,
         disconnectEvent: player.disconnectEvent,

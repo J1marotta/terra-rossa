@@ -8,6 +8,7 @@ export const PlayerState = schema(
     id: 'string',
     sessionId: 'string',
     displayName: 'string',
+    visualSlot: 'uint8',
     ready: 'boolean',
     connected: 'boolean',
     disconnectEvent: 'uint32',

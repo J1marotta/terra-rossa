@@ -979,7 +979,7 @@ Goal: turn the proven systems into a stable, understandable browser game without
 
 ## T5.1 — Establish the chunky 2.5D visual language
 
-- [ ] Replace the most confusing placeholders with a coherent, low-cost presentation.
+- [x] Replace the most confusing placeholders with a coherent, low-cost presentation.
 
 Prerequisites: Phase 4 gate.
 

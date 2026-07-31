@@ -204,6 +204,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.id = playerId;
     player.sessionId = client.sessionId;
     player.displayName = sanitizeDisplayName(options.displayName);
+    const usedVisualSlots = new Set(
+      [...this.state.players.values()].map((candidate) => candidate.visualSlot),
+    );
+    player.visualSlot =
+      [0, 1, 2, 3].find((slot) => !usedVisualSlots.has(slot)) ?? 0;
     player.ready = false;
     player.connected = true;
     player.disconnectEvent = 0;

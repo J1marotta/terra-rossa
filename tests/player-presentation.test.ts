@@ -14,6 +14,7 @@ const view = (
 ): PlayerView => ({
   id,
   displayName: id,
+  visualSlot: 0,
   ready: false,
   connected: true,
   disconnectEvent: 0,

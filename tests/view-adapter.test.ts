@@ -15,6 +15,7 @@ describe('room view adapter', () => {
     player.id = 'player-b';
     player.sessionId = 'session-local';
     player.displayName = 'Scout';
+    player.visualSlot = 2;
     player.ready = true;
     player.connected = true;
     player.disconnectEvent = 0;
@@ -63,6 +64,7 @@ describe('room view adapter', () => {
       {
         id: 'player-b',
         displayName: 'Scout',
+        visualSlot: 2,
         ready: true,
         connected: true,
         disconnectEvent: 0,

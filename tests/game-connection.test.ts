@@ -16,6 +16,7 @@ function createFakeRoom() {
   player.id = 'server-player-id';
   player.sessionId = 'local-session';
   player.displayName = 'Scout';
+  player.visualSlot = 0;
   player.ready = false;
   player.connected = true;
   player.disconnectEvent = 0;
@@ -104,6 +105,7 @@ describe('game connection', () => {
     expect(connection.getSnapshot().room?.players[0]).toEqual({
       id: 'server-player-id',
       displayName: 'Scout',
+      visualSlot: 0,
       ready: false,
       connected: true,
       disconnectEvent: 0,

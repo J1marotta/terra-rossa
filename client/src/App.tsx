@@ -163,27 +163,28 @@ export function App() {
           )}
         </section>
       )}
-      {snapshot.status === 'connected' && !inLobby && !inResults && (
-        <section className="title-panel">
-          <p className="eyebrow">Terra Rossa</p>
-          <h1>
-            {room?.phase === 'countdown'
-              ? `Go in ${Math.max(1, Math.ceil(room.countdownTicksRemaining / 30))}`
-              : 'The night is gathering.'}
-          </h1>
-          <p>Four dogs will enter. Only one leaves the dark.</p>
-          <p className="connection-status" data-status={snapshot.status}>
-            {snapshot.status === 'connected' && localPlayer !== undefined
-              ? `Connected as ${localPlayer.displayName} · ${localPlayer.id.slice(0, 8)}`
-              : `Server: ${snapshot.status}`}
-          </p>
-          {snapshot.error !== null && (
-            <p className="connection-error" role="alert">
-              {snapshot.error}
+      {snapshot.status === 'connected' &&
+        room?.phase === 'countdown' &&
+        !inLobby &&
+        !inResults && (
+          <section className="title-panel">
+            <p className="eyebrow">Terra Rossa</p>
+            <h1>
+              Go in {Math.max(1, Math.ceil(room.countdownTicksRemaining / 30))}
+            </h1>
+            <p>Four dogs will enter. Only one leaves the dark.</p>
+            <p className="connection-status" data-status={snapshot.status}>
+              {snapshot.status === 'connected' && localPlayer !== undefined
+                ? `Connected as ${localPlayer.displayName} · ${localPlayer.id.slice(0, 8)}`
+                : `Server: ${snapshot.status}`}
             </p>
-          )}
-        </section>
-      )}
+            {snapshot.error !== null && (
+              <p className="connection-error" role="alert">
+                {snapshot.error}
+              </p>
+            )}
+          </section>
+        )}
     </main>
   );
 }

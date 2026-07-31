@@ -4,6 +4,7 @@ export type ConnectionStatus =
 export interface PlayerView {
   readonly id: string;
   readonly displayName: string;
+  readonly visualSlot: number;
   readonly ready: boolean;
   readonly connected: boolean;
   readonly disconnectEvent: number;

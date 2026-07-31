@@ -2,6 +2,7 @@ import {
   AmbientLight,
   BufferGeometry,
   BoxGeometry,
+  ConeGeometry,
   Color,
   DirectionalLight,
   Group,
@@ -12,6 +13,7 @@ import {
   MeshBasicMaterial,
   OrthographicCamera,
   PlaneGeometry,
+  CylinderGeometry,
   Raycaster,
   SphereGeometry,
   Vector2,
@@ -32,6 +34,13 @@ import { LocalPrediction } from './LocalPrediction';
 import { PlayerPresentationRegistry } from './PlayerPresentation';
 
 const CAMERA_HEIGHT = 18;
+const RENDER_SCALE = 0.75;
+const PLAYER_PALETTE = [
+  ['#d96f45', '#f0b879'],
+  ['#6287b8', '#a9c5e3'],
+  ['#9a6ab2', '#d1addd'],
+  ['#6f9b62', '#b8d29e'],
+] as const;
 export const MAX_TRANSIENT_EFFECTS = 32;
 
 interface TransientEffect {
@@ -80,8 +89,12 @@ export class GameScene {
 
   constructor(container: HTMLElement) {
     this.#container = container;
-    this.#renderer = new WebGLRenderer({ antialias: false, alpha: false });
-    this.#renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+    this.#renderer = new WebGLRenderer({
+      antialias: false,
+      alpha: false,
+      powerPreference: 'high-performance',
+    });
+    this.#renderer.setPixelRatio(1);
     this.#renderer.outputColorSpace = 'srgb';
     this.#renderer.domElement.className = 'game-canvas';
     this.#renderer.domElement.setAttribute(
@@ -98,13 +111,13 @@ export class GameScene {
   }
 
   #buildWorld() {
-    this.#scene.background = new Color('#17141d');
+    this.#scene.background = new Color('#100f1b');
 
     const mapWidth = TERRA_ROSSA_MAP.bounds.maxX - TERRA_ROSSA_MAP.bounds.minX;
     const mapDepth = TERRA_ROSSA_MAP.bounds.maxZ - TERRA_ROSSA_MAP.bounds.minZ;
     const ground = new Mesh(
       new PlaneGeometry(mapWidth, mapDepth),
-      new MeshStandardMaterial({ color: '#322d36', roughness: 1 }),
+      new MeshStandardMaterial({ color: '#5a302f', roughness: 1 }),
     );
     ground.rotation.x = -Math.PI / 2;
     this.#scene.add(ground);
@@ -122,8 +135,8 @@ export class GameScene {
       this.#scene.add(obstacle);
     });
 
-    this.#scene.add(new AmbientLight('#c2b1d2', 1.6));
-    const moonlight = new DirectionalLight('#f4d7ba', 2.8);
+    this.#scene.add(new AmbientLight('#8f91b7', 1.45));
+    const moonlight = new DirectionalLight('#d8e3ff', 2.65);
     moonlight.position.set(-8, 14, 6);
     this.#scene.add(moonlight);
 
@@ -281,8 +294,14 @@ export class GameScene {
       pickups,
       receivedAt,
       (pickup) => {
+        const geometry =
+          pickup.kind === 'heal'
+            ? new BoxGeometry(0.62, 0.24, 0.62)
+            : pickup.kind === 'weapon'
+              ? new BoxGeometry(0.3, 0.22, 1.25)
+              : new CylinderGeometry(0.32, 0.32, 0.46, 6);
         const mesh = new Mesh(
-          new BoxGeometry(0.55, 0.25, 0.55),
+          geometry,
           new MeshBasicMaterial({
             color:
               pickup.kind === 'heal'
@@ -293,6 +312,8 @@ export class GameScene {
           }),
         );
         mesh.position.y = 0.2;
+        if (pickup.kind === 'ammo') mesh.rotation.z = Math.PI / 2;
+        if (pickup.kind === 'weapon') mesh.rotation.y = Math.PI / 4;
         this.#scene.add(mesh);
         return mesh;
       },
@@ -403,10 +424,11 @@ export class GameScene {
   #createDog(player: PlayerView) {
     const group = new Group();
     group.name = player.id;
+    const palette = PLAYER_PALETTE[player.visualSlot % PLAYER_PALETTE.length]!;
     const body = new Mesh(
       new BoxGeometry(1.25, 1.8, 0.8),
       new MeshStandardMaterial({
-        color: player.isLocal ? '#cf754b' : '#756c9b',
+        color: palette[0],
         roughness: 0.8,
       }),
     );
@@ -414,12 +436,37 @@ export class GameScene {
     const head = new Mesh(
       new BoxGeometry(1.05, 0.9, 0.9),
       new MeshStandardMaterial({
-        color: player.isLocal ? '#e0a46d' : '#9a91bd',
+        color: palette[1],
         roughness: 0.8,
       }),
     );
     head.position.set(0, 2.25, -0.1);
-    group.add(body, head);
+    const muzzle = new Mesh(
+      new BoxGeometry(0.62, 0.38, 0.42),
+      new MeshStandardMaterial({ color: '#d8c1a5', roughness: 0.9 }),
+    );
+    muzzle.position.set(0, 2.12, -0.65);
+    const leftEar = new Mesh(
+      new ConeGeometry(0.25, 0.7, 4),
+      new MeshStandardMaterial({ color: palette[0], roughness: 0.9 }),
+    );
+    leftEar.position.set(-0.34, 2.92, -0.05);
+    leftEar.rotation.z = -0.22;
+    const rightEar = leftEar.clone();
+    rightEar.position.x = 0.34;
+    rightEar.rotation.z = 0.22;
+    const marker = new Mesh(
+      new CylinderGeometry(
+        0.12 + player.visualSlot * 0.035,
+        0.12 + player.visualSlot * 0.035,
+        0.12,
+        3 + player.visualSlot,
+      ),
+      new MeshBasicMaterial({ color: '#fff3cf' }),
+    );
+    marker.name = `player-marker-${player.visualSlot + 1}`;
+    marker.position.set(0, 3.55, 0);
+    group.add(body, head, muzzle, leftEar, rightEar, marker);
     const pistol = new Mesh(
       new BoxGeometry(0.18, 0.18, 0.8),
       new MeshStandardMaterial({ color: '#b9a68d', roughness: 0.7 }),
@@ -467,7 +514,11 @@ export class GameScene {
     const bounds = calculateOrthographicBounds(width, height, CAMERA_HEIGHT);
     Object.assign(this.#camera, bounds);
     this.#camera.updateProjectionMatrix();
-    this.#renderer.setSize(width, height, false);
+    this.#renderer.setSize(
+      Math.max(1, Math.floor(width * RENDER_SCALE)),
+      Math.max(1, Math.floor(height * RENDER_SCALE)),
+      false,
+    );
   }
 
   #render = (time: number) => {
