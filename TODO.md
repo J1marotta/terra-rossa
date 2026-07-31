@@ -1121,8 +1121,10 @@ Acceptance:
 Progress: the clean-checkout runbook, public environment inventory, graceful
 restart/log guidance, immutable-image/source-revision rollback, commit-visible
 client diagnostics, exact server health version, hosted WSS smoke, and
-client-bundle version verification are implemented. A production rehearsal and
-completion of prerequisite T5.6 remain before this task can close.
+client-bundle version verification are implemented. Production commit
+`b92f398b0f7fc48e6b56e41e3c49d4092c418f0f` passed exact server/client version
+correlation and a real hosted WSS join. Completion of prerequisite T5.6 remains
+before this task can close.
 
 Prerequisites: T0.7 and T5.6.
 
