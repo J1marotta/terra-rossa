@@ -941,7 +941,7 @@ Acceptance:
 
 - [ ] Evaluate whether creatures improve or randomize four-player fights.
 
-Progress: the first hosted four-client session exposed and now regression-tests unsigned round-seed normalization; bounded telemetry and post-fix tuning runs remain.
+Progress: the hosted seed crash is regression-tested and the room now reports bounded interference telemetry; post-instrumentation tuning runs remain.
 
 Prerequisites: T4.4 through T4.8.
 

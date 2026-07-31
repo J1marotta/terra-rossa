@@ -425,6 +425,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.state.darknessDamagePerSecond = 0;
     this.state.visibilityRadiusMetres =
       DARKNESS_STAGES[0]!.visibilityRadiusMetres;
+    this.state.telemetryCreatureDamageToPlayers = 0;
+    this.state.telemetryPlayerDamageToCreatures = 0;
+    this.state.telemetryPvpDeathsUnderCreaturePressure = 0;
+    this.state.telemetryAmmoExpended = 0;
+    this.state.telemetryLastEncounterRegion = '';
     this.state.players.forEach((player) => {
       player.ready = false;
     });
@@ -656,6 +661,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       return;
     }
     player.magazineAmmo -= 1;
+    this.state.telemetryAmmoExpended += 1;
     this.#emitApproximateActivity(player, 'gunfire');
     const targets = [
       ...this.state.players.values(),
@@ -689,7 +695,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     hits.forEach((hit) => {
       if (hit.targetId !== null) {
         if (this.state.creatures.has(hit.targetId)) {
-          this.#creatures.damage(hit.targetId, weapon.damage);
+          this.#damageCreature(hit.targetId, weapon.damage);
         } else {
           this.#queueDamage(player.id, hit.targetId, 'firearm', weapon.damage);
           const target = this.state.players.get(hit.targetId);
@@ -826,7 +832,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       Math.sin(player.meleeAngleRadians) * SHARED_MELEE.knockbackMetres,
     );
     if (this.state.creatures.has(target.id)) {
-      this.#creatures.damage(target.id, SHARED_MELEE.damage);
+      this.#damageCreature(target.id, SHARED_MELEE.damage);
     } else {
       this.#queueDamage(player.id, target.id, 'melee', SHARED_MELEE.damage);
     }
@@ -838,6 +844,13 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     cause: DamageEvent['cause'],
     amount: number,
   ) {
+    if (cause === 'creature') {
+      this.state.telemetryCreatureDamageToPlayers += amount;
+      const target = this.state.players.get(targetId);
+      if (target !== undefined) {
+        this.state.telemetryLastEncounterRegion = `${target.z < 0 ? 'north' : 'south'}-${target.x < 0 ? 'west' : 'east'}`;
+      }
+    }
     const order = this.#nextDamageOrder++;
     this.#pendingDamage.push({
       id: `${this.#simulationTick}-${order}`,
@@ -865,6 +878,18 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       const target = this.state.players.get(result.event.targetId);
       if (target === undefined || !target.alive) continue;
       target.alive = false;
+      if (
+        (result.event.cause === 'firearm' || result.event.cause === 'melee') &&
+        this.#creatures
+          .values()
+          .some(
+            (creature) =>
+              creature.alive &&
+              Math.hypot(creature.x - target.x, creature.z - target.z) <= 5,
+          )
+      ) {
+        this.state.telemetryPvpDeathsUnderCreaturePressure += 1;
+      }
       target.eliminatedById = result.event.sourceId;
       target.eliminationEvent += 1;
       target.moveX = 0;
@@ -886,5 +911,27 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.state.winnerPlayerId = result.winnerPlayerId;
     this.state.resultEvent += 1;
     this.#pendingDamage.length = 0;
+    this.#logger.info('round_finished', {
+      roomId: this.roomId,
+      resultKind: result.kind,
+      durationTicks: this.state.darknessElapsedTicks,
+      creatureDamageToPlayers: this.state.telemetryCreatureDamageToPlayers,
+      playerDamageToCreatures: this.state.telemetryPlayerDamageToCreatures,
+      pvpDeathsUnderCreaturePressure:
+        this.state.telemetryPvpDeathsUnderCreaturePressure,
+      ammoExpended: this.state.telemetryAmmoExpended,
+      lastEncounterRegion: this.state.telemetryLastEncounterRegion,
+    });
+  }
+
+  #damageCreature(id: string, amount: number) {
+    const creature = this.state.creatures.get(id);
+    const before = creature?.health ?? 0;
+    const result = this.#creatures.damage(id, amount);
+    if (result.applied) {
+      this.state.telemetryPlayerDamageToCreatures +=
+        before - result.healthAfter;
+    }
+    return result;
   }
 }

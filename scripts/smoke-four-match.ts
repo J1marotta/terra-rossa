@@ -252,7 +252,21 @@ async function runMatch(iteration: number) {
           ),
       ),
     );
-    return { iteration, outcome, reveals, combatEvents };
+    return {
+      iteration,
+      outcome,
+      reveals,
+      combatEvents,
+      durationTicks: clients[0]!.state.darknessElapsedTicks,
+      creatureDamageToPlayers:
+        clients[0]!.state.telemetryCreatureDamageToPlayers,
+      playerDamageToCreatures:
+        clients[0]!.state.telemetryPlayerDamageToCreatures,
+      pvpDeathsUnderCreaturePressure:
+        clients[0]!.state.telemetryPvpDeathsUnderCreaturePressure,
+      ammoExpended: clients[0]!.state.telemetryAmmoExpended,
+      lastEncounterRegion: clients[0]!.state.telemetryLastEncounterRegion,
+    };
   } finally {
     await Promise.allSettled(
       clients.map((room) =>

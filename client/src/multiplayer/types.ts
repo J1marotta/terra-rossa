@@ -106,6 +106,11 @@ export interface RoomView {
   readonly darknessHalfDepth: number;
   readonly darknessDamagePerSecond: number;
   readonly darknessWarningEvent: number;
+  readonly telemetryCreatureDamageToPlayers: number;
+  readonly telemetryPlayerDamageToCreatures: number;
+  readonly telemetryPvpDeathsUnderCreaturePressure: number;
+  readonly telemetryAmmoExpended: number;
+  readonly telemetryLastEncounterRegion: string;
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
   readonly creatureProjectiles: readonly CreatureProjectileView[];

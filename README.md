@@ -247,6 +247,10 @@ No selected point may be within five metres of a player when population occurs. 
 
 All round-specific creature and loot seeds are normalized back to unsigned 32-bit values after salting. This prevents JavaScript's signed bitwise result from turning valid production seeds above `0x7fffffff` into rejected negative values.
 
+## Creature-interference telemetry
+
+Each round counts creature damage to players, player damage to creatures, firearm ammunition spent, PvP deaths occurring with a living creature within five metres, and the coarse quadrant of the latest creature encounter. Match duration reuses the authoritative darkness tick. These bounded values are synchronized for development harnesses and written as one structured `round_finished` log entry; no exact player route history or personal data is retained.
+
 The room synchronizes living creature population and the measured milliseconds spent updating creature behaviours and projectiles on the latest fixed tick. These are intentionally small debug metrics, not player HUD. Rematch and disposal clear creatures, projectiles, population, and timing together.
 
 ## Ammunition and healing supplies

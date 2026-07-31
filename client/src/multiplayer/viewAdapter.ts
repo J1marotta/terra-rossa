@@ -145,6 +145,12 @@ export function adaptRoomState(
     darknessHalfDepth: state.darknessHalfDepth,
     darknessDamagePerSecond: state.darknessDamagePerSecond,
     darknessWarningEvent: state.darknessWarningEvent,
+    telemetryCreatureDamageToPlayers: state.telemetryCreatureDamageToPlayers,
+    telemetryPlayerDamageToCreatures: state.telemetryPlayerDamageToCreatures,
+    telemetryPvpDeathsUnderCreaturePressure:
+      state.telemetryPvpDeathsUnderCreaturePressure,
+    telemetryAmmoExpended: state.telemetryAmmoExpended,
+    telemetryLastEncounterRegion: state.telemetryLastEncounterRegion,
     players: Object.freeze(players),
     creatures: Object.freeze(creatures),
     creatureProjectiles: Object.freeze(creatureProjectiles),
