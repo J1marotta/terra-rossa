@@ -2,9 +2,9 @@ import { SPITTER, SWARMER, type CreatureSpawn } from './creatures';
 import type { WorldPoint } from './coordinates';
 import { SeededRandom } from './random';
 
-export const NORMAL_CREATURE_BUDGET = 16;
+export const NORMAL_CREATURE_BUDGET = 8;
 export const STRESS_CREATURE_BUDGET = 48;
-export const CREATURE_PLAYER_SAFETY_METRES = 5;
+export const CREATURE_PLAYER_SAFETY_METRES = 7;
 
 export interface CreatureSpawnZone {
   readonly id: string;

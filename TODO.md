@@ -941,7 +941,7 @@ Acceptance:
 
 - [ ] Evaluate whether creatures improve or randomize four-player fights.
 
-Progress: the hosted seed crash is regression-tested and the room now reports bounded interference telemetry; post-instrumentation tuning runs remain.
+Progress: measured baseline runs showed monster-dominated 8.8-second rounds; the data-only eight-creature/seven-metre comparison build awaits hosted verification.
 
 Prerequisites: T4.4 through T4.8.
 

@@ -242,6 +242,17 @@ async function runMatch(iteration: number) {
       throw new Error('Clients disagreed on the public match result.');
     if (reveals === 0 || combatEvents === 0)
       throw new Error('Harness did not exercise visibility and combat.');
+    const telemetry = {
+      durationTicks: clients[0]!.state.darknessElapsedTicks,
+      creatureDamageToPlayers:
+        clients[0]!.state.telemetryCreatureDamageToPlayers,
+      playerDamageToCreatures:
+        clients[0]!.state.telemetryPlayerDamageToCreatures,
+      pvpDeathsUnderCreaturePressure:
+        clients[0]!.state.telemetryPvpDeathsUnderCreaturePressure,
+      ammoExpended: clients[0]!.state.telemetryAmmoExpended,
+      lastEncounterRegion: clients[0]!.state.telemetryLastEncounterRegion,
+    };
     await send(0, 'rematch', {});
     await waitFor('clean rematch lobby', () =>
       clients.every(
@@ -257,15 +268,7 @@ async function runMatch(iteration: number) {
       outcome,
       reveals,
       combatEvents,
-      durationTicks: clients[0]!.state.darknessElapsedTicks,
-      creatureDamageToPlayers:
-        clients[0]!.state.telemetryCreatureDamageToPlayers,
-      playerDamageToCreatures:
-        clients[0]!.state.telemetryPlayerDamageToCreatures,
-      pvpDeathsUnderCreaturePressure:
-        clients[0]!.state.telemetryPvpDeathsUnderCreaturePressure,
-      ammoExpended: clients[0]!.state.telemetryAmmoExpended,
-      lastEncounterRegion: clients[0]!.state.telemetryLastEncounterRegion,
+      ...telemetry,
     };
   } finally {
     await Promise.allSettled(

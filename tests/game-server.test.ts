@@ -12,6 +12,7 @@ import type { GameLogger, LogFields } from '../server/logger';
 import type { GameRoom } from '../server/rooms/GameRoom';
 import { resolvePrivateRoom } from '../server/roomRegistry';
 import { PickupState } from '../shared/state';
+import { NORMAL_CREATURE_BUDGET } from '../shared/creaturePacing';
 
 describe.sequential('minimal game server', () => {
   const events: Array<{ event: string; fields: LogFields | undefined }> = [];
@@ -403,8 +404,8 @@ describe.sequential('minimal game server', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 3_050));
     expect(room.state.phase).toBe('playing');
-    expect(room.state.creatures.size).toBe(16);
-    expect(room.state.creaturePopulation).toBe(16);
+    expect(room.state.creatures.size).toBe(NORMAL_CREATURE_BUDGET);
+    expect(room.state.creaturePopulation).toBe(NORMAL_CREATURE_BUDGET);
     expect(room.state.creatureUpdateMilliseconds).toBeGreaterThanOrEqual(0);
     host.send(
       COMMAND_MESSAGE,

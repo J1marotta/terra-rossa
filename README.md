@@ -241,9 +241,9 @@ The Chrome placeholder gives spitters a wider green-black silhouette while reusi
 
 ## Authored creature pacing
 
-Red Hollow now has four equal pressure zones, one between each starting corner and the central conflict area. Every zone contains twelve individually validated authored points. At match start, the server uses the match seed and round number to select four safe points per zone, producing the normal budget of sixteen creatures: twelve swarmers and four spitters. This gives every starting region comparable pressure while leaving alternate routes possible.
+Red Hollow now has four equal pressure zones, one between each starting corner and the central conflict area. Every zone contains twelve individually validated authored points. At match start, the server uses the match seed and round number to select two safe points per zone, producing the tuned normal budget of eight creatures: six swarmers and two spitters. This gives every starting region comparable pressure while leaving alternate routes possible.
 
-No selected point may be within five metres of a player when population occurs. A deterministic stress plan can fill all 48 authored points, matching the hard creature cap without inventing runtime geometry. If safety removes candidates, the plan returns fewer creatures rather than violating the exclusion distance or duplicating an entity.
+No selected point may be within seven metres of a player when population occurs. A deterministic stress plan can fill all 48 authored points, matching the hard creature cap without inventing runtime geometry. If safety removes candidates, the plan returns fewer creatures rather than violating the exclusion distance or duplicating an entity.
 
 All round-specific creature and loot seeds are normalized back to unsigned 32-bit values after salting. This prevents JavaScript's signed bitwise result from turning valid production seeds above `0x7fffffff` into rejected negative values.
 

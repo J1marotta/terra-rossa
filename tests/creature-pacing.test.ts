@@ -28,10 +28,10 @@ describe('authored creature pacing', () => {
     const plan = planCreaturePopulation([], 42);
     expect(plan).toHaveLength(NORMAL_CREATURE_BUDGET);
     CREATURE_SPAWN_ZONES.forEach((zone) => {
-      expect(plan.filter((spawn) => spawn.zoneId === zone.id)).toHaveLength(4);
+      expect(plan.filter((spawn) => spawn.zoneId === zone.id)).toHaveLength(2);
     });
-    expect(plan.filter((spawn) => spawn.kind === 'swarmer')).toHaveLength(12);
-    expect(plan.filter((spawn) => spawn.kind === 'spitter')).toHaveLength(4);
+    expect(plan.filter((spawn) => spawn.kind === 'swarmer')).toHaveLength(6);
+    expect(plan.filter((spawn) => spawn.kind === 'spitter')).toHaveLength(2);
   });
 
   it('supports the 48-creature stress budget without exceeding the cap', () => {
