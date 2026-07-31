@@ -1190,6 +1190,10 @@ the mode as testing-only; it supplies no multiplayer or fun evidence. A hosted
 solo smoke test verifies that the production room reaches play with creatures
 and pickups populated.
 
+Production evidence: commit `0934c3b6663dd81dc03f202dacbf00c9f00de0ad`
+passed exact client/server version correlation, the ordinary hosted join smoke,
+and a one-player hosted start containing eight creatures and thirteen pickups.
+
 Acceptance:
 
 - Ordinary private rooms still require two to four ready players.
