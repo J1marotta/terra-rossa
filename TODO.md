@@ -1096,7 +1096,13 @@ Acceptance:
 
 - [ ] Verify the production-like game in current desktop Google Chrome across target machines.
 
-Progress: current hosted Chrome at 1280×720, resize, rendering, networking, settings, rematch harness, and realistic-latency four-client runs pass on the Windows development host. Non-Chrome browsers now receive an actionable block. Physical Apple Silicon MacBook Air and a separately identified integrated-graphics Windows laptop remain required evidence.
+Progress: current hosted Chrome at 1280×720, resize, rendering, networking,
+settings, rematch harness, and realistic-latency four-client runs pass on the
+Windows development host. That host is an MSI MS-7C37 desktop with a Ryzen 5
+3600X and discrete Radeon RX 5700 XT, so it does not qualify as the
+integrated-graphics laptop row. Non-Chrome browsers receive an actionable
+block. Physical Apple Silicon MacBook Air and integrated-graphics Windows
+laptop evidence remain required.
 
 Prerequisites: T5.1 through T5.5.
 
