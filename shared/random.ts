@@ -3,6 +3,17 @@ import { requireIntegerInRange } from './numeric';
 const UINT32_MAX = 0xffff_ffff;
 const UINT32_RANGE = 0x1_0000_0000;
 
+export function deriveUnsignedSeed(seed: number, salt: number) {
+  const base = requireIntegerInRange('seed', seed, 0, UINT32_MAX);
+  const integerSalt = requireIntegerInRange(
+    'salt',
+    salt,
+    -0x8000_0000,
+    UINT32_MAX,
+  );
+  return (base ^ integerSalt) >>> 0;
+}
+
 export class SeededRandom {
   #state: number;
 

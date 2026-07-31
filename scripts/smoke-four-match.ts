@@ -88,7 +88,7 @@ async function runMatch(iteration: number) {
   try {
     const hostSdk = new ColyseusSDK(endpoint);
     clients.push(
-      (await hostSdk.create(
+      (await hostSdk.joinOrCreate(
         GAME_ROOM_NAME,
         {
           protocolVersion: PROTOCOL_VERSION,
@@ -131,11 +131,22 @@ async function runMatch(iteration: number) {
       ),
     );
     await send(0, 'start', {});
-    await waitFor(
-      'authoritative countdown and play',
-      () => clients.every((room) => room.state.phase === 'playing'),
-      6_000,
-    );
+    try {
+      await waitFor(
+        'authoritative countdown and play',
+        () => clients.every((room) => room.state.phase === 'playing'),
+        20_000,
+      );
+    } catch (error) {
+      throw new Error(
+        `${String(error)}; observed phases: ${clients
+          .map(
+            (room) =>
+              `${room.state.phase}:${room.state.countdownTicksRemaining}`,
+          )
+          .join(', ')}`,
+      );
+    }
 
     const waypointIndexes = [0, 0, 0, 0];
     const patrol: readonly WorldPoint[] = [
@@ -243,7 +254,16 @@ async function runMatch(iteration: number) {
     );
     return { iteration, outcome, reveals, combatEvents };
   } finally {
-    await Promise.allSettled(clients.map((room) => room.leave(true)));
+    await Promise.allSettled(
+      clients.map((room) =>
+        Promise.race([
+          room.leave(true),
+          wait(2_000).then(() => {
+            throw new Error('Timed out leaving hosted harness room.');
+          }),
+        ]),
+      ),
+    );
   }
 }
 

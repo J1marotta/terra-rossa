@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FIXED_STEP_SECONDS,
   SeededRandom,
+  deriveUnsignedSeed,
   millisecondsToTicks,
   normalizeAngleRadians,
   renderToWorld,
@@ -68,6 +69,14 @@ describe('fixed simulation time', () => {
 });
 
 describe('seeded random', () => {
+  it('normalizes signed bitwise results into valid uint32 seeds', () => {
+    expect(deriveUnsignedSeed(0xffff_ffff, 1)).toBe(0xffff_fffe);
+    expect(deriveUnsignedSeed(0x8000_0000, 1)).toBe(0x8000_0001);
+    expect(
+      () => new SeededRandom(deriveUnsignedSeed(0xffff_ffff, 73)),
+    ).not.toThrow();
+  });
+
   it('repeats choices for the same seed', () => {
     const left = new SeededRandom(42);
     const right = new SeededRandom(42);

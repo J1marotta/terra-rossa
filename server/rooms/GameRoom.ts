@@ -54,6 +54,7 @@ import {
 import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
+import { deriveUnsignedSeed } from '../../shared/random';
 import { canViewerSeeTarget } from '../../shared/visibility';
 import {
   ACTIVITY_CUE_LIFETIME_TICKS,
@@ -485,7 +486,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#creatures.clear();
     const plan = planCreaturePopulation(
       [...this.state.players.values()],
-      this.state.matchSeed ^ this.state.roundNumber,
+      deriveUnsignedSeed(this.state.matchSeed, this.state.roundNumber),
       NORMAL_CREATURE_BUDGET,
     );
     plan.forEach((spawn) => {
@@ -499,22 +500,22 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
 
   #populatePickups() {
     this.state.pickups.clear();
-    planPickups(this.state.matchSeed ^ (this.state.roundNumber * 31)).forEach(
-      (planned) => {
-        const pickup = new PickupState();
-        pickup.id = `round-${this.state.roundNumber}-${planned.id}`;
-        pickup.kind = planned.kind;
-        pickup.x = planned.x;
-        pickup.z = planned.z;
-        pickup.amount = planned.amount;
-        pickup.weaponId = '';
-        pickup.magazineAmmo = 0;
-        pickup.reserveAmmo = 0;
-        this.state.pickups.set(pickup.id, pickup);
-      },
-    );
+    planPickups(
+      deriveUnsignedSeed(this.state.matchSeed, this.state.roundNumber * 31),
+    ).forEach((planned) => {
+      const pickup = new PickupState();
+      pickup.id = `round-${this.state.roundNumber}-${planned.id}`;
+      pickup.kind = planned.kind;
+      pickup.x = planned.x;
+      pickup.z = planned.z;
+      pickup.amount = planned.amount;
+      pickup.weaponId = '';
+      pickup.magazineAmmo = 0;
+      pickup.reserveAmmo = 0;
+      this.state.pickups.set(pickup.id, pickup);
+    });
     const point = planShotgunPickup(
-      this.state.matchSeed ^ (this.state.roundNumber * 73),
+      deriveUnsignedSeed(this.state.matchSeed, this.state.roundNumber * 73),
     );
     const shotgun = new PickupState();
     shotgun.id = `round-${this.state.roundNumber}-shotgun`;

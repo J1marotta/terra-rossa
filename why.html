@@ -1854,6 +1854,32 @@
             </div>
           </article>
 
+          <article class="decision reveal" data-category="networking evidence">
+            <div class="decision-meta">
+              <span class="tag">T4.9 / production seed incident</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>A playtest found a crash that unit-scale seeds missed</h3>
+            <p>
+              A hosted four-client run repeatedly froze at countdown tick two.
+              Fly logs showed the actual cause: JavaScript XOR returns a signed
+              32-bit value, so a valid random room seed could become negative
+              when salted for creature placement. The random generator then
+              correctly rejected it and the process exited.
+            </p>
+            <p>
+              Round-derived seeds now pass through one tested unsigned
+              normalizer for creature, pickup, and shotgun plans. The hosted
+              harness also bounds cleanup and reports observed countdown values
+              instead of hiding the original failure behind a hanging leave.
+            </p>
+            <div class="evidence">
+              <strong>Lesson:</strong> deterministic randomness still needs
+              boundary-value tests. A seed of 42 proves repeatability; it does
+              not prove that every uint32 survives JavaScript bitwise operators.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Hero:</strong> Which dog silhouette reads best in the

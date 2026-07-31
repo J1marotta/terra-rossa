@@ -245,6 +245,8 @@ Red Hollow now has four equal pressure zones, one between each starting corner a
 
 No selected point may be within five metres of a player when population occurs. A deterministic stress plan can fill all 48 authored points, matching the hard creature cap without inventing runtime geometry. If safety removes candidates, the plan returns fewer creatures rather than violating the exclusion distance or duplicating an entity.
 
+All round-specific creature and loot seeds are normalized back to unsigned 32-bit values after salting. This prevents JavaScript's signed bitwise result from turning valid production seeds above `0x7fffffff` into rejected negative values.
+
 The room synchronizes living creature population and the measured milliseconds spent updating creature behaviours and projectiles on the latest fixed tick. These are intentionally small debug metrics, not player HUD. Rematch and disposal clear creatures, projectiles, population, and timing together.
 
 ## Ammunition and healing supplies
