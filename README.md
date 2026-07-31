@@ -228,3 +228,11 @@ The fragile ranged-pressure creature has 24 health and tries to hold roughly nin
 At wind-up completion the server rechecks target life, range, and sightline before creating a projectile. Projectiles travel at eight metres per second, deal 18 damage on server collision, disappear against authored geometry, and expire after 2.2 seconds. Their positions use per-client schema views, and a hard cap of 64 prevents unbounded entities. A player can sidestep after the warning; projectiles do not home.
 
 The Chrome placeholder gives spitters a wider green-black silhouette while reusing the creature wind-up pulse. Revealed projectiles are small interpolated green orbs. Hidden projectile coordinates never enter drawable client data. Production spitter counts and locations remain part of authored pacing in T4.4.
+
+## Authored creature pacing
+
+Red Hollow now has four equal pressure zones, one between each starting corner and the central conflict area. Every zone contains twelve individually validated authored points. At match start, the server uses the match seed and round number to select four safe points per zone, producing the normal budget of sixteen creatures: twelve swarmers and four spitters. This gives every starting region comparable pressure while leaving alternate routes possible.
+
+No selected point may be within five metres of a player when population occurs. A deterministic stress plan can fill all 48 authored points, matching the hard creature cap without inventing runtime geometry. If safety removes candidates, the plan returns fewer creatures rather than violating the exclusion distance or duplicating an entity.
+
+The room synchronizes living creature population and the measured milliseconds spent updating creature behaviours and projectiles on the latest fixed tick. These are intentionally small debug metrics, not player HUD. Rematch and disposal clear creatures, projectiles, population, and timing together.

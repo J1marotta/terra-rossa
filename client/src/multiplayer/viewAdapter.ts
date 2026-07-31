@@ -112,6 +112,8 @@ export function adaptRoomState(
     resultKind: state.resultKind,
     winnerPlayerId: state.winnerPlayerId,
     resultEvent: state.resultEvent,
+    creaturePopulation: state.creaturePopulation,
+    creatureUpdateMilliseconds: state.creatureUpdateMilliseconds,
     players: Object.freeze(players),
     creatures: Object.freeze(creatures),
     creatureProjectiles: Object.freeze(creatureProjectiles),

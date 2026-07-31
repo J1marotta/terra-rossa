@@ -343,6 +343,9 @@ describe.sequential('minimal game server', () => {
 
     await new Promise((resolve) => setTimeout(resolve, 3_050));
     expect(room.state.phase).toBe('playing');
+    expect(room.state.creatures.size).toBe(16);
+    expect(room.state.creaturePopulation).toBe(16);
+    expect(room.state.creatureUpdateMilliseconds).toBeGreaterThanOrEqual(0);
     host.send(
       COMMAND_MESSAGE,
       createCommand({ roomId: room.roomId, matchId: null }, 4, 'move', {

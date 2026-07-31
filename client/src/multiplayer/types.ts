@@ -81,6 +81,8 @@ export interface RoomView {
   readonly resultKind: string;
   readonly winnerPlayerId: string;
   readonly resultEvent: number;
+  readonly creaturePopulation: number;
+  readonly creatureUpdateMilliseconds: number;
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
   readonly creatureProjectiles: readonly CreatureProjectileView[];

@@ -112,6 +112,8 @@ export const GameRoomState = schema(
     resultKind: 'string',
     winnerPlayerId: 'string',
     resultEvent: 'uint32',
+    creaturePopulation: 'uint16',
+    creatureUpdateMilliseconds: 'float32',
     players: { map: PlayerState },
     creatures: { map: CreatureState },
     creatureProjectiles: { map: CreatureProjectileState },
@@ -135,6 +137,8 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.resultKind = '';
   state.winnerPlayerId = '';
   state.resultEvent = 0;
+  state.creaturePopulation = 0;
+  state.creatureUpdateMilliseconds = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   state.creatures = new MapSchema<CreatureStateInstance>();
   state.creatureProjectiles = new MapSchema<CreatureProjectileStateInstance>();

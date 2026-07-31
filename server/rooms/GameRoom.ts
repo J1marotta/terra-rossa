@@ -51,6 +51,10 @@ import { consoleLogger, type GameLogger } from '../logger';
 import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
 import { canViewerSeeTarget } from '../../shared/visibility';
+import {
+  NORMAL_CREATURE_BUDGET,
+  planCreaturePopulation,
+} from '../../shared/creaturePacing';
 import { CreatureRegistry } from '../creatures/CreatureRegistry';
 import { ProjectileRegistry } from '../creatures/ProjectileRegistry';
 import { SpitterSystem } from '../creatures/SpitterSystem';
@@ -104,6 +108,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           this.state.countdownTicksRemaining -= 1;
           if (this.state.countdownTicksRemaining === 0) {
             this.state.phase = 'playing';
+            this.#populateCreatures();
             this.#updateVisibilityViews();
           }
           return;
@@ -118,6 +123,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           advanceReload(player);
           this.#advanceMelee(player);
         });
+        const creatureUpdateStarted = performance.now();
         this.#swarmers.step(
           [...this.state.players.values()],
           (creatureId, targetId, damage) =>
@@ -128,6 +134,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           (creatureId, targetId, damage) =>
             this.#queueDamage(creatureId, targetId, 'creature', damage),
         );
+        this.state.creaturePopulation = this.#creatures
+          .values()
+          .filter((creature) => creature.alive).length;
+        this.state.creatureUpdateMilliseconds =
+          performance.now() - creatureUpdateStarted;
         this.#updateVisibilityViews();
         this.#resolvePendingDamage();
       });
@@ -263,6 +274,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#pendingDamage.length = 0;
     this.#creatures.clear();
     this.#projectiles.clear();
+    this.state.creaturePopulation = 0;
+    this.state.creatureUpdateMilliseconds = 0;
     removePrivateRoom(this.state.roomCode);
     this.#logger.info('room_disposed', { roomId: this.roomId });
   }
@@ -360,6 +373,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     if (resetPlayers) {
       this.#creatures.clear();
       this.#projectiles.clear();
+      this.state.creaturePopulation = 0;
+      this.state.creatureUpdateMilliseconds = 0;
       this.#resetPlayersForRematch();
     }
     updatePrivateRoom(this.state.roomCode, { closed: false });
@@ -403,6 +418,22 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       initializeMovementState(player, spawn.center.x, spawn.center.z);
       player.spawnRegionId = spawn.id;
     });
+  }
+
+  #populateCreatures() {
+    this.#creatures.clear();
+    const plan = planCreaturePopulation(
+      [...this.state.players.values()],
+      this.state.matchSeed ^ this.state.roundNumber,
+      NORMAL_CREATURE_BUDGET,
+    );
+    plan.forEach((spawn) => {
+      this.#creatures.spawn({
+        ...spawn,
+        id: `round-${this.state.roundNumber}-${spawn.id}`,
+      });
+    });
+    this.state.creaturePopulation = this.#creatures.size;
   }
 
   #updateVisibilityViews() {

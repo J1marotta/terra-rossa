@@ -833,7 +833,7 @@ Acceptance:
 
 ## T4.4 — Add authored creature placement and pacing
 
-- [ ] Populate the fixed map with creature zones that shape routes without deciding spawns unfairly.
+- [x] Populate the fixed map with creature zones that shape routes without deciding spawns unfairly.
 
 Prerequisites: T4.2 and T4.3.
 
