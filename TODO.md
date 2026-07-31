@@ -1118,6 +1118,12 @@ Acceptance:
 
 - [ ] Harden the client and server release process used after every task.
 
+Progress: the clean-checkout runbook, public environment inventory, graceful
+restart/log guidance, immutable-image/source-revision rollback, commit-visible
+client diagnostics, exact server health version, hosted WSS smoke, and
+client-bundle version verification are implemented. A production rehearsal and
+completion of prerequisite T5.6 remain before this task can close.
+
 Prerequisites: T0.7 and T5.6.
 
 Deliverables:

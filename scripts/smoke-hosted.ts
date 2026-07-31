@@ -29,9 +29,16 @@ if (!response.ok)
 const health = (await response.json()) as {
   ok?: boolean;
   protocolVersion?: string;
+  version?: string;
 };
 if (!health.ok || health.protocolVersion !== PROTOCOL_VERSION) {
   throw new Error(`Unexpected health response: ${JSON.stringify(health)}`);
+}
+const expectedVersion = process.env.EXPECTED_VERSION;
+if (expectedVersion !== undefined && health.version !== expectedVersion) {
+  throw new Error(
+    `Server version ${String(health.version)} does not match expected ${expectedVersion}.`,
+  );
 }
 
 const sdk = new ColyseusSDK(websocketUrl);
@@ -65,6 +72,7 @@ console.log(
   JSON.stringify({
     ok: true,
     service: 'terra-rossa-server',
+    version: health.version,
     protocolVersion: health.protocolVersion,
     playerId: player.id,
   }),

@@ -65,7 +65,11 @@ The workspace intentionally has no gameplay, database, authentication, CSS frame
 
 Copy `.env.example` to `.env.local` for personal overrides; never commit the copied file. Local development needs no credentials and defaults to a client endpoint of `ws://localhost:2567`, a server on `127.0.0.1:2567`, and the Vite origin `http://localhost:5173`.
 
-The client reads only `VITE_COLYSEUS_URL`. A `staging` or `production` client rejects missing, insecure, and local endpoints; hosted values must use public `wss://` URLs. Vite exposes `VITE_` values to browser code, so never place secrets in them.
+The client reads `VITE_COLYSEUS_URL` and the non-secret
+`VITE_SERVICE_VERSION` commit identity. A `staging` or `production` client
+rejects missing versions plus missing, insecure, and local endpoints; hosted
+values must use public `wss://` URLs. Vite exposes `VITE_` values to browser
+code, so never place secrets in them.
 
 The server accepts these process variables:
 
@@ -116,6 +120,9 @@ The server intentionally runs as one machine because room discovery and seat res
 ## Authority path
 
 Phase 0 proves the complete path before adding controls. A future browser input handler will convert keyboard or pointer state into a versioned command and send it through `GameConnection` to the Colyseus room. The room—not React or Three.js—will validate the command and update authoritative schema state. Colyseus synchronizes that state back to each browser, where `viewAdapter.ts` copies it into immutable presentation data. React reports connection and menu state; `GameScene` reconciles frame-rendered objects by stable server ID.
+
+The reproducible release, smoke, version-correlation, restart, and source-free
+rollback procedure lives in `DEPLOYMENT.md`.
 
 In short: browser intent travels inward as commands, while server truth travels outward as schema. The client may predict presentation later, but it never gets to author the consequential result.
 

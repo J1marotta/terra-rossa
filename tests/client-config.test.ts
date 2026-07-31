@@ -7,6 +7,9 @@ describe('client configuration', () => {
     expect(resolveClientConfig({ MODE: 'development' }).colyseusUrl).toBe(
       'ws://localhost:2567',
     );
+    expect(resolveClientConfig({ MODE: 'development' }).serviceVersion).toBe(
+      'dev',
+    );
   });
 
   it('requires a public secure endpoint in production', () => {
@@ -26,7 +29,24 @@ describe('client configuration', () => {
       resolveClientConfig({
         MODE: 'staging',
         VITE_COLYSEUS_URL: 'wss://game.example.test',
+        VITE_SERVICE_VERSION: 'abc123',
       }).colyseusUrl,
     ).toBe('wss://game.example.test');
+  });
+
+  it('requires and exposes a hosted build version', () => {
+    expect(() =>
+      resolveClientConfig({
+        MODE: 'production',
+        VITE_COLYSEUS_URL: 'wss://game.example.test',
+      }),
+    ).toThrow('VITE_SERVICE_VERSION');
+    expect(
+      resolveClientConfig({
+        MODE: 'production',
+        VITE_COLYSEUS_URL: 'wss://game.example.test',
+        VITE_SERVICE_VERSION: 'abc123',
+      }).serviceVersion,
+    ).toBe('abc123');
   });
 });

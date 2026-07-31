@@ -2159,6 +2159,35 @@
             </div>
           </article>
 
+          <article
+            class="decision reveal"
+            data-category="architecture shipping testing"
+          >
+            <div class="decision-meta">
+              <span class="phase">Phase 5 · Release reliability</span>
+              <span class="status shipped">Implemented</span>
+            </div>
+            <h3>One commit identity must survive both hosting systems</h3>
+            <p>
+              A green server and a green web page can still be the wrong pair.
+              The release now stamps the same Git SHA into Fly's health response
+              and the browser lobby. Verification reads the deployed JavaScript
+              bundle, checks that SHA, and then joins a real Colyseus room over
+              WSS.
+            </p>
+            <p>
+              Rollback deliberately uses immutable history: redeploy a prior Fly
+              image and rebuild Pages from a clean worktree at the selected Git
+              SHA. No emergency source edit is required, so the recovered
+              artifacts remain explainable and repeatable.
+            </p>
+            <div class="evidence">
+              <strong>Junior lesson:</strong> “deployed successfully” describes
+              a command, not a system. Correlate artifacts, probe the public
+              path, and write the rollback before the failure.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

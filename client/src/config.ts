@@ -4,6 +4,7 @@ export type ClientEnvironment =
 export interface ClientConfig {
   environment: ClientEnvironment;
   colyseusUrl: string;
+  serviceVersion: string;
 }
 
 type ClientEnvironmentSource = Readonly<
@@ -60,7 +61,22 @@ export function resolveClientConfig(
     }
   }
 
-  return { environment, colyseusUrl: url.toString().replace(/\/$/, '') };
+  const configuredVersion = source.VITE_SERVICE_VERSION;
+  const serviceVersion =
+    typeof configuredVersion === 'string' && configuredVersion.length > 0
+      ? configuredVersion
+      : isHosted(environment)
+        ? undefined
+        : 'dev';
+  if (serviceVersion === undefined) {
+    throw new Error('VITE_SERVICE_VERSION is required for hosted builds.');
+  }
+
+  return {
+    environment,
+    colyseusUrl: url.toString().replace(/\/$/, ''),
+    serviceVersion,
+  };
 }
 
 export const clientConfig = resolveClientConfig(import.meta.env);

@@ -140,6 +140,9 @@ export function App() {
             </button>
           </div>
           <p className="connection-status">Server: {snapshot.status}</p>
+          <p className="connection-status">
+            Client build: {clientConfig.serviceVersion}
+          </p>
           {snapshot.error !== null && (
             <p className="connection-error" role="alert">
               {snapshot.error}
