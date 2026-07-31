@@ -44,6 +44,9 @@ export function App() {
           creatures={room.creatures.filter(
             (creature) => creature.positionVisible,
           )}
+          creatureProjectiles={room.creatureProjectiles.filter(
+            (projectile) => projectile.positionVisible,
+          )}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}

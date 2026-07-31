@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { adaptRoomState } from '../client/src/multiplayer/viewAdapter';
 import {
+  CreatureProjectileState,
   CreatureState,
   PlayerState,
   createGameRoomState,
@@ -168,6 +169,27 @@ describe('room view adapter', () => {
     ]);
     expect(Object.isFrozen(view.creatures)).toBe(true);
     expect(Object.isFrozen(view.creatures[0])).toBe(true);
+  });
+
+  it('keeps hidden projectiles out of drawable presentation state', () => {
+    const state = createGameRoomState();
+    const projectile = new CreatureProjectileState();
+    projectile.id = 'hidden-shot';
+    projectile.ownerId = 'spitter';
+    Object.defineProperty(projectile, 'x', { value: undefined });
+    Object.defineProperty(projectile, 'z', { value: undefined });
+    state.creatureProjectiles.set(projectile.id, projectile);
+
+    const view = adaptRoomState(state, 'none');
+
+    expect(view.creatureProjectiles).toEqual([
+      {
+        id: 'hidden-shot',
+        positionVisible: false,
+        x: 0,
+        z: 0,
+      },
+    ]);
   });
 
   it('sorts stable player IDs without changing schema insertion order', () => {

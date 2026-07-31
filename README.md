@@ -220,3 +220,11 @@ The first creature is a weak, direct-pressure swarmer: 36 health, a 0.42-metre b
 Entering 1.15 metres with a clear map sightline starts a synchronized 400 ms warning. The swarmer cannot move or deal damage during that wind-up; at completion the server checks range, life, and line-of-sight again before applying damage, then enforces a 900 ms cooldown. Breaking the readable attack condition cancels damage. Player pistol and melee traces now include living creatures, invoke the registry's hit/death pathway, and exclude dead bodies from later targeting.
 
 The client adapts only creatures whose schema view contains finite coordinates. Three.js renders each revealed swarmer as a small dark low-cost block silhouette with red eyes, interpolates its server position, pulses the whole silhouette during attack wind-up, and lays it down on death. The system and presentation exist without production spawns; authored zones and population pacing remain T4.4's responsibility.
+
+## Spitter
+
+The fragile ranged-pressure creature has 24 health and tries to hold roughly nine metres from its nearest living dog. It approaches when too far, retreats inside five metres, and may begin an attack only from five to thirteen metres with an unobstructed sightline. Because thirteen metres is inside the current sixteen-metre visibility rule, its synchronized 650 ms wind-up is always eligible to be seen by the intended victim.
+
+At wind-up completion the server rechecks target life, range, and sightline before creating a projectile. Projectiles travel at eight metres per second, deal 18 damage on server collision, disappear against authored geometry, and expire after 2.2 seconds. Their positions use per-client schema views, and a hard cap of 64 prevents unbounded entities. A player can sidestep after the warning; projectiles do not home.
+
+The Chrome placeholder gives spitters a wider green-black silhouette while reusing the creature wind-up pulse. Revealed projectiles are small interpolated green orbs. Hidden projectile coordinates never enter drawable client data. Production spitter counts and locations remain part of authored pacing in T4.4.

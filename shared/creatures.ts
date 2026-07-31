@@ -10,6 +10,22 @@ export const SWARMER = Object.freeze({
   attackCooldownMilliseconds: 900,
   separationPaddingMetres: 0.18,
 });
+export const SPITTER = Object.freeze({
+  kind: 'spitter',
+  collisionRadius: 0.38,
+  speedMetresPerSecond: 2.2,
+  maximumHealth: 24,
+  preferredRangeMetres: 9,
+  minimumRangeMetres: 5,
+  maximumRangeMetres: 13,
+  attackDamage: 18,
+  attackWindupMilliseconds: 650,
+  attackCooldownMilliseconds: 1_500,
+  projectileSpeedMetresPerSecond: 8,
+  projectileRadius: 0.22,
+  projectileLifetimeMilliseconds: 2_200,
+});
+export const CREATURE_PROJECTILE_CAP = 64;
 
 export interface CreatureTarget {
   readonly id: string;

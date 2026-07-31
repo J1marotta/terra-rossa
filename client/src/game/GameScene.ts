@@ -20,7 +20,11 @@ import {
   WebGLRenderer,
 } from 'three';
 
-import type { CreatureView, PlayerView } from '../multiplayer/types';
+import type {
+  CreatureProjectileView,
+  CreatureView,
+  PlayerView,
+} from '../multiplayer/types';
 import { createMapVisuals, TERRA_ROSSA_MAP } from '../../../shared/map';
 import { calculateOrthographicBounds } from './projection';
 import { LocalPrediction } from './LocalPrediction';
@@ -41,6 +45,10 @@ export class GameScene {
   readonly #renderer: WebGLRenderer;
   readonly #players = new PlayerPresentationRegistry<Group>();
   readonly #creatures = new PlayerPresentationRegistry<Group, CreatureView>();
+  readonly #creatureProjectiles = new PlayerPresentationRegistry<
+    Mesh,
+    CreatureProjectileView
+  >();
   readonly #localPrediction = new LocalPrediction();
   readonly #lastDashEvent = new Map<string, number>();
   readonly #dashPulseUntil = new Map<string, number>();
@@ -237,6 +245,34 @@ export class GameScene {
     );
   }
 
+  setCreatureProjectiles(
+    projectiles: readonly CreatureProjectileView[],
+    receivedAt: number,
+  ) {
+    if (this.#disposed) return;
+    this.#creatureProjectiles.reconcile(
+      projectiles,
+      receivedAt,
+      () => {
+        const projectile = new Mesh(
+          new SphereGeometry(0.22, 6, 5),
+          new MeshBasicMaterial({ color: '#9be36d' }),
+        );
+        projectile.position.y = 0.42;
+        this.#scene.add(projectile);
+        return projectile;
+      },
+      (projectile) => {
+        this.#scene.remove(projectile);
+        projectile.geometry.dispose();
+        const materials = Array.isArray(projectile.material)
+          ? projectile.material
+          : [projectile.material];
+        materials.forEach((material) => material.dispose());
+      },
+    );
+  }
+
   applyPredictedMovement(x: number, z: number, sequence: number) {
     this.#localPrediction.predict(sequence, x, z);
   }
@@ -357,8 +393,15 @@ export class GameScene {
     const group = new Group();
     group.name = creature.id;
     const body = new Mesh(
-      new BoxGeometry(0.9, 0.65, 1.1),
-      new MeshStandardMaterial({ color: '#34213f', roughness: 1 }),
+      new BoxGeometry(
+        creature.kind === 'spitter' ? 1.1 : 0.9,
+        creature.kind === 'spitter' ? 0.9 : 0.65,
+        creature.kind === 'spitter' ? 0.85 : 1.1,
+      ),
+      new MeshStandardMaterial({
+        color: creature.kind === 'spitter' ? '#385345' : '#34213f',
+        roughness: 1,
+      }),
     );
     body.position.y = 0.45;
     const eyes = new Mesh(
@@ -439,6 +482,13 @@ export class GameScene {
       entry.object.scale.set(pulse, entry.player.alive ? pulse : 0.2, pulse);
       entry.object.rotation.z = entry.player.alive ? 0 : Math.PI / 2;
     });
+    this.#creatureProjectiles.forEach((entry) => {
+      const position = entry.buffer.sample(time, 50);
+      if (position !== null) {
+        entry.object.position.x = position.x;
+        entry.object.position.z = position.z;
+      }
+    });
     if (time < this.#cameraShakeUntil && !this.#reducedEffects) {
       const remaining = (this.#cameraShakeUntil - time) / 140;
       this.#camera.position.x += Math.sin(time * 0.18) * 0.16 * remaining;
@@ -456,6 +506,14 @@ export class GameScene {
     this.#resizeObserver.disconnect();
     this.#players.disposeAll((group) => this.#removeDog(group));
     this.#creatures.disposeAll((group) => this.#removeDog(group));
+    this.#creatureProjectiles.disposeAll((projectile) => {
+      this.#scene.remove(projectile);
+      projectile.geometry.dispose();
+      const materials = Array.isArray(projectile.material)
+        ? projectile.material
+        : [projectile.material];
+      materials.forEach((material) => material.dispose());
+    });
     this.#lastDashEvent.clear();
     this.#dashPulseUntil.clear();
     this.#lastMeleeEvent.clear();

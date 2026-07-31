@@ -79,6 +79,25 @@ export const CreatureState = schema(
 
 export type CreatureStateInstance = SchemaType<typeof CreatureState>;
 
+export const CreatureProjectileState = schema(
+  {
+    id: 'string',
+    ownerId: 'string',
+    x: { type: 'float32', view: 1 },
+    z: { type: 'float32', view: 1 },
+    velocityX: 'float32',
+    velocityZ: 'float32',
+    collisionRadius: 'float32',
+    damage: 'float32',
+    lifetimeTicksRemaining: 'uint16',
+  },
+  'CreatureProjectileState',
+);
+
+export type CreatureProjectileStateInstance = SchemaType<
+  typeof CreatureProjectileState
+>;
+
 export const GameRoomState = schema(
   {
     protocolVersion: 'string',
@@ -95,6 +114,7 @@ export const GameRoomState = schema(
     resultEvent: 'uint32',
     players: { map: PlayerState },
     creatures: { map: CreatureState },
+    creatureProjectiles: { map: CreatureProjectileState },
   },
   'GameRoomState',
 );
@@ -117,5 +137,6 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.resultEvent = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   state.creatures = new MapSchema<CreatureStateInstance>();
+  state.creatureProjectiles = new MapSchema<CreatureProjectileStateInstance>();
   return state;
 }

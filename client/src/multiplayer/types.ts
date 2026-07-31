@@ -61,6 +61,13 @@ export interface CreatureView {
   readonly attackEvent: number;
 }
 
+export interface CreatureProjectileView {
+  readonly id: string;
+  readonly positionVisible: boolean;
+  readonly x: number;
+  readonly z: number;
+}
+
 export interface RoomView {
   readonly protocolVersion: string;
   readonly phase: string;
@@ -76,6 +83,7 @@ export interface RoomView {
   readonly resultEvent: number;
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
+  readonly creatureProjectiles: readonly CreatureProjectileView[];
 }
 
 export interface ConnectionSnapshot {

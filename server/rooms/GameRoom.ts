@@ -52,6 +52,8 @@ import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
 import { canViewerSeeTarget } from '../../shared/visibility';
 import { CreatureRegistry } from '../creatures/CreatureRegistry';
+import { ProjectileRegistry } from '../creatures/ProjectileRegistry';
+import { SpitterSystem } from '../creatures/SpitterSystem';
 import { SwarmerSystem } from '../creatures/SwarmerSystem';
 import {
   createRoomCode,
@@ -79,12 +81,16 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #nextDamageOrder = 0;
   #creatures!: CreatureRegistry;
   #swarmers!: SwarmerSystem;
+  #projectiles!: ProjectileRegistry;
+  #spitters!: SpitterSystem;
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
     this.setState(createGameRoomState());
     this.#creatures = new CreatureRegistry(this.state.creatures);
     this.#swarmers = new SwarmerSystem(this.#creatures);
+    this.#projectiles = new ProjectileRegistry(this.state.creatureProjectiles);
+    this.#spitters = new SpitterSystem(this.#creatures, this.#projectiles);
     this.state.roomCode = createRoomCode(this.roomId);
     this.state.matchSeed = options.seed ?? randomInt(0, 0x1_0000_0000);
     this.setMetadata({ roomCode: this.state.roomCode });
@@ -113,6 +119,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           this.#advanceMelee(player);
         });
         this.#swarmers.step(
+          [...this.state.players.values()],
+          (creatureId, targetId, damage) =>
+            this.#queueDamage(creatureId, targetId, 'creature', damage),
+        );
+        this.#spitters.step(
           [...this.state.players.values()],
           (creatureId, targetId, damage) =>
             this.#queueDamage(creatureId, targetId, 'creature', damage),
@@ -251,6 +262,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#lastAimTickByPlayer.clear();
     this.#pendingDamage.length = 0;
     this.#creatures.clear();
+    this.#projectiles.clear();
     removePrivateRoom(this.state.roomCode);
     this.#logger.info('room_disposed', { roomId: this.roomId });
   }
@@ -347,6 +359,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     });
     if (resetPlayers) {
       this.#creatures.clear();
+      this.#projectiles.clear();
       this.#resetPlayersForRematch();
     }
     updatePrivateRoom(this.state.roomCode, { closed: false });
@@ -412,6 +425,19 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           view.add(creature, 1);
         } else {
           view.remove(creature, 1);
+        }
+      });
+      this.state.creatureProjectiles.forEach((projectile) => {
+        if (
+          canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, {
+            x: projectile.x,
+            z: projectile.z,
+            alive: true,
+          })
+        ) {
+          view.add(projectile, 1);
+        } else {
+          view.remove(projectile, 1);
         }
       });
     });

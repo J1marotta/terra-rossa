@@ -1,5 +1,10 @@
 import type { GameRoomStateInstance } from '../../../shared/state';
-import type { CreatureView, PlayerView, RoomView } from './types';
+import type {
+  CreatureProjectileView,
+  CreatureView,
+  PlayerView,
+  RoomView,
+} from './types';
 
 export function adaptRoomState(
   state: GameRoomStateInstance,
@@ -79,6 +84,20 @@ export function adaptRoomState(
     );
   });
   creatures.sort((left, right) => left.id.localeCompare(right.id));
+  const creatureProjectiles: CreatureProjectileView[] = [];
+  state.creatureProjectiles.forEach((projectile) => {
+    const positionVisible =
+      Number.isFinite(projectile.x) && Number.isFinite(projectile.z);
+    creatureProjectiles.push(
+      Object.freeze({
+        id: projectile.id,
+        positionVisible,
+        x: positionVisible ? projectile.x : 0,
+        z: positionVisible ? projectile.z : 0,
+      }),
+    );
+  });
+  creatureProjectiles.sort((left, right) => left.id.localeCompare(right.id));
 
   return Object.freeze({
     protocolVersion: state.protocolVersion,
@@ -95,5 +114,6 @@ export function adaptRoomState(
     resultEvent: state.resultEvent,
     players: Object.freeze(players),
     creatures: Object.freeze(creatures),
+    creatureProjectiles: Object.freeze(creatureProjectiles),
   });
 }

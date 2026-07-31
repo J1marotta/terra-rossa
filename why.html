@@ -991,6 +991,31 @@
 
             <article
               class="decision reveal"
+              data-category="gameplay technical interface"
+            >
+              <span class="tag">T4.3 / spitter</span>
+              <h3>Ranged pressure travels through time and space.</h3>
+              <p>
+                A fragile spitter holds medium range, warns for 650
+                milliseconds, and only then launches a capped server-owned
+                projectile. The shot has visible travel time, collides with
+                authored cover, can be sidestepped, expires after 2.2 seconds,
+                and never homes. Range and sightline are checked before and
+                after wind-up.
+              </p>
+              <p class="why">
+                <strong>Why:</strong> applying delayed damage directly would
+                make the warning cosmetic and dodging ambiguous. A real
+                projectile turns the telegraph into a readable movement problem.
+                Keeping its thirteen-metre attack limit inside the sixteen-metre
+                visibility radius means a hidden spitter cannot legally create
+                an unseen attack, while a 64-shot cap and explicit
+                collision/expiry keep server and browser cost bounded.
+              </p>
+            </article>
+
+            <article
+              class="decision reveal"
               data-category="technical gameplay interface"
             >
               <span class="tag">Phase 3 gate / passed</span>

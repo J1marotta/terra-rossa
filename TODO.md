@@ -815,7 +815,7 @@ Acceptance:
 
 ## T4.3 — Implement the spitter
 
-- [ ] Add the fragile ranged-pressure creature.
+- [x] Add the fragile ranged-pressure creature.
 
 Prerequisites: T4.1 and T4.2.
 
