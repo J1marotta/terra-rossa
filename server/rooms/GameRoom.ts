@@ -107,6 +107,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #projectiles!: ProjectileRegistry;
   #spitters!: SpitterSystem;
   #creatureWarningEventById = new Map<string, number>();
+  #simulationSamples: number[] = [];
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
@@ -123,6 +124,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     });
     this.setSimulationInterval((elapsedMilliseconds) => {
       this.#fixedStep.advance(elapsedMilliseconds, () => {
+        const simulationStarted = performance.now();
         this.#simulationTick += 1;
         if (this.state.phase === 'countdown') {
           this.state.countdownTicksRemaining -= 1;
@@ -132,6 +134,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
             this.#populatePickups();
             this.#updateVisibilityViews();
           }
+          this.#recordSimulationTime(performance.now() - simulationStarted);
           return;
         }
         if (this.state.phase !== 'playing') return;
@@ -176,6 +179,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           performance.now() - creatureUpdateStarted;
         this.#updateVisibilityViews();
         this.#resolvePendingDamage();
+        this.#recordSimulationTime(performance.now() - simulationStarted);
       });
     }, FIXED_STEP_MILLISECONDS);
     this.#logger.info('room_created', {
@@ -938,5 +942,28 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         before - result.healthAfter;
     }
     return result;
+  }
+
+  #recordSimulationTime(milliseconds: number) {
+    this.#simulationSamples.push(milliseconds);
+    if (this.#simulationSamples.length > 300) this.#simulationSamples.shift();
+    if (this.#simulationTick % 30 !== 0) return;
+    const sorted = [...this.#simulationSamples].sort(
+      (left, right) => left - right,
+    );
+    const percentile = (fraction: number) =>
+      sorted[
+        Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))
+      ] ?? 0;
+    this.state.simulationP50Milliseconds = percentile(0.5);
+    this.state.simulationP95Milliseconds = percentile(0.95);
+    this.state.simulationP99Milliseconds = percentile(0.99);
+    this.state.serverEntityCount =
+      this.state.players.size +
+      this.state.creatures.size +
+      this.state.creatureProjectiles.size +
+      this.state.pickups.size;
+    this.state.serverHeapMegabytes =
+      process.memoryUsage().heapUsed / (1024 * 1024);
   }
 }

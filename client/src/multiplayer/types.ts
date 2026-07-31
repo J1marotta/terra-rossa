@@ -112,6 +112,11 @@ export interface RoomView {
   readonly telemetryPvpDeathsUnderCreaturePressure: number;
   readonly telemetryAmmoExpended: number;
   readonly telemetryLastEncounterRegion: string;
+  readonly simulationP50Milliseconds: number;
+  readonly simulationP95Milliseconds: number;
+  readonly simulationP99Milliseconds: number;
+  readonly serverEntityCount: number;
+  readonly serverHeapMegabytes: number;
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
   readonly creatureProjectiles: readonly CreatureProjectileView[];

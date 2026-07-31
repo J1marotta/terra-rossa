@@ -211,6 +211,12 @@ During play, one compact field strip shows health and current magazine/reserve a
 
 The keyboard-accessible Settings dialog controls mute, master/effects volume, reduced effects, camera shake, and low/balanced/full render resolution. Preferences persist locally. Lobby, countdown, results, rematch, and actionable connection errors retain semantic headings, labels, buttons, live regions, and readable 1280×720 layout.
 
+## Performance diagnostics
+
+Append `?debug=1` to the client URL to expose a development-only overlay with client frame p95, Three.js draw calls, scene object count, geometry/texture counts, server simulation p50/p95/p99, synchronized entity count, server heap, estimated serialized room-view bytes, cumulative downstream bytes, and cumulative upstream command bytes. Command bytes are also accumulated by command type inside the connection object. The downstream number deliberately estimates the complete authorized room view on each state callback, so it is a conservative ceiling rather than a claim about Colyseus wire compression.
+
+Run `npm run stress:performance` for the deterministic four-player plus 48-creature/900-tick server scenario. It fails if server behaviour p95 reaches 20 ms. The first Windows development-host run measured 0.134 ms p50, 0.347 ms p95, 0.628 ms p99, and 11.7 MB heap for the isolated creature systems.
+
 Colyseus schema view tag 1 carries revocable position fields; tag 2 carries the owning player's private spawn assignment. Every client always receives the public roster, but the room independently adds or removes tag 1 for each viewer-target pair on simulation ticks. Concealment therefore removes remote coordinates from synchronized schema state instead of asking Three.js to hide data it already knows. The client adapter marks records without finite coordinates as concealed and excludes them from the rendered player list, while retaining names for lobby and result screens.
 
 Gunfire does not grant an additional exact-position reveal in this slice. Existing combat events remain presentation hooks only for opponents already visible; later audio work may add an approved approximate sound cue without publishing a hidden shooter's coordinates.

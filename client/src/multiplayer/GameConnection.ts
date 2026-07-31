@@ -16,6 +16,13 @@ import { adaptRoomState } from './viewAdapter';
 
 type Listener = (snapshot: ConnectionSnapshot) => void;
 
+export interface NetworkDiagnostics {
+  readonly latestPatchBytes: number;
+  readonly downstreamBytes: number;
+  readonly upstreamBytes: number;
+  readonly commandsByType: Readonly<Record<string, number>>;
+}
+
 export interface RoomTransport {
   readonly roomId: string;
   readonly sessionId: string;
@@ -51,6 +58,10 @@ export class GameConnection {
   #room: RoomTransport | null = null;
   #generation = 0;
   #nextSequence = 0;
+  #latestPatchBytes = 0;
+  #downstreamBytes = 0;
+  #upstreamBytes = 0;
+  #commandsByType: Record<string, number> = {};
 
   constructor(endpoint: string, joinRoom: JoinRoom = createJoinRoom(endpoint)) {
     this.#endpoint = endpoint;
@@ -59,6 +70,14 @@ export class GameConnection {
   }
 
   getSnapshot = () => this.#snapshot;
+
+  getDiagnostics = (): NetworkDiagnostics =>
+    Object.freeze({
+      latestPatchBytes: this.#latestPatchBytes,
+      downstreamBytes: this.#downstreamBytes,
+      upstreamBytes: this.#upstreamBytes,
+      commandsByType: Object.freeze({ ...this.#commandsByType }),
+    });
 
   subscribe = (listener: Listener) => {
     this.#listeners.add(listener);
@@ -137,9 +156,14 @@ export class GameConnection {
       this.#nextSequence = 0;
       const publishState = (state: GameRoomStateInstance) => {
         if (generation !== this.#generation) return;
+        const roomView = adaptRoomState(state, room.sessionId);
+        this.#latestPatchBytes = new TextEncoder().encode(
+          JSON.stringify(roomView),
+        ).byteLength;
+        this.#downstreamBytes += this.#latestPatchBytes;
         this.#publish({
           status: 'connected',
-          room: adaptRoomState(state, room.sessionId),
+          room: roomView,
           error: null,
         });
       };
@@ -203,7 +227,7 @@ export class GameConnection {
       'move',
       { x, z },
     );
-    room.send(COMMAND_MESSAGE, command);
+    this.#sendTransport(room, command);
     this.#nextSequence += 1;
     return sequence;
   };
@@ -218,7 +242,7 @@ export class GameConnection {
       'dash',
       {},
     );
-    room.send(COMMAND_MESSAGE, command);
+    this.#sendTransport(room, command);
     this.#nextSequence += 1;
     return sequence;
   };
@@ -230,7 +254,7 @@ export class GameConnection {
     const command = createCommand(this.#commandContext(room), sequence, 'aim', {
       angleRadians,
     });
-    room.send(COMMAND_MESSAGE, command);
+    this.#sendTransport(room, command);
     this.#nextSequence += 1;
     return sequence;
   };
@@ -245,7 +269,7 @@ export class GameConnection {
       'fire',
       {},
     );
-    room.send(COMMAND_MESSAGE, command);
+    this.#sendTransport(room, command);
     this.#nextSequence += 1;
     return sequence;
   };
@@ -257,11 +281,9 @@ export class GameConnection {
     const room = this.#room;
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
-    room.send(
-      COMMAND_MESSAGE,
-      createCommand(this.#commandContext(room), sequence, 'ready', {
-        ready,
-      }),
+    this.#sendTransport(
+      room,
+      createCommand(this.#commandContext(room), sequence, 'ready', { ready }),
     );
     this.#nextSequence += 1;
     return sequence;
@@ -279,7 +301,7 @@ export class GameConnection {
       'reload_attempt',
       { clientElapsedMilliseconds },
     );
-    room.send(COMMAND_MESSAGE, command);
+    this.#sendTransport(room, command);
     this.#nextSequence += 1;
     return sequence;
   };
@@ -290,8 +312,8 @@ export class GameConnection {
     const room = this.#room;
     if (room === null || this.#snapshot.status !== 'connected') return null;
     const sequence = this.#nextSequence;
-    room.send(
-      COMMAND_MESSAGE,
+    this.#sendTransport(
+      room,
       createCommand(this.#commandContext(room), sequence, type, {}),
     );
     this.#nextSequence += 1;
@@ -301,6 +323,17 @@ export class GameConnection {
   #publish(snapshot: ConnectionSnapshot) {
     this.#snapshot = Object.freeze(snapshot);
     this.#listeners.forEach((listener) => listener(this.#snapshot));
+  }
+
+  #sendTransport(
+    room: RoomTransport,
+    command: ReturnType<typeof createCommand>,
+  ) {
+    const bytes = new TextEncoder().encode(JSON.stringify(command)).byteLength;
+    this.#upstreamBytes += bytes;
+    this.#commandsByType[command.type] =
+      (this.#commandsByType[command.type] ?? 0) + bytes;
+    room.send(COMMAND_MESSAGE, command);
   }
 
   #commandContext(room: RoomTransport) {

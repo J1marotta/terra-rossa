@@ -14,6 +14,7 @@ import {
   readAudioSettings,
   type AudioSettings,
 } from '../audio/GameAudio';
+import type { NetworkDiagnostics } from '../multiplayer/GameConnection';
 
 interface GameCanvasProps {
   players: readonly PlayerView[];
@@ -29,6 +30,12 @@ interface GameCanvasProps {
   darknessHalfWidth: number;
   darknessHalfDepth: number;
   connectionWarning: boolean;
+  networkDiagnostics: NetworkDiagnostics;
+  simulationP50Milliseconds: number;
+  simulationP95Milliseconds: number;
+  simulationP99Milliseconds: number;
+  serverEntityCount: number;
+  serverHeapMegabytes: number;
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
@@ -53,6 +60,12 @@ export function GameCanvas({
   darknessHalfWidth,
   darknessHalfDepth,
   connectionWarning,
+  networkDiagnostics,
+  simulationP50Milliseconds,
+  simulationP95Milliseconds,
+  simulationP99Milliseconds,
+  serverEntityCount,
+  serverHeapMegabytes,
   sendMovement,
   sendDash,
   sendAim,
@@ -80,6 +93,14 @@ export function GameCanvas({
   const [resolutionScale, setResolutionScale] = useState(() =>
     Number(localStorage.getItem('terra-rossa.resolution-scale') ?? 0.75),
   );
+  const [renderDiagnostics, setRenderDiagnostics] = useState({
+    frameP95Milliseconds: 0,
+    drawCalls: 0,
+    objects: 0,
+    geometries: 0,
+    textures: 0,
+  });
+  const debugEnabled = new URLSearchParams(window.location.search).has('debug');
 
   useEffect(() => {
     const container = containerRef.current;
@@ -124,6 +145,15 @@ export function GameCanvas({
   useEffect(() => {
     audioRef.current?.update(audioSettings);
   }, [audioSettings]);
+
+  useEffect(() => {
+    if (!debugEnabled) return;
+    const timer = window.setInterval(() => {
+      const diagnostics = sceneRef.current?.getDiagnostics();
+      if (diagnostics !== undefined) setRenderDiagnostics(diagnostics);
+    }, 1_000);
+    return () => window.clearInterval(timer);
+  }, [debugEnabled]);
 
   useEffect(() => {
     if (darknessWarningEvent > previousDarknessWarning.current)
@@ -378,6 +408,38 @@ export function GameCanvas({
             </select>
           </label>
         </section>
+      )}
+      {debugEnabled && (
+        <output
+          className="performance-panel"
+          aria-label="Performance diagnostics"
+        >
+          <span>
+            Frame p95 {renderDiagnostics.frameP95Milliseconds.toFixed(1)} ms
+          </span>
+          <span>
+            Draw {renderDiagnostics.drawCalls} · Objects{' '}
+            {renderDiagnostics.objects}
+          </span>
+          <span>
+            GPU {renderDiagnostics.geometries} geo ·{' '}
+            {renderDiagnostics.textures} tex
+          </span>
+          <span>
+            Server p50/p95/p99 {simulationP50Milliseconds.toFixed(2)}/
+            {simulationP95Milliseconds.toFixed(2)}/
+            {simulationP99Milliseconds.toFixed(2)} ms
+          </span>
+          <span>
+            Entities {serverEntityCount} · Heap {serverHeapMegabytes.toFixed(1)}{' '}
+            MB
+          </span>
+          <span>
+            Net patch≈{networkDiagnostics.latestPatchBytes} B · down≈
+            {networkDiagnostics.downstreamBytes} B · up{' '}
+            {networkDiagnostics.upstreamBytes} B
+          </span>
+        </output>
       )}
       {reloading && (
         <div

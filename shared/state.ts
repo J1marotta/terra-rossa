@@ -152,6 +152,11 @@ export const GameRoomState = schema(
     telemetryPvpDeathsUnderCreaturePressure: 'uint16',
     telemetryAmmoExpended: 'uint32',
     telemetryLastEncounterRegion: 'string',
+    simulationP50Milliseconds: 'float32',
+    simulationP95Milliseconds: 'float32',
+    simulationP99Milliseconds: 'float32',
+    serverEntityCount: 'uint16',
+    serverHeapMegabytes: 'float32',
     players: { map: PlayerState },
     creatures: { map: CreatureState },
     creatureProjectiles: { map: CreatureProjectileState },
@@ -191,6 +196,11 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.telemetryPvpDeathsUnderCreaturePressure = 0;
   state.telemetryAmmoExpended = 0;
   state.telemetryLastEncounterRegion = '';
+  state.simulationP50Milliseconds = 0;
+  state.simulationP95Milliseconds = 0;
+  state.simulationP99Milliseconds = 0;
+  state.serverEntityCount = 0;
+  state.serverHeapMegabytes = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   state.creatures = new MapSchema<CreatureStateInstance>();
   state.creatureProjectiles = new MapSchema<CreatureProjectileStateInstance>();

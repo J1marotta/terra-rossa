@@ -71,6 +71,12 @@ export function App() {
           darknessHalfWidth={room.darknessHalfWidth}
           darknessHalfDepth={room.darknessHalfDepth}
           connectionWarning={connectionWarning}
+          networkDiagnostics={connection.getDiagnostics()}
+          simulationP50Milliseconds={room.simulationP50Milliseconds}
+          simulationP95Milliseconds={room.simulationP95Milliseconds}
+          simulationP99Milliseconds={room.simulationP99Milliseconds}
+          serverEntityCount={room.serverEntityCount}
+          serverHeapMegabytes={room.serverHeapMegabytes}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}

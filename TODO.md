@@ -1051,6 +1051,8 @@ Acceptance:
 
 - [ ] Measure client, server, and network costs under the four-player stress case.
 
+Progress: opt-in client/server/network diagnostics and the repeatable 48-creature stress command are implemented; hosted Chrome observations remain before closure.
+
 Prerequisites: Phase 4 gate.
 
 Deliverables:

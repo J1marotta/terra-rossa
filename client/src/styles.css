@@ -162,6 +162,22 @@ body {
   width: 100%;
 }
 
+.performance-panel {
+  position: absolute;
+  z-index: 4;
+  top: 3.2rem;
+  left: 0.7rem;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.55rem;
+  color: #c9f0c2;
+  background: rgb(5 10 8 / 88%);
+  font:
+    600 0.68rem/1.25 ui-monospace,
+    monospace;
+  pointer-events: none;
+}
+
 .reload-track span {
   display: block;
   height: 100%;

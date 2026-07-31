@@ -90,6 +90,7 @@ export class GameScene {
   #previousRenderTime = performance.now();
   #cameraShakeUntil = 0;
   #hitStopUntil = 0;
+  readonly #frameTimes: number[] = [];
   readonly #pointerRay = new Raycaster();
 
   constructor(container: HTMLElement) {
@@ -125,6 +126,24 @@ export class GameScene {
     this.#screenShake = preferences.screenShake;
     this.#renderScale = Math.max(0.5, Math.min(1, preferences.resolutionScale));
     this.resize();
+  }
+
+  getDiagnostics() {
+    const sorted = [...this.#frameTimes].sort((left, right) => left - right);
+    const p95 =
+      sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ??
+      0;
+    let objects = 0;
+    this.#scene.traverse(() => {
+      objects += 1;
+    });
+    return {
+      frameP95Milliseconds: p95,
+      drawCalls: this.#renderer.info.render.calls,
+      objects,
+      geometries: this.#renderer.info.memory.geometries,
+      textures: this.#renderer.info.memory.textures,
+    };
   }
 
   #buildWorld() {
@@ -574,8 +593,10 @@ export class GameScene {
 
   #render = (time: number) => {
     if (this.#disposed) return;
-    const elapsedSeconds =
-      Math.min(0.25, Math.max(0, time - this.#previousRenderTime)) / 1_000;
+    const frameMilliseconds = Math.max(0, time - this.#previousRenderTime);
+    this.#frameTimes.push(frameMilliseconds);
+    if (this.#frameTimes.length > 120) this.#frameTimes.shift();
+    const elapsedSeconds = Math.min(0.25, frameMilliseconds) / 1_000;
     this.#previousRenderTime = time;
     if (!this.#reducedMotion.matches) {
       const offset = Math.sin((time - this.#startTime) / 450) * 0.08;

@@ -2050,6 +2050,33 @@
             </div>
           </article>
 
+          <article class="decision reveal" data-category="performance evidence">
+            <div class="decision-meta">
+              <span class="tag">T5.4 / observable budgets</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>A frame-rate promise needs counters and a failure threshold</h3>
+            <p>
+              The opt-in debug overlay reports client frame p95, draw calls,
+              objects, GPU resources, server simulation percentiles, entity
+              count, heap, and estimated network bytes. The room retains only
+              300 timing samples; the renderer retains 120 frames. Normal HUD
+              remains untouched.
+            </p>
+            <p>
+              A deterministic 900-tick scenario drives four targets and all 48
+              authored creatures. Its first development-host run measured 0.347
+              ms server p95 and 0.628 ms p99 with 11.7 MB heap, far under the
+              enforced 20 ms p95 budget.
+            </p>
+            <div class="evidence">
+              <strong>Honesty note:</strong> downstream bytes serialize the
+              complete authorized view per callback. That is a conservative
+              estimate, not an invented measurement of Colyseus compression.
+              Hosted Chrome render observations remain before this task closes.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

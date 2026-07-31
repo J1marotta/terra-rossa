@@ -19,6 +19,7 @@
     "smoke:four": "tsx scripts/smoke-four-player.ts",
     "smoke:combat": "tsx scripts/smoke-combat.ts",
     "smoke:match": "tsx scripts/smoke-four-match.ts",
+    "stress:performance": "tsx scripts/stress-performance.ts",
     "start:server": "tsx server/index.ts",
     "test": "vitest run",
     "typecheck": "tsc -b",
