@@ -939,9 +939,9 @@ Acceptance:
 
 ## T4.9 — Tune third-party and creature interference
 
-- [ ] Evaluate whether creatures improve or randomize four-player fights.
+- [x] Evaluate whether creatures improve or randomize four-player fights.
 
-Progress: measured baseline runs showed monster-dominated 8.8-second rounds; the data-only eight-creature/seven-metre comparison build awaits hosted verification.
+Result: three comparison runs lasted about 11.2 seconds, produced 7–12 shots and 24–72 player damage to creatures, but still showed heavy creature pressure. The next experiment is a human four-player session where all dogs can deliberately kite or fight rather than another AI-behaviour change.
 
 Prerequisites: T4.4 through T4.8.
 
@@ -960,7 +960,7 @@ Acceptance:
 
 ## Phase 4 gate
 
-- [ ] Complete repeated hosted four-player continuous PvPvE matches.
+- [x] Complete repeated hosted four-player continuous PvPvE matches.
 
 Pass only when:
 

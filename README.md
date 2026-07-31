@@ -251,6 +251,8 @@ All round-specific creature and loot seeds are normalized back to unsigned 32-bi
 
 Each round counts creature damage to players, player damage to creatures, firearm ammunition spent, PvP deaths occurring with a living creature within five metres, and the coarse quadrant of the latest creature encounter. Match duration reuses the authoritative darkness tick. These bounded values are synchronized for development harnesses and written as one structured `round_finished` log entry; no exact player route history or personal data is retained.
 
+The first instrumented pair with sixteen creatures ended at 264 ticks (8.8 seconds), with 216–240 creature damage, zero damage returned to creatures, and one pressured PvP death per run. After reducing the opening to eight creatures and expanding spawn safety, three hosted comparison runs ended at 336–339 ticks, spent 7–12 rounds, and dealt 24–72 damage back to creatures. Creature damage remained high at 186–216 because three harness dogs follow routes without aiming at threats. The next honest balance experiment is a human four-player session, not more AI-driven tuning.
+
 The room synchronizes living creature population and the measured milliseconds spent updating creature behaviours and projectiles on the latest fixed tick. These are intentionally small debug metrics, not player HUD. Rematch and disposal clear creatures, projectiles, population, and timing together.
 
 ## Ammunition and healing supplies
