@@ -1826,6 +1826,34 @@
             </div>
           </article>
 
+          <article class="decision reveal" data-category="design networking">
+            <div class="decision-meta">
+              <span class="tag">T4.8 / closing night</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>Pressure moves the player; it never moves their character</h3>
+            <p>
+              The safe rectangle contracts every two minutes toward the central
+              ruin, where several approaches and pieces of cover remain useful.
+              Outside damage escalates from a warning bite to lethal pressure,
+              while visibility also narrows. No teleport or protected duel phase
+              interrupts the continuous match.
+            </p>
+            <p>
+              The room publishes one clock, stage, boundary, visibility radius,
+              and damage rate. Damage enters the same ordered queue as bullets,
+              melee, and creatures, so simultaneous deaths and victory do not
+              acquire a second set of rules. At twelve minutes the final stage
+              damages everyone, providing an honest hard maximum.
+            </p>
+            <div class="evidence">
+              <strong>Implementation lesson:</strong> model a shrinking zone as
+              data plus one pure “outside” predicate. Rendering, warnings,
+              damage, tests, and later tuning can then share the same facts
+              without letting the browser decide who is safe.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Hero:</strong> Which dog silhouette reads best in the
@@ -1834,10 +1862,6 @@
             <div>
               <strong>Rendering:</strong> Which sprite, billboard, and geometry
               mix remains sustainable?
-            </div>
-            <div>
-              <strong>Darkness:</strong> When should it close, and what boundary
-              shape fits the map?
             </div>
             <div>
               <strong>Performance:</strong> What creature and patch rates

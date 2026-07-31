@@ -16,6 +16,8 @@ interface GameCanvasProps {
   creatureProjectiles: readonly CreatureProjectileView[];
   pickups: readonly PickupView[];
   visibilityRadiusMetres: number;
+  darknessStage: number;
+  darknessDamagePerSecond: number;
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
@@ -32,6 +34,8 @@ export function GameCanvas({
   creatureProjectiles,
   pickups,
   visibilityRadiusMetres,
+  darknessStage,
+  darknessDamagePerSecond,
   sendMovement,
   sendDash,
   sendAim,
@@ -157,6 +161,11 @@ export function GameCanvas({
           } as React.CSSProperties
         }
       />
+      {darknessStage > 0 && (
+        <div className="darkness-warning" role="status">
+          Darkness closes · outside {darknessDamagePerSecond} damage/sec
+        </div>
+      )}
       {localPlayer !== undefined &&
         localPlayer.activityCueTicksRemaining > 0 && (
           <div className="activity-cue" role="status">

@@ -187,6 +187,12 @@ During play, the server reveals an opponent's exact X/Z position only when the t
 
 The room now owns the live visibility radius and applies it to players, creatures, hostile projectiles, pickups, and pickup interaction. The client vignette is presentation only: removing it cannot restore coordinates that the server withheld. Hidden gunfire and creature wind-ups produce a short, private eight-way compass bearing (`N`, `NE`, and so on) for each living viewer. That cue supports inference without transmitting a source position or marker.
 
+## Staged darkness contraction
+
+Once play begins, one server clock advances through authored rectangular boundaries that preserve the central ruin's multiple approaches and cover. At two-minute intervals the safe half-width and half-depth contract, visibility falls, and outside damage rises from 5 to 50 health per second. At twelve minutes the night becomes lethal everywhere, guaranteeing a deterministic hard stop through the existing simultaneous-damage and last-player-standing rules. Players are never teleported.
+
+Every client receives the same stage, elapsed tick, next-stage tick, boundary dimensions, damage rate, visibility radius, and warning event. A compact warning makes the pressure understandable while the server alone determines safety and applies damage. Rematches reset the complete darkness clock and boundary.
+
 Colyseus schema view tag 1 carries revocable position fields; tag 2 carries the owning player's private spawn assignment. Every client always receives the public roster, but the room independently adds or removes tag 1 for each viewer-target pair on simulation ticks. Concealment therefore removes remote coordinates from synchronized schema state instead of asking Three.js to hide data it already knows. The client adapter marks records without finite coordinates as concealed and excludes them from the rendered player list, while retaining names for lobby and result screens.
 
 Gunfire does not grant an additional exact-position reveal in this slice. Existing combat events remain presentation hooks only for opponents already visible; later audio work may add an approved approximate sound cue without publishing a hidden shooter's coordinates.

@@ -58,7 +58,11 @@ import { canViewerSeeTarget } from '../../shared/visibility';
 import {
   ACTIVITY_CUE_LIFETIME_TICKS,
   approximateActivityDirection,
+  DARKNESS_STAGES,
+  darknessStageAtTick,
+  isOutsideDarknessBoundary,
 } from '../../shared/darkness';
+import { SIMULATION_HZ } from '../../shared/time';
 import {
   NORMAL_CREATURE_BUDGET,
   planCreaturePopulation,
@@ -142,6 +146,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
             player.activityCueTicksRemaining -= 1;
           }
         });
+        this.#advanceDarkness();
         const creatureUpdateStarted = performance.now();
         this.#swarmers.step(
           [...this.state.players.values()],
@@ -411,6 +416,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.state.countdownTicksRemaining = 0;
     this.state.resultKind = '';
     this.state.winnerPlayerId = '';
+    this.state.darknessStage = 0;
+    this.state.darknessElapsedTicks = 0;
+    this.state.darknessNextStageTick = DARKNESS_STAGES[1]!.startsAtTick;
+    this.state.darknessHalfWidth = DARKNESS_STAGES[0]!.halfWidth;
+    this.state.darknessHalfDepth = DARKNESS_STAGES[0]!.halfDepth;
+    this.state.darknessDamagePerSecond = 0;
+    this.state.visibilityRadiusMetres =
+      DARKNESS_STAGES[0]!.visibilityRadiusMetres;
     this.state.players.forEach((player) => {
       player.ready = false;
     });
@@ -697,6 +710,46 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   ) {
     return canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, target, {
       maximumRangeMetres: this.state.visibilityRadiusMetres,
+    });
+  }
+
+  #advanceDarkness() {
+    this.state.darknessElapsedTicks += 1;
+    const { index, stage } = darknessStageAtTick(
+      this.state.darknessElapsedTicks,
+    );
+    if (index !== this.state.darknessStage) {
+      this.state.darknessStage = index;
+      this.state.darknessWarningEvent += 1;
+    }
+    this.state.darknessHalfWidth = stage.halfWidth;
+    this.state.darknessHalfDepth = stage.halfDepth;
+    this.state.darknessDamagePerSecond = stage.damagePerSecond;
+    this.state.visibilityRadiusMetres = stage.visibilityRadiusMetres;
+    this.state.darknessNextStageTick =
+      DARKNESS_STAGES[index + 1]?.startsAtTick ?? 0;
+    if (
+      stage.damagePerSecond <= 0 ||
+      this.state.darknessElapsedTicks % SIMULATION_HZ !== 0
+    )
+      return;
+    this.state.players.forEach((player) => {
+      if (
+        player.alive &&
+        isOutsideDarknessBoundary(
+          player.x,
+          player.z,
+          stage.halfWidth,
+          stage.halfDepth,
+        )
+      ) {
+        this.#queueDamage(
+          'darkness',
+          player.id,
+          'darkness',
+          stage.damagePerSecond,
+        );
+      }
     });
   }
 

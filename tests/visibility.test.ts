@@ -5,7 +5,11 @@ import {
   BASE_VISIBILITY_RANGE_METRES,
   canViewerSeeTarget,
 } from '../shared/visibility';
-import { approximateActivityDirection } from '../shared/darkness';
+import {
+  approximateActivityDirection,
+  darknessStageAtTick,
+  isOutsideDarknessBoundary,
+} from '../shared/darkness';
 
 const subject = (x: number, z: number, alive = true) => ({ x, z, alive });
 
@@ -54,5 +58,14 @@ describe('opponent visibility', () => {
   it('reduces hidden activity to a coarse bearing without a coordinate', () => {
     expect(approximateActivityDirection(0, 0, 20, 1)).toBe('E');
     expect(approximateActivityDirection(0, 0, -20, -20)).toBe('NW');
+  });
+
+  it('contracts in shared stages and identifies unsafe positions', () => {
+    expect(darknessStageAtTick(3_599).index).toBe(0);
+    expect(darknessStageAtTick(3_600).index).toBe(1);
+    expect(darknessStageAtTick(18_000).stage.damagePerSecond).toBe(50);
+    expect(isOutsideDarknessBoundary(24, 0, 23, 17)).toBe(true);
+    expect(isOutsideDarknessBoundary(0, 0, 2.5, 2)).toBe(false);
+    expect(isOutsideDarknessBoundary(0, 0, 0, 0)).toBe(true);
   });
 });

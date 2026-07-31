@@ -99,6 +99,13 @@ export interface RoomView {
   readonly creaturePopulation: number;
   readonly creatureUpdateMilliseconds: number;
   readonly visibilityRadiusMetres: number;
+  readonly darknessStage: number;
+  readonly darknessElapsedTicks: number;
+  readonly darknessNextStageTick: number;
+  readonly darknessHalfWidth: number;
+  readonly darknessHalfDepth: number;
+  readonly darknessDamagePerSecond: number;
+  readonly darknessWarningEvent: number;
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
   readonly creatureProjectiles: readonly CreatureProjectileView[];

@@ -89,6 +89,19 @@ body {
   transform: translateX(-50%);
 }
 
+.darkness-warning {
+  position: absolute;
+  z-index: 3;
+  right: 1rem;
+  bottom: 1rem;
+  color: #ffb095;
+  font:
+    700 0.72rem system-ui,
+    sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .reload-track span {
   display: block;
   height: 100%;

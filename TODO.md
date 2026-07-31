@@ -917,7 +917,7 @@ Acceptance:
 
 ## T4.8 — Add staged darkness contraction
 
-- [ ] Compress the playable area until one player remains.
+- [x] Compress the playable area until one player remains.
 
 Prerequisites: T4.7 and T3.4.
 

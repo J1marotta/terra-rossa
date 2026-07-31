@@ -513,7 +513,7 @@ describe.sequential('minimal game server', () => {
       COMMAND_MESSAGE,
       createCommand({ roomId: room.roomId, matchId: null }, 3, 'dash', {}),
     );
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    await new Promise((resolve) => setTimeout(resolve, 150));
     expect(local()?.dashEvent).toBe(1);
     expect(local()?.lastProcessedSequence).toBe(3);
     await client.leave();

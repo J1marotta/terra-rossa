@@ -139,6 +139,13 @@ export const GameRoomState = schema(
     creaturePopulation: 'uint16',
     creatureUpdateMilliseconds: 'float32',
     visibilityRadiusMetres: 'float32',
+    darknessStage: 'uint8',
+    darknessElapsedTicks: 'uint32',
+    darknessNextStageTick: 'uint32',
+    darknessHalfWidth: 'float32',
+    darknessHalfDepth: 'float32',
+    darknessDamagePerSecond: 'float32',
+    darknessWarningEvent: 'uint32',
     players: { map: PlayerState },
     creatures: { map: CreatureState },
     creatureProjectiles: { map: CreatureProjectileState },
@@ -166,6 +173,13 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.creaturePopulation = 0;
   state.creatureUpdateMilliseconds = 0;
   state.visibilityRadiusMetres = INITIAL_VISIBILITY_RADIUS_METRES;
+  state.darknessStage = 0;
+  state.darknessElapsedTicks = 0;
+  state.darknessNextStageTick = 3_600;
+  state.darknessHalfWidth = 30;
+  state.darknessHalfDepth = 22;
+  state.darknessDamagePerSecond = 0;
+  state.darknessWarningEvent = 0;
   state.players = new MapSchema<PlayerStateInstance>();
   state.creatures = new MapSchema<CreatureStateInstance>();
   state.creatureProjectiles = new MapSchema<CreatureProjectileStateInstance>();

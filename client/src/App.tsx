@@ -49,6 +49,8 @@ export function App() {
           )}
           pickups={room.pickups.filter((pickup) => pickup.positionVisible)}
           visibilityRadiusMetres={room.visibilityRadiusMetres}
+          darknessStage={room.darknessStage}
+          darknessDamagePerSecond={room.darknessDamagePerSecond}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}
