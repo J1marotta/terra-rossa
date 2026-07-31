@@ -2130,6 +2130,35 @@
             </div>
           </article>
 
+          <article
+            class="decision reveal"
+            data-category="compatibility evidence"
+          >
+            <div class="decision-meta">
+              <span class="tag">T5.6 / Chrome-only guard</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>Unsupported should be explicit, not accidentally broken</h3>
+            <p>
+              The MVP now detects desktop Google Chrome and gives other browser
+              identities a clear instruction instead of letting them fail
+              somewhere inside WebGL, audio, or networking. Unit cases cover
+              Chrome, Firefox, Safari, Edge, and Opera-style identities.
+            </p>
+            <p>
+              Hosted Chrome has passed the 1280×720 presentation, resize,
+              network, settings, results, and repeated latency-injected match
+              flows on the development Windows environment. Viewport emulation
+              is not a substitute for different hardware.
+            </p>
+            <div class="evidence">
+              <strong>Still honest:</strong> the Apple Silicon MacBook Air and a
+              separately identified integrated-graphics Windows laptop remain
+              unverified physical rows. This task stays open while the rest of
+              the release work continues.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

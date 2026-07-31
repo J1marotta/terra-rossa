@@ -4,8 +4,10 @@ import { clientConfig } from './config';
 import { GameCanvas } from './game/GameCanvas';
 import { GameConnection } from './multiplayer/GameConnection';
 import type { ConnectionSnapshot } from './multiplayer/types';
+import { evaluateBrowserSupport } from './browserSupport';
 
 export function App() {
+  const browserSupport = evaluateBrowserSupport(navigator.userAgent);
   const connection = useMemo(
     () => new GameConnection(clientConfig.colyseusUrl),
     [],
@@ -49,6 +51,18 @@ export function App() {
     localPlayer?.id === room.hostPlayerId &&
     room.players.length >= 2 &&
     room.players.every((player) => player.ready);
+
+  if (!browserSupport.supported) {
+    return (
+      <main className="app-shell">
+        <section className="lobby-panel" aria-labelledby="unsupported-title">
+          <p className="eyebrow">Browser not supported</p>
+          <h1 id="unsupported-title">Bring Chrome.</h1>
+          <p role="alert">{browserSupport.message}</p>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="app-shell">

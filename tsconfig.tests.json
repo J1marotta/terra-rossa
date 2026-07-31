@@ -8,6 +8,7 @@
   "include": [
     "tests/**/*.ts",
     "client/src/config.ts",
+    "client/src/browserSupport.ts",
     "client/src/audio/**/*.ts",
     "client/src/game/projection.ts",
     "client/src/game/PlayerPresentation.ts",
