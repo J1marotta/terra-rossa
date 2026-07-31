@@ -329,3 +329,12 @@ The candidate is not yet a validated game release. `PLAYTEST.md` records the
 remaining Apple Silicon/integrated-Windows hardware checks and the required
 three human four-player matches. Those observations, not feature count, decide
 whether development continues.
+
+## Solo system testing
+
+Choose **Start solo test** on the opening screen, ready up, and start as host.
+This explicit room mode permits one dog through the normal authoritative
+countdown and runs the same creatures, weapons, pickups, reload, melee,
+darkness, death, results, and rematch systems. Normal private rooms still
+require two to four ready dogs. Solo testing is a developer convenience, not a
+balanced game mode and not evidence that PvP works or is fun.

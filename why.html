@@ -2266,6 +2266,37 @@
             </div>
           </article>
 
+          <article
+            class="decision reveal"
+            data-category="testing gameplay architecture"
+          >
+            <div class="decision-meta">
+              <span class="phase">T5.9 · Solo system testing</span>
+              <span class="status shipped">Implemented</span>
+            </div>
+            <h3>
+              One developer can test the machinery without inventing a bot
+            </h3>
+            <p>
+              The opening screen now creates an explicitly marked solo-testing
+              room. The server permits its one ready host to start, assigns an
+              authored spawn, and runs the same authoritative PvE, loot, reload,
+              darkness, death, results, and rematch pipeline.
+            </p>
+            <p>
+              This is not a silent relaxation of multiplayer rules. Ordinary
+              rooms still require two dogs, and the lobby says plainly that a
+              solo run cannot validate multiplayer balance. A server-owned mode
+              flag also prevents the browser from locally pretending the start
+              was legal.
+            </p>
+            <div class="evidence">
+              <strong>Why:</strong> a focused test seam is cheaper and more
+              trustworthy than fake opponents, and it keeps the production
+              authority boundary intact.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

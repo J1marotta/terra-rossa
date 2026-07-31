@@ -7,4 +7,5 @@ export const PROTOCOL_ERROR_MESSAGE = 'protocol_error';
 export interface JoinOptions {
   protocolVersion: string;
   displayName?: string;
+  soloTesting?: boolean;
 }

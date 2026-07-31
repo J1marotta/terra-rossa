@@ -128,6 +128,7 @@ export const GameRoomState = schema(
     protocolVersion: 'string',
     phase: 'string',
     roomCode: 'string',
+    soloTesting: 'boolean',
     hostPlayerId: 'string',
     startApprovedEvent: 'uint32',
     matchSeed: 'uint32',
@@ -172,6 +173,7 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.protocolVersion = PROTOCOL_VERSION;
   state.phase = 'lobby';
   state.roomCode = '';
+  state.soloTesting = false;
   state.hostPlayerId = '';
   state.startApprovedEvent = 0;
   state.matchSeed = 0;

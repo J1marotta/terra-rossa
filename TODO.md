@@ -1178,6 +1178,25 @@ Acceptance:
 - No expansion feature is added to rescue an unproven core loop.
 - The developer can explain every major client/server boundary.
 
+## T5.9 — Add explicit solo system testing
+
+- [x] Let one developer start and replay the authoritative PvE slice without a
+      second browser while leaving normal multiplayer start rules unchanged.
+
+Result: **Start solo test** creates a server-marked room that accepts one ready
+host, allocates one authored spawn, and runs the existing countdown, combat,
+creatures, pickups, darkness, death, results, and rematch flow. The lobby labels
+the mode as testing-only; it supplies no multiplayer or fun evidence. A hosted
+solo smoke test verifies that the production room reaches play with creatures
+and pickups populated.
+
+Acceptance:
+
+- Ordinary private rooms still require two to four ready players.
+- Only an explicitly created solo-testing room may start with one player.
+- The server, not a local client shortcut, owns the exception.
+- Solo death reaches results and rematch remains available.
+
 ## MVP release gate
 
 - [ ] Verify every acceptance criterion in `spec.md`.

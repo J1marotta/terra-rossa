@@ -39,4 +39,15 @@ describe('last-player-standing result', () => {
       ]).kind,
     ).toBe('ongoing');
   });
+
+  it('keeps a living solo tester active and ends when that dog dies', () => {
+    expect(resolveLastStanding([{ id: 'solo', alive: true }])).toEqual({
+      kind: 'ongoing',
+      winnerPlayerId: '',
+    });
+    expect(resolveLastStanding([{ id: 'solo', alive: false }])).toEqual({
+      kind: 'draw',
+      winnerPlayerId: '',
+    });
+  });
 });

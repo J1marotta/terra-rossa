@@ -127,6 +127,7 @@ export function adaptRoomState(
     protocolVersion: state.protocolVersion,
     phase: state.phase,
     roomCode: state.roomCode,
+    soloTesting: state.soloTesting,
     hostPlayerId: state.hostPlayerId,
     startApprovedEvent: state.startApprovedEvent,
     matchSeed: state.matchSeed,

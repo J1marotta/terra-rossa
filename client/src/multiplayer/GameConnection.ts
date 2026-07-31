@@ -93,11 +93,11 @@ export class GameConnection {
     );
   }
 
-  async createPrivate(displayName: string) {
+  async createPrivate(displayName: string, soloTesting = false) {
     return this.#connectUsing(() =>
       this.#sdk.create(
         GAME_ROOM_NAME,
-        { protocolVersion: PROTOCOL_VERSION, displayName },
+        { protocolVersion: PROTOCOL_VERSION, displayName, soloTesting },
         GameRoomState,
       ),
     );

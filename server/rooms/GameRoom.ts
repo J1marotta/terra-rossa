@@ -88,6 +88,7 @@ import {
 interface RoomOptions {
   logger?: GameLogger;
   seed?: number;
+  soloTesting?: boolean;
 }
 
 const COUNTDOWN_TICKS = millisecondsToTicks(3_000);
@@ -114,6 +115,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
     this.setState(createGameRoomState());
+    this.state.soloTesting = options.soloTesting === true;
     this.#creatures = new CreatureRegistry(this.state.creatures);
     this.#swarmers = new SwarmerSystem(this.#creatures);
     this.#projectiles = new ProjectileRegistry(this.state.creatureProjectiles);
@@ -403,7 +405,8 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     } else if (command.type === 'start') {
       if (
         player.id === this.state.hostPlayerId &&
-        this.state.players.size >= 2 &&
+        (this.state.players.size >= 2 ||
+          (this.state.soloTesting && this.state.players.size === 1)) &&
         [...this.state.players.values()].every((candidate) => candidate.ready)
       ) {
         this.state.phase = 'countdown';

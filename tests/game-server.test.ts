@@ -234,6 +234,48 @@ describe.sequential('minimal game server', () => {
     await Promise.all([host.leave(), guest.leave()]);
   });
 
+  it('starts an explicitly requested solo testing room with one ready dog', async () => {
+    const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME, {
+      soloTesting: true,
+    });
+    const host = await testServer.connectTo(room, {
+      protocolVersion: PROTOCOL_VERSION,
+      displayName: 'Solo tester',
+    });
+    expect(room.state.soloTesting).toBe(true);
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 1, 'ready', {
+        ready: true,
+      }),
+    );
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand({ roomId: room.roomId, matchId: null }, 2, 'start', {}),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 75));
+    expect(room.state.phase).toBe('countdown');
+    expect(room.state.players.size).toBe(1);
+    expect([...room.state.players.values()][0]?.spawnRegionId).toBeTruthy();
+    room.state.phase = 'round_over';
+    host.send(
+      COMMAND_MESSAGE,
+      createCommand(
+        { roomId: room.roomId, matchId: room.state.matchId },
+        3,
+        'rematch',
+        {},
+      ),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(room.state.phase).toBe('lobby');
+    room.state.phase = 'playing';
+    await host.leave();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(room.state.phase).toBe('round_over');
+    expect(room.state.resultKind).toBe('draw');
+  });
+
   it('awards one shotgun and resolves its pellet burst', async () => {
     const room = await testServer.createRoom<GameRoom>(GAME_ROOM_NAME);
     const clients = await Promise.all(

@@ -49,7 +49,8 @@ export function App() {
     room !== null &&
     room !== undefined &&
     localPlayer?.id === room.hostPlayerId &&
-    room.players.length >= 2 &&
+    (room.players.length >= 2 ||
+      (room.soloTesting && room.players.length === 1)) &&
     room.players.every((player) => player.ready);
 
   if (!browserSupport.supported) {
@@ -121,6 +122,13 @@ export function App() {
             >
               Create private room
             </button>
+            <button
+              disabled={snapshot.status === 'connecting'}
+              onClick={() => void connection.createPrivate(displayName, true)}
+              type="button"
+            >
+              Start solo test
+            </button>
             <label>
               Friend code
               <input
@@ -186,7 +194,11 @@ export function App() {
               Leave
             </button>
           </div>
-          <p>Two to four dogs. Everyone must be ready.</p>
+          <p>
+            {room.soloTesting
+              ? 'Solo testing: PvE systems are live, but multiplayer balance is not being tested.'
+              : 'Two to four dogs. Everyone must be ready.'}
+          </p>
         </section>
       )}
       {inResults && room !== null && room !== undefined && (

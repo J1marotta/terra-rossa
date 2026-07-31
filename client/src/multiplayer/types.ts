@@ -88,6 +88,7 @@ export interface RoomView {
   readonly protocolVersion: string;
   readonly phase: string;
   readonly roomCode: string;
+  readonly soloTesting: boolean;
   readonly hostPlayerId: string;
   readonly startApprovedEvent: number;
   readonly matchSeed: number;

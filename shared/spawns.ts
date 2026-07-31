@@ -32,8 +32,8 @@ export function spawnSeparationScore(spawns: readonly SpawnRegion[]) {
 }
 
 export function allocateSpawnRegions(playerCount: number, seed: number) {
-  if (!Number.isInteger(playerCount) || playerCount < 2 || playerCount > 4) {
-    throw new RangeError('Spawn allocation requires two to four players.');
+  if (!Number.isInteger(playerCount) || playerCount < 1 || playerCount > 4) {
+    throw new RangeError('Spawn allocation requires one to four players.');
   }
   const candidates = combinations(TERRA_ROSSA_MAP.spawns, playerCount);
   const scored = candidates.map((spawns) => ({
@@ -41,7 +41,9 @@ export function allocateSpawnRegions(playerCount: number, seed: number) {
     score: spawnSeparationScore(spawns),
   }));
   const bestScore = Math.max(...scored.map(({ score }) => score));
-  const best = scored.filter(({ score }) => Math.abs(score - bestScore) < 1e-9);
+  const best = scored.filter(
+    ({ score }) => score === bestScore || Math.abs(score - bestScore) < 1e-9,
+  );
   const random = new SeededRandom(seed);
   const selected = [...random.pick(best).spawns];
   for (let index = selected.length - 1; index > 0; index -= 1) {

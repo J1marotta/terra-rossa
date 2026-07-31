@@ -11,6 +11,10 @@ Server: Node.js, Colyseus 0.17, authoritative room simulation
 
 Players: Two to four; four-player free-for-all is the primary target
 
+Testing exception: an explicitly created one-player room may run the complete
+authoritative PvE loop so one developer can verify controls and systems. It is
+not a balanced product mode or multiplayer acceptance evidence.
+
 Genre: Continuous top-down PvPvE survival shooter
 
 ## 1. Purpose
