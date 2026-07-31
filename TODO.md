@@ -897,7 +897,7 @@ Acceptance:
 
 ## T4.7 — Add darkness visibility
 
-- [ ] Apply server-controlled darkness range to per-client visibility.
+- [x] Apply server-controlled darkness range to per-client visibility.
 
 Prerequisites: T3.5 and T4.4.
 

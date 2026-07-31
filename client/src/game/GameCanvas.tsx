@@ -15,6 +15,7 @@ interface GameCanvasProps {
   creatures: readonly CreatureView[];
   creatureProjectiles: readonly CreatureProjectileView[];
   pickups: readonly PickupView[];
+  visibilityRadiusMetres: number;
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
@@ -30,6 +31,7 @@ export function GameCanvas({
   creatures,
   creatureProjectiles,
   pickups,
+  visibilityRadiusMetres,
   sendMovement,
   sendDash,
   sendAim,
@@ -146,6 +148,24 @@ export function GameCanvas({
 
   return (
     <div aria-label={worldLabel} className="game-viewport" ref={containerRef}>
+      <div
+        aria-hidden="true"
+        className="darkness-vignette"
+        style={
+          {
+            '--visibility-radius': `${visibilityRadiusMetres}`,
+          } as React.CSSProperties
+        }
+      />
+      {localPlayer !== undefined &&
+        localPlayer.activityCueTicksRemaining > 0 && (
+          <div className="activity-cue" role="status">
+            {localPlayer.activityCueKind === 'gunfire'
+              ? 'Gunfire'
+              : 'Creatures'}{' '}
+            · {localPlayer.activityCueDirection}
+          </div>
+        )}
       {reloading && (
         <div
           aria-live="polite"

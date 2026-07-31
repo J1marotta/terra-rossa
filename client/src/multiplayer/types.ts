@@ -46,6 +46,10 @@ export interface PlayerView {
   readonly eliminatedById: string;
   readonly pickupEvent: number;
   readonly pickupKind: string;
+  readonly activityCueEvent: number;
+  readonly activityCueKind: string;
+  readonly activityCueDirection: string;
+  readonly activityCueTicksRemaining: number;
 }
 
 export interface CreatureView {
@@ -94,6 +98,7 @@ export interface RoomView {
   readonly resultEvent: number;
   readonly creaturePopulation: number;
   readonly creatureUpdateMilliseconds: number;
+  readonly visibilityRadiusMetres: number;
   readonly players: readonly PlayerView[];
   readonly creatures: readonly CreatureView[];
   readonly creatureProjectiles: readonly CreatureProjectileView[];

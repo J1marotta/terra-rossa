@@ -146,6 +146,10 @@ describe('game connection', () => {
       eliminatedById: '',
       pickupEvent: 0,
       pickupKind: '',
+      activityCueEvent: 0,
+      activityCueKind: '',
+      activityCueDirection: '',
+      activityCueTicksRemaining: 0,
     });
 
     connection.disconnect();

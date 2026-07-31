@@ -48,6 +48,7 @@ export function App() {
             (projectile) => projectile.positionVisible,
           )}
           pickups={room.pickups.filter((pickup) => pickup.positionVisible)}
+          visibilityRadiusMetres={room.visibilityRadiusMetres}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}

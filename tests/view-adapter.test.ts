@@ -105,6 +105,10 @@ describe('room view adapter', () => {
         eliminatedById: '',
         pickupEvent: 1,
         pickupKind: 'ammo',
+        activityCueEvent: 0,
+        activityCueKind: '',
+        activityCueDirection: '',
+        activityCueTicksRemaining: 0,
       },
     ]);
     expect(Object.isFrozen(view)).toBe(true);

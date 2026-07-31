@@ -61,6 +61,10 @@ export function adaptRoomState(
         eliminatedById: player.eliminatedById,
         pickupEvent: player.pickupEvent,
         pickupKind: player.pickupKind,
+        activityCueEvent: player.activityCueEvent ?? 0,
+        activityCueKind: player.activityCueKind ?? '',
+        activityCueDirection: player.activityCueDirection ?? '',
+        activityCueTicksRemaining: player.activityCueTicksRemaining ?? 0,
       }),
     );
   });
@@ -133,6 +137,7 @@ export function adaptRoomState(
     resultEvent: state.resultEvent,
     creaturePopulation: state.creaturePopulation,
     creatureUpdateMilliseconds: state.creatureUpdateMilliseconds,
+    visibilityRadiusMetres: state.visibilityRadiusMetres,
     players: Object.freeze(players),
     creatures: Object.freeze(creatures),
     creatureProjectiles: Object.freeze(creatureProjectiles),

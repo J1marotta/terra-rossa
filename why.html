@@ -1797,6 +1797,35 @@
               confidence.
             </p>
           </div>
+          <article class="decision reveal" data-category="networking design">
+            <div class="decision-meta">
+              <span class="tag">T4.7 / authoritative darkness</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>The vignette is atmosphere, not security</h3>
+            <p>
+              The room now owns one visibility radius and uses it when deciding
+              whether each viewer receives player, creature, projectile, and
+              pickup coordinates. Walls still occlude inside that radius. This
+              means deleting the CSS darkness cannot reveal data that never
+              crossed the network.
+            </p>
+            <p>
+              Fully silent hidden fights felt unreadable, so gunfire and
+              creature wind-ups produce a private eight-way compass bearing. The
+              cue contains a category and direction but no position. For a
+              junior developer, the lesson is to separate
+              <em>knowledge</em> (server-filtered state) from <em>mood</em> (the
+              client vignette).
+            </p>
+            <div class="evidence">
+              <strong>Evidence:</strong> 158 automated checks cover range,
+              authored wall occlusion, eliminated subjects, coarse bearings,
+              schema adaptation, and room behaviour; type checking, linting, and
+              the production client build pass.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Hero:</strong> Which dog silhouette reads best in the
@@ -1805,10 +1834,6 @@
             <div>
               <strong>Rendering:</strong> Which sprite, billboard, and geometry
               mix remains sustainable?
-            </div>
-            <div>
-              <strong>Visibility:</strong> How much approximate direction should
-              hidden gunfire disclose without leaking a coordinate?
             </div>
             <div>
               <strong>Darkness:</strong> When should it close, and what boundary

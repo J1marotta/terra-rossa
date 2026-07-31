@@ -59,6 +59,36 @@ body {
   background: #17141d;
 }
 
+.darkness-vignette {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 0 31%,
+    rgb(8 8 16 / 34%) 49%,
+    rgb(5 5 12 / 88%) 82%
+  );
+}
+
+.activity-cue {
+  position: absolute;
+  z-index: 3;
+  top: 1rem;
+  left: 50%;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid rgb(216 107 75 / 60%);
+  color: #f4ead8;
+  background: rgb(18 15 23 / 78%);
+  font:
+    700 0.78rem system-ui,
+    sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translateX(-50%);
+}
+
 .reload-track span {
   display: block;
   height: 100%;

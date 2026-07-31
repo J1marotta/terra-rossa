@@ -56,6 +56,10 @@ const view = (
   eliminatedById: '',
   pickupEvent: 0,
   pickupKind: '',
+  activityCueEvent: 0,
+  activityCueKind: '',
+  activityCueDirection: '',
+  activityCueTicksRemaining: 0,
 });
 
 describe('remote position presentation', () => {

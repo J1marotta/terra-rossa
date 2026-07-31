@@ -5,6 +5,7 @@ import {
   BASE_VISIBILITY_RANGE_METRES,
   canViewerSeeTarget,
 } from '../shared/visibility';
+import { approximateActivityDirection } from '../shared/darkness';
 
 const subject = (x: number, z: number, alive = true) => ({ x, z, alive });
 
@@ -48,5 +49,10 @@ describe('opponent visibility', () => {
         subject(-5, -10, false),
       ),
     ).toBe(false);
+  });
+
+  it('reduces hidden activity to a coarse bearing without a coordinate', () => {
+    expect(approximateActivityDirection(0, 0, 20, 1)).toBe('E');
+    expect(approximateActivityDirection(0, 0, -20, -20)).toBe('NW');
   });
 });

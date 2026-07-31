@@ -56,6 +56,10 @@ import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
 import { canViewerSeeTarget } from '../../shared/visibility';
 import {
+  ACTIVITY_CUE_LIFETIME_TICKS,
+  approximateActivityDirection,
+} from '../../shared/darkness';
+import {
   NORMAL_CREATURE_BUDGET,
   planCreaturePopulation,
 } from '../../shared/creaturePacing';
@@ -97,6 +101,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #swarmers!: SwarmerSystem;
   #projectiles!: ProjectileRegistry;
   #spitters!: SpitterSystem;
+  #creatureWarningEventById = new Map<string, number>();
 
   override onCreate(options: RoomOptions) {
     this.#logger = options.logger ?? consoleLogger;
@@ -133,6 +138,9 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           }
           advanceReload(player, getWeaponDefinition(player.weaponId));
           this.#advanceMelee(player);
+          if (player.activityCueTicksRemaining > 0) {
+            player.activityCueTicksRemaining -= 1;
+          }
         });
         const creatureUpdateStarted = performance.now();
         this.#swarmers.step(
@@ -145,6 +153,16 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           (creatureId, targetId, damage) =>
             this.#queueDamage(creatureId, targetId, 'creature', damage),
         );
+        this.state.creatures.forEach((creature) => {
+          const previous = this.#creatureWarningEventById.get(creature.id) ?? 0;
+          if (creature.attackWarningEvent > previous) {
+            this.#emitApproximateActivity(creature, 'creature');
+          }
+          this.#creatureWarningEventById.set(
+            creature.id,
+            creature.attackWarningEvent,
+          );
+        });
         this.state.creaturePopulation = this.#creatures
           .values()
           .filter((creature) => creature.alive).length;
@@ -214,6 +232,10 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     player.eliminatedById = '';
     player.pickupEvent = 0;
     player.pickupKind = '';
+    player.activityCueEvent = 0;
+    player.activityCueKind = '';
+    player.activityCueDirection = '';
+    player.activityCueTicksRemaining = 0;
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#clientByPlayerId.set(playerId, client);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
@@ -221,6 +243,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     client.view = new StateView();
     client.view.add(player, 1);
     client.view.add(player, 2);
+    client.view.add(player, 3);
     if (this.state.hostPlayerId === '') this.state.hostPlayerId = playerId;
     updatePrivateRoom(this.state.roomCode, {
       playerCount: this.state.players.size,
@@ -501,14 +524,14 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           view.add(target, 1);
           return;
         }
-        if (canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, target)) {
+        if (this.#canSee(viewer, target)) {
           view.add(target, 1);
         } else {
           view.remove(target, 1);
         }
       });
       this.state.creatures.forEach((creature) => {
-        if (canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, creature)) {
+        if (this.#canSee(viewer, creature)) {
           view.add(creature, 1);
         } else {
           view.remove(creature, 1);
@@ -516,7 +539,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       });
       this.state.creatureProjectiles.forEach((projectile) => {
         if (
-          canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, {
+          this.#canSee(viewer, {
             x: projectile.x,
             z: projectile.z,
             alive: true,
@@ -529,7 +552,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       });
       this.state.pickups.forEach((pickup) => {
         if (
-          canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, {
+          this.#canSee(viewer, {
             x: pickup.x,
             z: pickup.z,
             alive: true,
@@ -549,7 +572,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
         (candidate) =>
           Math.hypot(candidate.x - player.x, candidate.z - player.z) <=
             PICKUP_INTERACTION_RANGE_METRES &&
-          canViewerSeeTarget(TERRA_ROSSA_MAP, player, {
+          this.#canSee(player, {
             x: candidate.x,
             z: candidate.z,
             alive: true,
@@ -619,6 +642,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       return;
     }
     player.magazineAmmo -= 1;
+    this.#emitApproximateActivity(player, 'gunfire');
     const targets = [
       ...this.state.players.values(),
       ...this.state.creatures.values(),
@@ -664,6 +688,38 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
           }
         }
       }
+    });
+  }
+
+  #canSee(
+    viewer: { x: number; z: number; alive: boolean },
+    target: { x: number; z: number; alive: boolean },
+  ) {
+    return canViewerSeeTarget(TERRA_ROSSA_MAP, viewer, target, {
+      maximumRangeMetres: this.state.visibilityRadiusMetres,
+    });
+  }
+
+  #emitApproximateActivity(
+    source: { id: string; x: number; z: number; alive: boolean },
+    kind: 'gunfire' | 'creature',
+  ) {
+    this.state.players.forEach((viewer) => {
+      if (
+        viewer.id === source.id ||
+        !viewer.alive ||
+        this.#canSee(viewer, source)
+      )
+        return;
+      viewer.activityCueKind = kind;
+      viewer.activityCueDirection = approximateActivityDirection(
+        viewer.x,
+        viewer.z,
+        source.x,
+        source.z,
+      );
+      viewer.activityCueTicksRemaining = ACTIVITY_CUE_LIFETIME_TICKS;
+      viewer.activityCueEvent += 1;
     });
   }
 

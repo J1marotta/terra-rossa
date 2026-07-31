@@ -1,6 +1,7 @@
 import { MapSchema, schema, type SchemaType } from '@colyseus/schema';
 
 import { PROTOCOL_VERSION } from './protocol';
+import { INITIAL_VISIBILITY_RADIUS_METRES } from './darkness';
 
 export const PlayerState = schema(
   {
@@ -52,6 +53,10 @@ export const PlayerState = schema(
     eliminatedById: 'string',
     pickupEvent: 'uint32',
     pickupKind: 'string',
+    activityCueEvent: { type: 'uint32', view: 3 },
+    activityCueKind: { type: 'string', view: 3 },
+    activityCueDirection: { type: 'string', view: 3 },
+    activityCueTicksRemaining: { type: 'uint16', view: 3 },
   },
   'PlayerState',
 );
@@ -133,6 +138,7 @@ export const GameRoomState = schema(
     resultEvent: 'uint32',
     creaturePopulation: 'uint16',
     creatureUpdateMilliseconds: 'float32',
+    visibilityRadiusMetres: 'float32',
     players: { map: PlayerState },
     creatures: { map: CreatureState },
     creatureProjectiles: { map: CreatureProjectileState },
@@ -159,6 +165,7 @@ export function createGameRoomState(): GameRoomStateInstance {
   state.resultEvent = 0;
   state.creaturePopulation = 0;
   state.creatureUpdateMilliseconds = 0;
+  state.visibilityRadiusMetres = INITIAL_VISIBILITY_RADIUS_METRES;
   state.players = new MapSchema<PlayerStateInstance>();
   state.creatures = new MapSchema<CreatureStateInstance>();
   state.creatureProjectiles = new MapSchema<CreatureProjectileStateInstance>();
