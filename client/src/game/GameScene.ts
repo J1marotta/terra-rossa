@@ -68,15 +68,20 @@ export class GameScene {
   readonly #lastShotEvent = new Map<string, number>();
   readonly #lastDryFireEvent = new Map<string, number>();
   readonly #lastReloadEvent = new Map<string, number>();
+  readonly #lastReloadCompletionTick = new Map<string, number>();
   readonly #lastHealth = new Map<string, number>();
+  readonly #lastPickupEvent = new Map<string, number>();
+  readonly #lastCreatureWarningEvent = new Map<string, number>();
   readonly #hitPulseUntil = new Map<string, number>();
   readonly #effects: TransientEffect[] = [];
   readonly #reducedMotion = window.matchMedia(
     '(prefers-reduced-motion: reduce)',
   );
-  readonly #reducedEffects =
+  #reducedEffects =
     this.#reducedMotion.matches ||
     new URLSearchParams(window.location.search).get('effects') === 'low';
+  #screenShake = true;
+  #renderScale = RENDER_SCALE;
   readonly #resizeObserver: ResizeObserver;
   #animationFrame: number | undefined;
   #startTime = performance.now();
@@ -108,6 +113,18 @@ export class GameScene {
     this.#resizeObserver.observe(container);
     this.resize();
     this.#animationFrame = requestAnimationFrame(this.#render);
+  }
+
+  setPreferences(preferences: {
+    reducedEffects: boolean;
+    screenShake: boolean;
+    resolutionScale: number;
+  }) {
+    this.#reducedEffects =
+      this.#reducedMotion.matches || preferences.reducedEffects;
+    this.#screenShake = preferences.screenShake;
+    this.#renderScale = Math.max(0.5, Math.min(1, preferences.resolutionScale));
+    this.resize();
   }
 
   #buildWorld() {
@@ -168,7 +185,9 @@ export class GameScene {
         this.#lastShotEvent.delete(id);
         this.#lastDryFireEvent.delete(id);
         this.#lastReloadEvent.delete(id);
+        this.#lastReloadCompletionTick.delete(id);
         this.#lastHealth.delete(id);
+        this.#lastPickupEvent.delete(id);
         this.#hitPulseUntil.delete(id);
       }
     });
@@ -210,16 +229,38 @@ export class GameScene {
         this.#cue(`reload-${player.reloadOutcome}`, player.id);
       }
       this.#lastReloadEvent.set(player.id, player.reloadEvent);
+      const previousReloadCompletion =
+        this.#lastReloadCompletionTick.get(player.id) ?? 0;
+      if (
+        player.isLocal &&
+        previousReloadCompletion === 0 &&
+        player.reloadCompletionTick > 0
+      ) {
+        this.#cue('reload-start', player.id);
+      }
+      this.#lastReloadCompletionTick.set(
+        player.id,
+        player.reloadCompletionTick,
+      );
       const previousHealth = this.#lastHealth.get(player.id);
       if (previousHealth !== undefined && player.health < previousHealth) {
         this.#hitPulseUntil.set(player.id, receivedAt + 160);
         this.#cue(player.alive ? 'victim-hit' : 'victim-death', player.id);
-        if (player.isLocal) {
+        if (player.isLocal && this.#screenShake) {
           this.#cameraShakeUntil = receivedAt + 140;
           this.#hitStopUntil = receivedAt + 28;
         }
       }
       this.#lastHealth.set(player.id, player.health);
+      const previousPickup = this.#lastPickupEvent.get(player.id);
+      if (
+        player.isLocal &&
+        previousPickup !== undefined &&
+        player.pickupEvent > previousPickup
+      ) {
+        this.#cue('pickup', player.id);
+      }
+      this.#lastPickupEvent.set(player.id, player.pickupEvent);
     });
     const localPlayer = players.find((player) => player.isLocal);
     if (localPlayer === undefined) {
@@ -258,6 +299,16 @@ export class GameScene {
       },
       (group) => this.#removeDog(group),
     );
+    creatures.forEach((creature) => {
+      const previous = this.#lastCreatureWarningEvent.get(creature.id);
+      if (previous !== undefined && creature.attackWarningEvent > previous) {
+        this.#cue('creature-warning', creature.id);
+      }
+      this.#lastCreatureWarningEvent.set(
+        creature.id,
+        creature.attackWarningEvent,
+      );
+    });
   }
 
   setCreatureProjectiles(
@@ -391,7 +442,7 @@ export class GameScene {
     );
     impact.position.copy(end);
     this.#addEffect(impact, now + 100);
-    if (player.isLocal)
+    if (player.isLocal && this.#screenShake)
       this.#cameraShakeUntil = Math.max(this.#cameraShakeUntil, now + 65);
   }
 
@@ -515,8 +566,8 @@ export class GameScene {
     Object.assign(this.#camera, bounds);
     this.#camera.updateProjectionMatrix();
     this.#renderer.setSize(
-      Math.max(1, Math.floor(width * RENDER_SCALE)),
-      Math.max(1, Math.floor(height * RENDER_SCALE)),
+      Math.max(1, Math.floor(width * this.#renderScale)),
+      Math.max(1, Math.floor(height * this.#renderScale)),
       false,
     );
   }
@@ -601,7 +652,11 @@ export class GameScene {
       }
       entry.object.rotation.y = time * 0.0015;
     });
-    if (time < this.#cameraShakeUntil && !this.#reducedEffects) {
+    if (
+      this.#screenShake &&
+      time < this.#cameraShakeUntil &&
+      !this.#reducedEffects
+    ) {
       const remaining = (this.#cameraShakeUntil - time) / 140;
       this.#camera.position.x += Math.sin(time * 0.18) * 0.16 * remaining;
       this.#camera.position.z += Math.cos(time * 0.21) * 0.16 * remaining;

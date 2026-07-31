@@ -1992,6 +1992,64 @@
             </div>
           </article>
 
+          <article class="decision reveal" data-category="audio accessibility">
+            <div class="decision-meta">
+              <span class="tag">T5.2 / bounded audio</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>Communicate with sound without inheriting an asset problem</h3>
+            <p>
+              A gesture-unlocked Web Audio engine synthesizes short cues for
+              shots, dry fire, melee, impact, reload states, damage, death,
+              pickups, creatures, darkness, countdown, and victory. Twelve
+              concurrent voices are the hard limit, and high-priority danger may
+              replace a low-priority flavor sound.
+            </p>
+            <p>
+              Master volume, effects volume, and mute persist locally. No
+              samples need licensing, downloading, pooling, or decoding, and
+              every cue mirrors a visual event. The simulation never imports or
+              calls the audio layer.
+            </p>
+            <div class="evidence">
+              <strong>Verification:</strong> activation is tied to real
+              keyboard/pointer input, unknown/pre-activation cues are safe, the
+              voice cap is unit-tested, and cleanup closes every oscillator and
+              context owned by the game view.
+            </div>
+          </article>
+
+          <article
+            class="decision reveal"
+            data-category="accessibility visuals"
+          >
+            <div class="decision-meta">
+              <span class="tag">T5.3 / minimal interface</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>Show decisions, not a dashboard</h3>
+            <p>
+              The field strip contains health and magazine/reserve ammunition.
+              Reload timing stays contextual; hidden activity and darkness
+              safety use compass directions; a quiet schema stream produces a
+              connection warning. Nothing exposes enemy positions, inventory,
+              XP, feats, armour, relics, or a kill feed.
+            </p>
+            <p>
+              The semantic Settings dialog persists audio, reduced-effects,
+              camera-shake, and render-resolution choices. A 1280×720 browser
+              inspection confirmed all controls have labels and keyboard roles,
+              the balanced default is selected, and the field strip remains
+              confined to the lower edge.
+            </p>
+            <div class="evidence">
+              <strong>Design constraint:</strong> this is intentionally more
+              information than a literal compass-only HUD because the approved
+              MVP acceptance criteria require informed health, ammo, reload,
+              darkness, and connection decisions—but no broader game systems.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

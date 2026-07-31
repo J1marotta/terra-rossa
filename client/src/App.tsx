@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { clientConfig } from './config';
 import { GameCanvas } from './game/GameCanvas';
@@ -15,14 +15,28 @@ export function App() {
   );
   const [displayName, setDisplayName] = useState('Scout');
   const [roomCode, setRoomCode] = useState('');
+  const lastPatchAt = useRef(performance.now());
+  const [connectionWarning, setConnectionWarning] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = connection.subscribe(setSnapshot);
+    const unsubscribe = connection.subscribe((next) => {
+      setSnapshot(next);
+      if (next.status === 'connected') lastPatchAt.current = performance.now();
+    });
     return () => {
       unsubscribe();
       connection.disconnect();
     };
   }, [connection]);
+
+  useEffect(() => {
+    const timer = window.setInterval(
+      () =>
+        setConnectionWarning(performance.now() - lastPatchAt.current > 1_500),
+      500,
+    );
+    return () => window.clearInterval(timer);
+  }, []);
 
   const localPlayer = snapshot.room?.players.find((player) => player.isLocal);
   const room = snapshot.room;
@@ -51,6 +65,12 @@ export function App() {
           visibilityRadiusMetres={room.visibilityRadiusMetres}
           darknessStage={room.darknessStage}
           darknessDamagePerSecond={room.darknessDamagePerSecond}
+          darknessWarningEvent={room.darknessWarningEvent}
+          countdownTicksRemaining={room.countdownTicksRemaining}
+          resultEvent={room.resultEvent}
+          darknessHalfWidth={room.darknessHalfWidth}
+          darknessHalfDepth={room.darknessHalfDepth}
+          connectionWarning={connectionWarning}
           sendMovement={connection.sendMovement}
           sendDash={connection.sendDash}
           sendAim={connection.sendAim}

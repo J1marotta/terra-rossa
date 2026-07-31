@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type {
   CreatureProjectileView,
@@ -9,6 +9,11 @@ import type {
 import { MovementInput } from '../input/MovementInput';
 import { ReloadInput } from '../input/ReloadInput';
 import { GameScene } from './GameScene';
+import {
+  GameAudio,
+  readAudioSettings,
+  type AudioSettings,
+} from '../audio/GameAudio';
 
 interface GameCanvasProps {
   players: readonly PlayerView[];
@@ -18,6 +23,12 @@ interface GameCanvasProps {
   visibilityRadiusMetres: number;
   darknessStage: number;
   darknessDamagePerSecond: number;
+  darknessWarningEvent: number;
+  countdownTicksRemaining: number;
+  resultEvent: number;
+  darknessHalfWidth: number;
+  darknessHalfDepth: number;
+  connectionWarning: boolean;
   sendMovement: (x: number, z: number) => number | null;
   sendDash: () => number | null;
   sendAim: (angleRadians: number) => number | null;
@@ -36,6 +47,12 @@ export function GameCanvas({
   visibilityRadiusMetres,
   darknessStage,
   darknessDamagePerSecond,
+  darknessWarningEvent,
+  countdownTicksRemaining,
+  resultEvent,
+  darknessHalfWidth,
+  darknessHalfDepth,
+  connectionWarning,
   sendMovement,
   sendDash,
   sendAim,
@@ -47,17 +64,88 @@ export function GameCanvas({
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<GameScene | null>(null);
+  const audioRef = useRef<GameAudio | null>(null);
+  const previousDarknessWarning = useRef(darknessWarningEvent);
+  const previousCountdownSecond = useRef(-1);
+  const previousResultEvent = useRef(resultEvent);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [audioSettings, setAudioSettings] =
+    useState<AudioSettings>(readAudioSettings);
+  const [reducedEffects, setReducedEffects] = useState(
+    () => localStorage.getItem('terra-rossa.reduced-effects') === 'true',
+  );
+  const [screenShake, setScreenShake] = useState(
+    () => localStorage.getItem('terra-rossa.screen-shake') !== 'false',
+  );
+  const [resolutionScale, setResolutionScale] = useState(() =>
+    Number(localStorage.getItem('terra-rossa.resolution-scale') ?? 0.75),
+  );
 
   useEffect(() => {
     const container = containerRef.current;
     if (container === null) return;
     const gameScene = new GameScene(container);
+    const audio = new GameAudio();
     sceneRef.current = gameScene;
+    audioRef.current = audio;
+    const onFeedback = (event: Event) => {
+      const detail = (event as CustomEvent<{ kind?: string }>).detail;
+      if (detail?.kind !== undefined) audio.cue(detail.kind);
+    };
+    const unlock = () => void audio.unlock();
+    container.addEventListener('terra-rossa-feedback', onFeedback);
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
     return () => {
       sceneRef.current = null;
       gameScene.dispose();
+      container.removeEventListener('terra-rossa-feedback', onFeedback);
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+      audio.dispose();
+      audioRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    sceneRef.current?.setPreferences({
+      reducedEffects,
+      screenShake,
+      resolutionScale,
+    });
+    localStorage.setItem('terra-rossa.reduced-effects', String(reducedEffects));
+    localStorage.setItem('terra-rossa.screen-shake', String(screenShake));
+    localStorage.setItem(
+      'terra-rossa.resolution-scale',
+      String(resolutionScale),
+    );
+  }, [reducedEffects, resolutionScale, screenShake]);
+
+  useEffect(() => {
+    audioRef.current?.update(audioSettings);
+  }, [audioSettings]);
+
+  useEffect(() => {
+    if (darknessWarningEvent > previousDarknessWarning.current)
+      audioRef.current?.cue('darkness-warning');
+    previousDarknessWarning.current = darknessWarningEvent;
+  }, [darknessWarningEvent]);
+
+  useEffect(() => {
+    const second = Math.ceil(countdownTicksRemaining / 30);
+    if (
+      countdownTicksRemaining > 0 &&
+      second !== previousCountdownSecond.current
+    )
+      audioRef.current?.cue('countdown');
+    previousCountdownSecond.current = second;
+  }, [countdownTicksRemaining]);
+
+  useEffect(() => {
+    if (resultEvent > previousResultEvent.current)
+      audioRef.current?.cue('victory');
+    previousResultEvent.current = resultEvent;
+  }, [resultEvent]);
 
   useEffect(() => {
     const input = new MovementInput(
@@ -149,6 +237,20 @@ export function GameCanvas({
         localPlayer.reloadTicksElapsed / localPlayer.reloadCompletionTick,
       )
     : 0;
+  const outsideDarkness =
+    localPlayer !== undefined &&
+    (Math.abs(localPlayer.x) > darknessHalfWidth ||
+      Math.abs(localPlayer.z) > darknessHalfDepth);
+  const safetyDirection =
+    localPlayer === undefined
+      ? ''
+      : Math.abs(localPlayer.x) > Math.abs(localPlayer.z)
+        ? localPlayer.x > 0
+          ? 'W'
+          : 'E'
+        : localPlayer.z > 0
+          ? 'N'
+          : 'S';
 
   return (
     <div aria-label={worldLabel} className="game-viewport" ref={containerRef}>
@@ -175,6 +277,108 @@ export function GameCanvas({
             · {localPlayer.activityCueDirection}
           </div>
         )}
+      {localPlayer !== undefined && (
+        <div className="field-status" aria-label="Player status">
+          <span>
+            Health {Math.ceil(localPlayer.health)}/{localPlayer.maximumHealth}
+          </span>
+          <span>
+            Ammo {localPlayer.magazineAmmo}/{localPlayer.reserveAmmo}
+          </span>
+          {outsideDarkness && <strong>Safety {safetyDirection}</strong>}
+          {connectionWarning && <strong>Connection unstable</strong>}
+        </div>
+      )}
+      <button
+        aria-expanded={settingsOpen}
+        className="settings-toggle"
+        onClick={() => setSettingsOpen((open) => !open)}
+        type="button"
+      >
+        Settings
+      </button>
+      {settingsOpen && (
+        <section
+          aria-label="Game settings"
+          className="settings-panel"
+          role="dialog"
+        >
+          <label>
+            <input
+              checked={audioSettings.muted}
+              onChange={(event) =>
+                setAudioSettings({
+                  ...audioSettings,
+                  muted: event.target.checked,
+                })
+              }
+              type="checkbox"
+            />
+            Mute effects
+          </label>
+          <label>
+            Master volume
+            <input
+              max="1"
+              min="0"
+              onChange={(event) =>
+                setAudioSettings({
+                  ...audioSettings,
+                  masterVolume: Number(event.target.value),
+                })
+              }
+              step="0.1"
+              type="range"
+              value={audioSettings.masterVolume}
+            />
+          </label>
+          <label>
+            Effects volume
+            <input
+              max="1"
+              min="0"
+              onChange={(event) =>
+                setAudioSettings({
+                  ...audioSettings,
+                  effectsVolume: Number(event.target.value),
+                })
+              }
+              step="0.1"
+              type="range"
+              value={audioSettings.effectsVolume}
+            />
+          </label>
+          <label>
+            <input
+              checked={reducedEffects}
+              onChange={(event) => setReducedEffects(event.target.checked)}
+              type="checkbox"
+            />
+            Reduced effects
+          </label>
+          <label>
+            <input
+              checked={screenShake}
+              onChange={(event) => setScreenShake(event.target.checked)}
+              type="checkbox"
+            />
+            Camera shake
+          </label>
+          <label>
+            Resolution
+            <select
+              onChange={(event) =>
+                setResolutionScale(Number(event.target.value))
+              }
+              value={resolutionScale}
+            >
+              <option value="0.5">Low</option>
+              <option value="0.75">Balanced</option>
+              <option value="1">Full</option>
+            </select>
+          </label>
+        </section>
+      )}
       {reloading && (
         <div
           aria-live="polite"

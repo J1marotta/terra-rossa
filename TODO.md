@@ -1007,7 +1007,7 @@ Do not:
 
 ## T5.2 — Complete combat and environmental audio
 
-- [ ] Add a small, capped audio system that communicates gameplay state.
+- [x] Add a small, capped audio system that communicates gameplay state.
 
 Prerequisites: T2.6 and T4.8.
 
@@ -1027,7 +1027,7 @@ Acceptance:
 
 ## T5.3 — Complete minimal interface and settings
 
-- [ ] Present only the information required for informed play.
+- [x] Present only the information required for informed play.
 
 Prerequisites: T3.4, T4.5, T4.8, and T5.1.
 

@@ -199,6 +199,18 @@ The MVP uses an orthographic Three.js scene rendered internally at 75% of the CS
 
 Dogs are compact upright geometry with body, head, muzzle, pointed ears, firearm silhouette, and a bright geometric overhead marker. The server assigns one of four reusable visual slots, giving every connected player a distinct palette and a different three-to-six-sided marker; colour is never the only distinction. Pistols and shotguns differ in length and mass. Ammo is a horizontal hexagonal cylinder, healing is a square parcel, and the shotgun pickup is elongated and angled. Swarmer and spitter proportions, hostile projectile orbs, red earth, cool moonlight, purple-black cover, and the darkness vignette share one low-cost palette.
 
+## Capped synthesized audio
+
+The browser creates its audio context only after the first keyboard or pointer gesture. A twelve-voice priority cap favors damage, death, creature, darkness, and victory warnings over low-value repeated shots. Short Web Audio oscillator envelopes cover firing, dry fire, melee, impact, reload start/outcomes, damage, death, pickup, creature warning, darkness warning, countdown, and victory without shipping third-party samples. Audio remains presentation-only.
+
+Mute, master volume, and effects volume persist in local storage. Every audio event has an existing visual counterpart, so muted play remains viable.
+
+## Minimal HUD and settings
+
+During play, one compact field strip shows health and current magazine/reserve ammunition. Reload timing stays near the character focus. The existing compass-like activity cue gives approximate hidden gunfire or creature bearings, and an out-of-bounds dog receives only the cardinal direction back toward safety. A patch-age warning appears if synchronized state goes quiet for more than 1.5 seconds. No minimap, enemy marker, kill feed, XP, feat, armour, relic, or inventory panel exists.
+
+The keyboard-accessible Settings dialog controls mute, master/effects volume, reduced effects, camera shake, and low/balanced/full render resolution. Preferences persist locally. Lobby, countdown, results, rematch, and actionable connection errors retain semantic headings, labels, buttons, live regions, and readable 1280×720 layout.
+
 Colyseus schema view tag 1 carries revocable position fields; tag 2 carries the owning player's private spawn assignment. Every client always receives the public roster, but the room independently adds or removes tag 1 for each viewer-target pair on simulation ticks. Concealment therefore removes remote coordinates from synchronized schema state instead of asking Three.js to hide data it already knows. The client adapter marks records without finite coordinates as concealed and excludes them from the rendered player list, while retaining names for lobby and result screens.
 
 Gunfire does not grant an additional exact-position reveal in this slice. Existing combat events remain presentation hooks only for opponents already visible; later audio work may add an approved approximate sound cue without publishing a hidden shooter's coordinates.
