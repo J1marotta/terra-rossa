@@ -315,3 +315,17 @@ One seeded purple weapon pickup appears at a validated point inside the central 
 The shotgun fires no faster than every 780 ms and reloads over 1.9 seconds with its own good, perfect, and fumble windows. Ordinary ammo boxes grant only three shells and shotgun reserve caps at sixteen, so possession cannot sustain indefinite bursts. Weapon identity, ammunition, reload, hits, and knockback remain authoritative.
 
 A dog holds only one found weapon. Replacing a found shotgun mutates the claimed world pickup into the old shotgun with its exact remaining magazine and reserve; replacing the initial pistol consumes the shotgun pickup because starting weapons are not loot. This transfer rule preserves one world/held shotgun rather than cloning it. Player and pickup silhouettes visibly distinguish shotgun ownership without adding inventory HUD.
+
+## Release-candidate evidence
+
+The implemented MVP is deployed at `https://terra-rossa.pages.dev` with its
+authoritative server at `https://terra-rossa-server.fly.dev`. Automated tests,
+production builds, exact client/server commit correlation, real WSS joins, and
+complete four-client latency runs pass. The audiovisual presentation is made
+from repository-authored Three.js geometry, CSS, and synthesized Web Audio;
+there are no shipped third-party art or audio assets.
+
+The candidate is not yet a validated game release. `PLAYTEST.md` records the
+remaining Apple Silicon/integrated-Windows hardware checks and the required
+three human four-player matches. Those observations, not feature count, decide
+whether development continues.

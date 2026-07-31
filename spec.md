@@ -1,6 +1,7 @@
 # Terra Rossa — Continuous PvPvE MVP Specification
 
-Status: Draft; active implementation target
+Status: Implemented release candidate; physical hardware and human fun evidence
+remain open
 
 Target: Current desktop Google Chrome
 
@@ -307,12 +308,12 @@ Starting a reload creates an authoritative reload timeline and a client-side tim
 
 Initial example for a two-second base reload:
 
-| Result | Completion time |
-|---|---:|
-| Perfect | 0.25 seconds |
-| Good | 0.8 seconds |
-| No attempt | 2.0 seconds |
-| Failed | 2.7 seconds |
+| Result     | Completion time |
+| ---------- | --------------: |
+| Perfect    |    0.25 seconds |
+| Good       |     0.8 seconds |
+| No attempt |     2.0 seconds |
+| Failed     |     2.7 seconds |
 
 Exact timing remains data-driven and testable.
 
@@ -848,18 +849,24 @@ If those gates pass, evaluate expansion in this order:
 
 Each step requires its own playtest and performance evidence.
 
-## 23. Open decisions
+## 23. Remaining decisions and implemented choices
 
-- Final dog appearance and sprite workflow.
-- Exact map fiction and visual landmarks.
-- Starting firearm values.
-- Whether the centre weapon is a shotgun or another sidegrade.
-- Dash invulnerability, if any.
-- Initial darkness timing and shape.
-- Disconnect-loss grace period.
-- Exact visibility-filtering implementation in Colyseus.
-- Whether React remains necessary beyond the application shell.
-- Final Cloudflare/Fly project names and deployment environments.
-- Whether the repository uses npm workspaces or a simpler single-package layout.
+Human evidence must still decide whether the continuous PvPvE loop is fun
+enough to continue, revise, return to solo, or stop. The final dog art and map
+fiction also remain deliberately temporary until that decision.
 
-Open decisions should be answered through the smallest relevant implementation or playtest, not speculative infrastructure.
+The MVP implementation resolved the technical and mechanical questions:
+
+- the starting weapon is the current server-tuned hitscan pistol;
+- the centre sidegrade is a scarce short-range shotgun;
+- dash grants no invulnerability;
+- darkness is an authoritative staged rectangular contraction;
+- a disconnect during countdown or play is an immediate loss;
+- Colyseus schema views revoke hidden position fields per observer;
+- React remains the application, lobby, results, settings, and HUD shell;
+- the client is on Cloudflare Pages and the server is on Fly.io;
+- the repository is one pnpm package with client, server, shared, scripts, and
+  test boundaries.
+
+These are release-candidate choices, not permanent promises. Revise them only
+from a focused playtest or measured implementation result.

@@ -1176,11 +1176,11 @@ Acceptance:
 
 - [ ] Verify every acceptance criterion in `spec.md`.
 - [ ] Verify every active task above is complete or explicitly deferred with user approval.
-- [ ] Run type checking, linting, unit tests, protocol tests, room tests, four-client integration tests, production build, and soak/stress checks.
-- [ ] Complete a hosted four-player WSS match on the production-like deployment.
-- [ ] Confirm current client and server health after deployment.
-- [ ] Confirm all shipped audiovisual assets are original, licensed, or clearly temporary.
-- [ ] Update `README.md`, `spec.md`, `TODO.md`, and `why.html` to match the released implementation.
+- [x] Run type checking, linting, unit tests, protocol tests, room tests, four-client integration tests, production build, and soak/stress checks.
+- [x] Complete a hosted four-player WSS match on the production-like deployment.
+- [x] Confirm current client and server health after deployment.
+- [x] Confirm all shipped audiovisual assets are original, licensed, or clearly temporary.
+- [x] Update `README.md`, `spec.md`, `TODO.md`, and `why.html` to match the released implementation.
 - [ ] Commit, push, deploy, verify, and report the release commit and URLs.
 
 ---

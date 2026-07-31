@@ -13,6 +13,18 @@ making the scope decision.
 - Approximate network conditions:
 - Did everyone understand the controls without coaching?
 
+## Hardware rows
+
+Run the production URL in current desktop Google Chrome at 1280×720 or larger.
+
+| Machine                            | Chrome version | Input/audio/resize/visibility/rematch | Frame p95 / minimum observed FPS | Result and workaround |
+| ---------------------------------- | -------------- | ------------------------------------- | -------------------------------- | --------------------- |
+| Apple Silicon MacBook Air          |                |                                       |                                  |                       |
+| Integrated-graphics Windows laptop |                |                                       |                                  |                       |
+
+Record the actual model and operating system. A resized browser on the
+development desktop is not evidence for either row.
+
 ## Record once per match
 
 | Question                                        | Match 1 | Match 2 | Match 3 |
