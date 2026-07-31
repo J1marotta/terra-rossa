@@ -2103,6 +2103,33 @@
             </div>
           </article>
 
+          <article class="decision reveal" data-category="security networking">
+            <div class="decision-meta">
+              <span class="tag">T5.5 / hostile-client boundary</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>Reject floods before they touch command order</h3>
+            <p>
+              Every client now has one-second budgets: 60 commands overall, 30
+              movement, 30 aim, and 20 actions. A rejected flood does not
+              consume sequence order or mutate simulation state. The transport
+              separately caps frames at 4,096 bytes, and the room checks the
+              decoded estimate again.
+            </p>
+            <p>
+              Structured violation logs contain a room identifier, short command
+              class, and reason—but no name, payload, or coordinates. Existing
+              exact-envelope, numeric, identity, phase, sequence, range,
+              cooldown, origin, and authority checks remain the deeper defense.
+            </p>
+            <div class="evidence">
+              <strong>Tests:</strong> expected cadence passes; aim, action, and
+              aggregate floods stop; windows reset deterministically; invalid
+              clocks fail closed; malformed, impossible, stale, unauthorized,
+              and forged-outcome command suites still pass.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

@@ -49,7 +49,8 @@ export type ProtocolErrorCode =
   | 'protocol_mismatch'
   | 'wrong_room'
   | 'wrong_match'
-  | 'stale_sequence';
+  | 'stale_sequence'
+  | 'rate_limited';
 
 export interface ProtocolErrorEnvelope {
   readonly type: 'protocol_error';

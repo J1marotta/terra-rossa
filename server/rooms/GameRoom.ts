@@ -52,6 +52,7 @@ import {
   startReload,
 } from '../../shared/reload';
 import { consoleLogger, type GameLogger } from '../logger';
+import { CommandRateLimiter } from '../CommandRateLimiter';
 import { sanitizeDisplayName } from './displayName';
 import { allocateSpawnRegions } from '../../shared/spawns';
 import { deriveUnsignedSeed } from '../../shared/random';
@@ -96,6 +97,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
   #logger: GameLogger = consoleLogger;
   #playerIdBySession = new Map<string, string>();
   #commandOrderBySession = new Map<string, CommandOrder>();
+  #rateLimiterBySession = new Map<string, CommandRateLimiter>();
   #clientByPlayerId = new Map<string, Client>();
   #fixedStep = new FixedStepAccumulator();
   #simulationTick = 0;
@@ -254,6 +256,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     this.#playerIdBySession.set(client.sessionId, playerId);
     this.#clientByPlayerId.set(playerId, client);
     this.#commandOrderBySession.set(client.sessionId, new CommandOrder());
+    this.#rateLimiterBySession.set(client.sessionId, new CommandRateLimiter());
     this.state.players.set(playerId, player);
     client.view = new StateView();
     client.view.add(player, 1);
@@ -277,6 +280,7 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       this.#playerIdBySession.delete(client.sessionId);
       this.#clientByPlayerId.delete(playerId);
       this.#commandOrderBySession.delete(client.sessionId);
+      this.#rateLimiterBySession.delete(client.sessionId);
       this.#lastAimTickByPlayer.delete(playerId);
       if (this.state.hostPlayerId === playerId) {
         this.state.hostPlayerId =
@@ -338,7 +342,42 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
     const playerId = this.#playerIdBySession.get(client.sessionId);
     const player =
       playerId === undefined ? undefined : this.state.players.get(playerId);
-    if (order === undefined || player === undefined) return;
+    const limiter = this.#rateLimiterBySession.get(client.sessionId);
+    if (order === undefined || player === undefined || limiter === undefined)
+      return;
+    const messageType =
+      typeof message === 'object' &&
+      message !== null &&
+      'type' in message &&
+      typeof message.type === 'string'
+        ? message.type
+        : 'unknown';
+    const estimatedBytes = (() => {
+      try {
+        return new TextEncoder().encode(JSON.stringify(message)).byteLength;
+      } catch {
+        return Number.POSITIVE_INFINITY;
+      }
+    })();
+    if (estimatedBytes > 4_096 || !limiter.allow(Date.now(), messageType)) {
+      const code =
+        estimatedBytes > 4_096 ? 'malformed_command' : 'rate_limited';
+      this.#logger.info('protocol_violation', {
+        roomId: this.roomId,
+        code,
+        commandType: messageType.slice(0, 32),
+      });
+      client.send(PROTOCOL_ERROR_MESSAGE, {
+        type: 'protocol_error',
+        code,
+        message:
+          code === 'rate_limited'
+            ? 'Command rate exceeded the room budget.'
+            : 'Command exceeds the maximum payload size.',
+        sequence: null,
+      });
+      return;
+    }
     const result = validateCommand(
       message,
       {
@@ -348,6 +387,11 @@ export class GameRoom extends Room<{ state: GameRoomStateInstance }> {
       order,
     );
     if (!result.ok) {
+      this.#logger.info('protocol_violation', {
+        roomId: this.roomId,
+        code: result.error.code,
+        commandType: messageType.slice(0, 32),
+      });
       client.send(PROTOCOL_ERROR_MESSAGE, result.error);
       return;
     }

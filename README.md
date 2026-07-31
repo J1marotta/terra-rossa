@@ -219,6 +219,12 @@ Run `npm run stress:performance` for the deterministic four-player plus 48-creat
 
 A hosted current-Chrome match at 1280×720 measured 16.8 ms client frame p95 (approximately the 60 FPS target), 16 draw calls, 33 scene objects, 15 geometries, one texture, 1.08 ms server p95, 3.64 ms server p99, 23 synchronized entities, and 20.7 MB server heap. The authorized-view estimate was 5,845 bytes for the observed callback; cumulative figures are session totals and intentionally not presented as exact wire bandwidth. The normal eight-creature match meets the 60 FPS target, while the 48-creature isolated server stress is comfortably inside the above-30-FPS fallback budget.
 
+## Hostile-client boundaries
+
+The transport rejects frames above 4,096 bytes. Before command parsing, each connected client receives a one-second budget of 60 total commands, with narrower 30 Hz aim, 30 Hz movement, and 20 Hz action classes. Excess traffic is rejected without consuming command order or changing room state. Violations log only room ID, short command class, and reason—never display name, payload, or coordinate history.
+
+Exact-envelope parsing rejects unknown/extra fields, malformed and non-finite numbers, impossible movement magnitude, forged outcome fields, invalid IDs, stale sequences, wrong rooms/matches, and client-chosen reload results. The room independently enforces identity, phase, host permission, life state, ranges, cooldowns, ammunition, visibility, pickup ownership, creature state, darkness, damage, death, and victory. Hosted allowed-origin configuration and the 4-client transport cap remain mandatory; no game-facing administrative command or endpoint exists.
+
 Colyseus schema view tag 1 carries revocable position fields; tag 2 carries the owning player's private spawn assignment. Every client always receives the public roster, but the room independently adds or removes tag 1 for each viewer-target pair on simulation ticks. Concealment therefore removes remote coordinates from synchronized schema state instead of asking Three.js to hide data it already knows. The client adapter marks records without finite coordinates as concealed and excludes them from the rendered player list, while retaining names for lobby and result screens.
 
 Gunfire does not grant an additional exact-position reveal in this slice. Existing combat events remain presentation hooks only for opponents already visible; later audio work may add an approved approximate sound cue without publishing a hidden shooter's coordinates.

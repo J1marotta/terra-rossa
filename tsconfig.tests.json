@@ -16,6 +16,7 @@
     "client/src/multiplayer/**/*.ts",
     "client/src/vite-env.d.ts",
     "server/config.ts",
+    "server/CommandRateLimiter.ts",
     "server/index.ts",
     "server/logger.ts",
     "server/roomRegistry.ts",

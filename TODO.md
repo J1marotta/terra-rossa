@@ -1073,7 +1073,7 @@ Acceptance:
 
 ## T5.5 — Security and abuse hardening
 
-- [ ] Verify that hostile clients cannot author consequential state or exhaust a room trivially.
+- [x] Verify that hostile clients cannot author consequential state or exhaust a room trivially.
 
 Prerequisites: complete gameplay protocol.
 
