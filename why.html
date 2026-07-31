@@ -2077,6 +2077,32 @@
             </div>
           </article>
 
+          <article class="decision reveal" data-category="performance evidence">
+            <div class="decision-meta">
+              <span class="tag">T5.4 / hosted measurement</span>
+              <span class="tag">31 July 2026</span>
+            </div>
+            <h3>The normal match reaches the laptop-frame target</h3>
+            <p>
+              A hosted current-Chrome run at 1280×720 reported 16.8 ms client
+              frame p95, 16 draws, 33 objects, 15 geometries, and one texture.
+              The paired Sydney room reported 1.08 ms server p95, 3.64 ms p99,
+              23 entities, and 20.7 MB heap.
+            </p>
+            <p>
+              The observed authorized-view estimate was 5,845 bytes per state
+              callback. It is intentionally treated as an upper-bound diagnostic
+              rather than exact wire bandwidth. Together with the enforced
+              48-creature stress command, this closes the performance task
+              without pretending one laptop represents every machine.
+            </p>
+            <div class="evidence">
+              <strong>Budgets:</strong> normal hosted play is approximately the
+              60 FPS target; server p95 is far below 20 ms; stress remains well
+              above the 30 FPS fallback threshold on the isolated simulation.
+            </div>
+          </article>
+
           <div class="open-list reveal">
             <div>
               <strong>Performance:</strong> What creature and patch rates

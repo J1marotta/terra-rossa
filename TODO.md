@@ -1049,9 +1049,9 @@ Acceptance:
 
 ## T5.4 — Add performance instrumentation and budgets
 
-- [ ] Measure client, server, and network costs under the four-player stress case.
+- [x] Measure client, server, and network costs under the four-player stress case.
 
-Progress: opt-in client/server/network diagnostics and the repeatable 48-creature stress command are implemented; hosted Chrome observations remain before closure.
+Result: hosted Chrome at 1280×720 reported 16.8 ms frame p95, 16 draws, 33 objects, 15 geometries, one texture, and server p95 1.08 ms during a live match; the deterministic 48-creature server stress remained below 0.5 ms p95 on repeated development-host runs.
 
 Prerequisites: Phase 4 gate.
 
